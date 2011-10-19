@@ -80,7 +80,10 @@ sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step);
 fprintf('Data loaded.\n');
 
 % Border strain - SGA = YOR202W (HIS3) TSA = YMR271C (URA10)
-border_strain_orf = 'YOR202W';
+if ~exist('border_strain_orf', 'var')
+	border_strain_orf = 'YOR202W';
+end
+	
 fprintf('using border strain %s\n', border_strain_orf);
  
 
@@ -797,11 +800,17 @@ dm_actual_std = eps_std;
 clear eps eps_std afit;
 
 % Remove "undefined"
-% add 'exact' here to match undefinied+YDL227C
-ind = strmatch('undefined',sgadata.orfnames);
-%ind = strmatch('undefined',sgadata.orfnames, 'exact');
-complete_mat(ind,:)=NaN;
-complete_mat(:,ind)=NaN;
+if ~exist('skip_wt_remove', 'var')
+	skip_wt_remove = false;
+end
+
+if(~skip_wt_remove)
+	% add 'exact' here to match undefinied+YDL227C
+	ind = strmatch('undefined',sgadata.orfnames);
+	%ind = strmatch('undefined',sgadata.orfnames, 'exact');
+	complete_mat(ind,:)=NaN;
+	complete_mat(:,ind)=NaN;
+end
 
 
 %% Printing out
