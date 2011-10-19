@@ -1,0 +1,796 @@
+% -------------------------------------------------------------------------------
+Add double mutant fitness from latest data to standard
+zcat rawdata/rawdata_tr_110408.txt.gz | cut -f1 | sort -u > DMQ.txt
+% replace all _ with +...
+./Python/AddDoubleQueryFitnessToSMfile.py ...
+   refdata/smf_standard_merged_101020.txt
+   refdata/smf_merged_101020_tr_110408.txt
+   /project/csbio/lab_share/SGA/Sterling/scored/SGA_110419_scored_110505.txt
+   DMQ.txt
+YDL227C+YML109W not found in SGA_file
+undefined not found in SGA_file
+YDL227C+YOR371C not found in SGA_file
+
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 08, 2011 10:34
+inputfile =  'rawdata/ShortSet8.txt';
+outputfile = 'scored/ShortSet8_scored_110508';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+profile on
+compute_sgascore_110506
+% FYI this thing was thrashing all night
+% Still completed in ~12 hours
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 08, 2011 10:57
+inputfile =  'rawdata/ShortSet9.txt';
+outputfile = 'scored/SGA_110426_tr_110408_scored_110508';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+profile on
+compute_sgascore_110506
+% ABORTED to save MEMORY
+% -------------------------------------------------------------------------------
+
+
+
+
+%--------------------------------
+Fix this output and verify correctness: (from ShortSet8?)
+E1 no linkage or coord info for YNL261W in YNL261W_damp
+E2 no linkage or coord info for  in YNL261W_damp
+E1 no linkage or coord info for YDL208W in YDL208W_damp
+E2 no linkage or coord info for  in YDL208W_damp
+E1 no linkage or coord info for YKL170W in YKL170W_damp
+E2 no linkage or coord info for  in YKL170W_damp
+E1 no linkage or coord info for YJR104C in YJR104C_damp
+E2 no linkage or coord info for  in YJR104C_damp
+E1 no linkage or coord info for YKR001C in YKR001C_damp
+E2 no linkage or coord info for  in YKR001C_damp
+E1 no linkage or coord info for YHR170W in YHR170W_damp
+E2 no linkage or coord info for  in YHR170W_damp
+E1 no linkage or coord info for YML126C in YML126C_damp
+E2 no linkage or coord info for  in YML126C_damp
+E1 no linkage or coord info for undefined in undefined+YDL227C
+%--------------------------------
+
+% -------------------------------------------------------------------------------
+% May 10, 2011 11:49
+inputfile =  'rawdata/ShortSet9.txt';
+outputfile = 'scored/ShortSet9_scored_110508';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+profile on
+compute_sgascore_110506
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% May 10, 2011 15:23
+% We need to score a replicate version of ShortSet8
+ ./Python/RawdataReplicateRename.py rawdata/ShortSet8.txt rawdata/ShortSet8_replicate.txt
+% -------------------------------------------------------------------------------
+% May 10, 2011 15:50
+inputfile =  'rawdata/ShortSet8_replicate.txt';
+outputfile = 'scored/ShortSet8_replicate_scored_110510';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = false;
+compute_sgascore_WT
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 12, 2011 10:02
+% ShortSets are better but still missing too many plates. 
+% Found a possible order of operations bug, test by creating ShortSet10
+TotalLn: 109410813
+Printed: 27354621
+Queries: 88
+Batches: 148
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 12, 2011 10:39
+% Lets just let compute_sga.. proceed to a point where we can dump a plate view
+% then print out 'colsize'
+% INVESTIGATE YCL011C
+% has a row with only one plate (set 2) and a complete row above (set 1)
+dbstop in compute_sgascore at 153
+inputfile =  'rawdata/ShortSet10.txt';
+outputfile = 'scored/ShortSet10_scored_110512';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = false;
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% May 12, 2011 15:42
+% Short Set 11/12. This time we're saving our python structures
+./Python/ExtractShortSet.py rawdata/rawdata_110426_tr_110408.txt rawdata/ShortSet11.txt
+% OK fixed ANOTHER problem (see notebook, may 12)
+
+helix03% ../Triple/Python/ExtractShortSet.py rawdata_110426_tr_110408.txt ShortSet12.txt
+TotalLn: 109410813
+Printed: 33690621
+Queries: 1241
+Batches: 143
+
+
+dbstop in compute_sgascore at 153
+inputfile =  'rawdata/ShortSet12.txt';
+outputfile = 'scored/ShortSet12_scored_110512';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = false;
+compute_sgascore
+
+% -------------------------------------------------------------------------------
+
+May 13, 2011 16:55
+E1 no linkage or coord info for YNL261W in YNL261W_damp
+E2 no linkage or coord info for  in YNL261W_damp
+The "blanks" are fixed, "undefineds" are left in
+Others could be trouble. I'll check back on this on the next 
+Bleeding run. YNL261W, for example, is in the coord file
+though YNL261W_damp is not in the linkage file. YNL261W_damp138
+is however. I've asked anastasia about the "numerics"
+
+% -------------------------------------------------------------------------------
+% May 16, 2011
+% FULL SET - TRIPLE on Ohno
+% DETECTED AND FIXED A LINKAGE BUG
+inputfile =  'rawdata/rawdata_110426_tr_110408.txt';
+outputfile = 'scored/SGA_110426_tr_110408_scored_110516.txt';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = false;
+compute_sgascore
+
+
+% May 16, 2011
+% ShortSet12 new linkage
+inputfile =  'rawdata/ShortSet12.txt';
+outputfile = 'scored/ShortSet12_scored_110516';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = true;
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% May 17, 2011
+% ShortSet12b are crazed plates caused by linkage mapping problem
+% try removing all "difficult to map" queries
+grep -v damp rawdata/ShortSet12.txt | grep -v tsq | grep -v T?? > rawdata/ShortSet12b.txt
+
+
+inputfile =  'rawdata/ShortSet12b.txt';
+outputfile = 'scored/ShortSet12b_scored_110517';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = false;
+compute_sgascore
+% 7.3 hours
+% Plate 10 is crazy!
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 18, 2011
+% ShortSet12c let's remove all the triple data too
+grep -v + rawdata/ShortSet12b.txt > rawdata/ShortSet12c.txt
+
+
+inputfile =  'rawdata/ShortSet12c.txt';
+outputfile = 'scored/ShortSet12c_scored_110518';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = false;
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 20, 2011
+% ShortSet12b - older version of matlab (2009b)
+
+inputfile =  'rawdata/ShortSet12b.txt';
+outputfile = 'scored/ShortSet12b_scored_110520';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+skip_perl_step = true;
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 27, 2011
+% BASELINE? I've scored the sci_paper with STERLING 
+% Now score with TRIPLE as to repeat the sanity.m analysis
+inputfile =  'rawdata/Supplementary_data_4_Raw_sgadata_fullgenome_101209.txt'
+outputfile = 'scored/SGA_101209_scored_110527.txt'
+smfitnessfile =   'refdata/SMF_standard_SN+DAMP+TS_090501.txt' % OLD 
+linkagefile =     'refdata/query_specific_linkage_090116.txt'; % OLD 
+removearraylist = 'refdata/bad_array_strains_110125.txt';      % NEW 
+
+%smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+%linkagefile =     'refdata/query_specific_linkage_110419.txt';
+skip_perl_step = true;
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% May 31, 2011 16:18
+% BASELINE? I've scored the sci_paper with STERLING 
+% Now score with TRIPLE as to repeat the sanity.m analysis
+% R2009b
+inputfile =  'rawdata/Supplementary_data_4_Raw_sgadata_fullgenome_101209.txt'
+outputfile = 'scored/SGA_101209_scored_110531_2009b.txt'
+smfitnessfile =   'refdata/SMF_standard_SN+DAMP+TS_090501.txt' % OLD 
+linkagefile =     'refdata/query_specific_linkage_090116.txt'; % OLD 
+removearraylist = 'refdata/bad_array_strains_110125.txt';      % NEW 
+
+%smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+%linkagefile =     'refdata/query_specific_linkage_110419.txt';
+skip_perl_step = true;
+
+dbstop in compute_sgascore at 417
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% June 06, 2011 14:06
+% Things appear all-right if you simply use R2009b
+% I'm proceding on to the scoring of replicate data
+% for advanced QC, while doing some simple QC on SS12
+
+% At the same time, I'm updating the refdata files and scoring
+% SS12b again. 
+./Python/RawdataReplicateRename.py rawdata/ShortSet12b.txt rawdata/ShortSet12b_replicate.txt
+module load math/matlab/v.2009b
+
+% REPLICATE_RENAME
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = false;
+inputfile =  'rawdata/ShortSet12b_replicate.txt';
+outputfile = 'scored/ShortSet12b_replicate_scored_110606_2009b.txt';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+
+% Updated refdata_test (this output will then replace what I've sent out)
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = true;
+inputfile =  'rawdata/ShortSet12b.txt';
+outputfile = 'scored/ShortSet12b_scored_110606_2009b.txt';
+smfitnessfile =   'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile =     'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+
+
+% -------------------------------------------------------------------------------
+% June 08, 2011
+% SVD problem was caused by bug #673458 introduced in R2010b and fixed in R2011a
+% rescore the SP, the new SS13; with R2011a.
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = false;
+matlab_version = version();
+inputfile =  'rawdata/ShortSet13.txt';
+outputfile = 'scored/ShortSet13_scored_110608';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = true;
+matlab_version = version();
+inputfile =  'rawdata/Supplementary_data_4_Raw_sgadata_fullgenome_101209.txt';
+outputfile = 'scored/SGA_101209_scored_110608';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% June 09, 2011
+% ShortSet13_replicate
+skip_perl_step = false;
+inputfile =  'rawdata/ShortSet13_replicate.txt';
+outputfile = 'scored/ShortSet13_replicate_scored_110609';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% June 20, 2011
+% Whole Set - rawdata_110426_tr_110606.txt
+skip_perl_step = false;
+inputfile =  'rawdata/rawdata_110426_tr_110606.txt';
+outputfile = 'scored/SGA_110426_tr_110606_scored_110620';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408_T30append_11620.txt';
+linkagefile = 'refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% missed in linkage (108) (all of them got coord mapping)
+YDR341C_tsq1376
+YHR019C_tsq1377
+YHR196W_tsq1378
+YNL232W_tsq1379
+YMR290C_tsq1380
+YDR086C_tsq1381
+YGL113W_tsq1382
+YDR091C_tsq1383
+YLR186W_tsq1384
+YLR291C_tsq1385
+YMR281W_tsq1386
+YDL015C_tsq1387
+YGL091C_tsq1388
+YKR025W_tsq1389
+YLR007W_tsq1390
+YLR196W_tsq1391
+YLR316C_tsq1392
+YOL146W_tsq1393
+YGR046W_tsq1394
+YLR317W_tsq1395
+YJR006W_tsq1396
+YLR002C_tsq1397
+YBR254C_tsq1398
+YEL021W_collab
+YMR290C_tsq1380T30
+YDR086C_tsq1381T30
+YGL113W_tsq1382T30
+YDR091C_tsq1383T30
+YLR186W_tsq1384T30
+YLR291C_tsq1385T30
+YMR281W_tsq1386T30
+YHR019C_tsq1377T30
+YHR196W_tsq1378T30
+YDL015C_tsq1387T30
+YGL091C_tsq1388T30
+YKR025W_tsq1389T30
+YLR007W_tsq1390T30
+YLR196W_tsq1391T30
+YLR316C_tsq1392T30
+YOL146W_tsq1393T30
+YGR046W_tsq1394T30
+YLR317W_tsq1395T30
+YJR006W_tsq1396T30
+YLR002C_tsq1397T30
+YBR254C_tsq1398T30
+YDR341C_tsq1376T30
+YNL232W_tsq1379T30
+YOR260W_tsq1195T30
+YNL287W_tsq38T30
+YGR158C_tsq1135T30
+YML046W_tsq1123T30
+YBR109C_tsq1085T30
+YMR277W_tsq1270T30
+YKL210W_tsq191T30
+YGL011C_tsq1313T30
+YIR011C_tsq1334T30
+YDR437W_tsq1229T30
+YLR305C_tsq1078T30
+YDL111C_tsq1320T30
+YDL103C_tsq1322T30
+YIL150C_tsq458T30
+YNL163C_tsq1232T30
+YJR093C_tsq1187T30
+undefined_T30
+YGR013W_tsq1336T30
+YHR190W_tsq1337T30
+YLR116W_tsq1338T30
+YLR340W_tsq1339T30
+YKL049C_tsq1107T30
+YKL021C_tsq1326T30
+YOR057W_tsq1188T30
+YFL039C_tsq902T30
+YER009W_tsq1358T30
+YGR119C_tsq1353T30
+YML092C_tsq1354T30
+YFR050C_tsq1355T30
+YOL069W_tsq1356T30
+YOR103C_tsq1357T30
+YML077W_tsq1359T30
+YOL144W_tsq1360T30
+YBR142W_tsq1361T30
+YKL144C_tsq1362T30
+YLR005W_tsq1363T30
+YDL097C_tsq1364T30
+YOR056C_tsq1365T30
+YNL002C_tsq1366T30
+YAL043C_tsq1367T30
+YDL045C_tsq1368T30
+YGR172C_tsq1369T30
+YGL142C_tsq1370T30
+YGR253C_tsq1371T30
+YKL035W_tsq1372T30
+YBR154C_tsq1373T30
+YGR195W_tsq1374T30
+YDR064W_tsq1375T30
+YMR069W_collab1
+YOR330C_collab
+YEL021W_collab1
+YKL049C_y13275
+YKL049C_YMB6968
+YKL049C_YMB6969
+YKL049C_YMB7959
+YKL049C_YMB7960
+YKL049C_YMB7964
+YKL049C_YMB7965
+YKL049C_YMB7966
+YKL049C_YMB8117
+YKL049C_YMB8119
+% -------------------------------------------------------------------------------
+
+% June 28, 2011
+% Whole Set in Replicate - rawdata_110426_tr_110606_replicate.txt
+skip_perl_step = false;
+inputfile =  'rawdata/rawdata_110426_tr_110606_replicate.txt';
+outputfile = 'scored/SGA_110426_tr_110606_scored_110628';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408_T30append_11620.txt';
+linkagefile = 'refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+% -------------------------------------------------------------------------------
+% June 30, 2011
+% Whole Set in Replicate - rawdata_110426_tr_110606_replicate.txt
+% repeated with a fitness file -replicate enabled
+skip_perl_step = true;
+inputfile =  'rawdata/rawdata_110426_tr_110606_replicate.txt';
+outputfile = 'scored/SGA_110426_tr_110606_scored_110630'; %% NAME CHANGED AFTER RUN
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408_T30append_11620_SS13rep.txt';
+linkagefile = 'refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620_SS13rep.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% July 05, 2011
+% ShortSet13_replicate REDO with replicated linkage and fitness data
+skip_perl_step = true;
+inputfile =  'rawdata/ShortSet13_replicate.txt';
+outputfile = 'scored/ShortSet13_replicate_scored_110705';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408_T30append_11620_SS13rep.txt';
+linkagefile = 'refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620_SS13rep.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% July 12, 2011
+% ShortSet13_replicate REDO with replicated linkage and fitness data
+% Single orfs (arrays) have to be include also, don't clobber fitness file
+%
+% ./Python/RawdataReplicateRename.py rawdata/ShortSet13.txt tmp.ss13_rep.txt refdata/smf_merged_101020_tr_110408_T30append_11620.txt refdata/smf_merged_101020_tr_110408_T30append_11620_SS13rep.txt refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620.txt refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620_SS13rep.txt
+%
+skip_perl_step = true;
+inputfile =  'rawdata/ShortSet13_replicate.txt';
+outputfile = 'scored/ShortSet13_replicate_scored_110712';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408_T30append_11620_SS13rep.txt';
+linkagefile = 'refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620_SS13rep.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% July 22, 2011
+% TSA arrays are finished / Try to score them
+%
+skip_perl_step = false
+inputfile =  'rawdata/TS-Array-v6_dump_110722-13-12-36.txt';
+outputfile = 'scored/TS-Array-v6_scored_110722';
+smfitnessfile = 'refdata/smf_standard_merged_101020.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+%% - FAILED on line 257, no HIS3 colonies throws the "hold-one-out" filter
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% July 27, 2011
+% I think the full_set replicate data is bunk, lemme rescore it based on 
+% ss13 template (July 12) above
+%
+% 
+% ./Python/RawdataReplicateRename.py rawdata/rawdata_110426_tr_110606.txt rawdata/rawdata_110426_tr_110606_replicate.txt refdata/smf_merged_101020_tr_110408_T30append_11620.txt refdata/smf_merged_101020_tr_110408_T30append_11620_replicate.txt refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620.txt refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620_replicate.txt
+%
+skip_perl_step = false;
+inputfile =  'rawdata/rawdata_110426_tr_110606_replicate.txt';
+outputfile = 'scored/rawdata_110426_tr_110606_replicate_scored_110727';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408_T30append_11620_replicate.txt';
+linkagefile = 'refdata/query_specific_linkage_110419_DAMPidsRemoved_T30append_11620_replicate.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+% -------------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------------
+% June 08, 2011
+% rescore ShortSet13 to determine if variability in pvals is 
+% due to set size or stochasticity
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = true;
+inputfile =  'rawdata/ShortSet13.txt';
+outputfile = 'scored/ShortSet13_scored_110826';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110408.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% August 30, 2011
+%anew version of triple data
+% cut -f1 rawdata_110426_tr_110829.txt | grep + | sort -u > tmp.txt
+% ../Triple/Python/AddDoubleQueryFitnessToSMfile.py ../refdata/smf_merged_101020_tr_110408_T30append_11620.txt ../refdata/smf_merged_101020_tr_110629_T30append_11620.txt ../Triple/scored/SGA_110426_tr_110606_scored_110620.txt tmp.txt
+
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = false;
+inputfile =  'rawdata/rawdata_110426_tr_110829.txt';
+outputfile = 'scored/SGA_110426_tr_110829_scored_110830';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110629_T30append_11620.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% -------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------
+% August 30 cont
+% ShortSet14
+% ../Triple/Python/ExtractShortSet.py rawdata_110426_tr_110829.txt ShortSet14.txt
+
+TotalLn: 109819390
+Printed: 35347966
+Queries: 1310
+Batches: 155
+
+% ../Triple/Python/RawdataReplicateRename.py ShortSet14.txt ShortSet14_replicate.txt ../refdata/smf_merged_101020_tr_110629_T30append_11620.txt ../refdata/smf_ShortSet14_replicate.txt ../refdata/query_specific_linkage_110419.txt ../refdata/query_specific_linkage_110419_ShortSet14_replicate.txt
+
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = false;
+inputfile =  'rawdata/ShortSet14.txt';
+outputfile = 'scored/ShortSet14_scored_110830';
+smfitnessfile = 'refdata/smf_merged_101020_tr_110629_T30append_11620.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% replicate
+addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = false;
+inputfile =  'rawdata/ShortSet14_replicate.txt';
+outputfile = 'scored/ShortSet14_replicate_scored_110830';
+smfitnessfile = 'refdata/smf_ShortSet14_replicate.txt';
+linkagefile = 'refdata/query_specific_linkage_110419_ShortSet14_replicate.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore_WT
+
+% -------------------------------------------------------------------------------
+% September 06, 2011
+%addpath(genpath('/project/csbio/lab_share/SGA/Triple'));
+skip_perl_step = true;
+inputfile =  'rawdata/TS-Array-v6_dump_110722-13-12-36.txt';
+outputfile = 'scored/TS-Array-v6_dump_110722-13-12-36_dummy2.out';
+smfitnessfile = 'refdata/TS-Array-v6_dump_110722-13-12-36_smf_082611.txt';
+linkagefile = 'refdata/query_specific_linkage_110419.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------------
+% Scoring synchronization *******************************************************
+% -------------------------------------------------------------------------------
+% September 22, 2011
+% First priority is to get the new standard data (110919) going
+% 110919-500K.txt is the first 500,000 lines of the 110919 data
+
+skip_perl_step = false;
+inputfile =  'rawdata/110919-500K.txt';
+outputfile = 'scored/110919-500K_scored_110922';
+smfitnessfile = 'refdata/smf_standard_merged_101020_v2.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% -------------------------------------------------------------------------------
+
+skip_perl_step = false;
+inputfile =  'rawdata/raw_dump__SGA-Array-ver2-1536_collab__2011-09-19.txt';
+outputfile = 'scored/SGA_110919_scored_110922';
+smfitnessfile = 'refdata/smf_standard_merged_101020_v2.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% -------------------------------------------------------------------------------
+skip_perl_step = false;
+inputfile =  'rawdata/raw_dump__SGA_T30-Array-ver2-1536__2011-09-21_16-28-19.txt';
+outputfile = 'scored/SGA_110919_T30_scored_110923';
+smfitnessfile = 'refdata/smf_standard_merged_101020_v2.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+% ---------------- T26 2nd random run -------------------------------------------
+%%% WRONG BORDER STRAIN
+ % skip_perl_step = true;
+ % inputfile =  'rawdata/raw_dump__SGA-Array-ver2-1536_collab__2011-09-19.txt';
+ % outputfile = 'scored/SGA_110919_scored_110927';
+ % smfitnessfile = 'refdata/smf_standard_merged_101020_v2.txt';
+ % linkagefile = 'refdata/query_specific_linkage_110918.txt';
+ % removearraylist = 'refdata/bad_array_strains_110125.txt';
+ % compute_sgascore
+%%% WRONG BORDER STRAIN
+% ---------------- T26 3rd random run -------------------------------------------
+skip_perl_step = true;
+inputfile =  'rawdata/raw_dump__SGA-Array-ver2-1536_collab__2011-09-19.txt';
+outputfile = 'scored/SGA_110919_scored_110930';
+smfitnessfile = 'refdata/smf_standard_merged_101020_v2.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+
+
+% -------------------------------------------------------------------------------
+% TSA scoring before call *******************************************************
+% Sept 27, 2011
+% -------------------------------------------------------------------------------
+% T26 normal linkage
+% ------------------
+skip_perl_step = true;
+skip_linkage_step = false;
+inputfile =  'rawdata/raw_dump__TS-Array-v6__collab_2011-09-21_T26.txt';
+outputfile = 'scored/TSA_110921_T26_scored_110927';
+smfitnessfile = 'refdata/smf/fitness26.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% T26 skip   linkage
+% ------------------
+skip_perl_step = true;
+skip_linkage_step = true;
+inputfile =  'rawdata/raw_dump__TS-Array-v6__collab_2011-09-21_T26.txt';
+outputfile = 'scored/TSA_110921_T26_nolink_scored_110927';
+smfitnessfile = 'refdata/smf/fitness26.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% T30 normal linkage
+% ------------------
+skip_perl_step = false;
+skip_linkage_step = false;
+inputfile =  'rawdata/raw_dump__TS-Array-v6__collab_2011-09-21_T30.txt';
+outputfile = 'scored/TSA_110921_T30_scored_110927';
+smfitnessfile = 'refdata/smf/fitness30.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% T30 skip   linkage
+% ------------------
+skip_perl_step = true;
+skip_linkage_step = true;
+inputfile =  'rawdata/raw_dump__TS-Array-v6__collab_2011-09-21_T30.txt';
+outputfile = 'scored/TSA_110921_T30_nolink_scored_110927';
+smfitnessfile = 'refdata/smf/fitness30.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+
+% -------------------------------------------------------------------------------
+% Rescore fixed TSA data  *******************************************************
+% Sept 29, 2011
+% -------------------------------------------------------------------------------
+
+% T26 skip linkage
+% ------------------
+skip_perl_step = false;
+skip_linkage_step = true;
+inputfile =  'rawdata/raw_dump_TS_T26_2011-09-29.txt';
+outputfile = 'scored/TSA_T26_110929_nolink_scored_110929';
+smfitnessfile = 'refdata/smf/fitness26.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% T30 skip linkage
+% ------------------
+skip_perl_step = false;
+skip_linkage_step = true;
+inputfile =  'rawdata/raw_dump_TS_T30_2011-09-29.txt';
+outputfile = 'scored/TSA_T30_110929_nolink_scored_110929';
+smfitnessfile = 'refdata/smf/fitness30.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% -------------------------------------------------------------------------------
+% RE-Rescore fixed TSA data  *******************************************************
+% Oct 03, 2011
+% -------------------------------------------------------------------------------
+
+% T30 skip linkage
+% ------------------
+skip_perl_step = false;
+skip_linkage_step = true;
+inputfile =  'rawdata/raw_dump__TS_T30-Array-v6_collab__2011-09-30.txt';
+outputfile = 'scored/TSA_T30_110930_nolink_scored_111003';
+smfitnessfile = 'refdata/smf/fitness30.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+
+% -------------------------------------------------------------------------------
+% Rescore AB
+% Oct 10, 2011
+% -------------------------------------------------------------------------------
+
+skip_perl_step = true;
+skip_linkage_step = false;
+inputfile =  'rawdata/raw_dump__SGA-Array-ver2-1536_collab__2011-09-19.txt';
+outputfile = 'scored/AB_111010'
+smfitnessfile = 'refdata/smf_standard_merged_101020_v2.txt';
+linkagefile = 'refdata/query_specific_linkage_110918.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+
+% -------------------------------------------------------------------------------
+% October 13-18, 2011
+% New triple data
+% -------------------------------------------------------------------------------
+ ../Python/PreprocessTripleSGA.py raw_dump__SGA-Array-ver2-1536_collab__2011-09-19.txt rawdata_tr_110927.txt.gz rawdata_110919_tr_110927.txt
+... something like sed -e 's/_sn[0-9][0-9]*//' raw_dump__SGA-Array-ver2-1536_collab__2011-09-19.txt > rawdata_110919_SNremoved.txt
+
+../Python/ExtractShortSet.py rawdata_110919_tr_110927_snRemoved.txt ShortSet15c.txt
+TotalLn: 103503358
+Printed: 36205054
+Queries: 1326
+Batches: 157
+mv 15c -> 15
+sed -e 's/_sn[0-9][0-9]*//' query_specific_linkage_110918.txt > query_specific_linkage_110918_NOSN_SS15.txt
+
+skip_perl_step = true;
+skip_linkage_step = false;
+inputfile =  'rawdata/ShortSet15.txt';
+outputfile = 'scored/ShortSet15';
+smfitnessfile = 'refdata/smf_standard_merged_101020_v2.txt';
+linkagefile = 'refdata/query_specific_linkage_110918_NOSN_SS15.txt';
+removearraylist = 'refdata/bad_array_strains_110125.txt';
+compute_sgascore
+
+% -------------------------------------------------------------------------------
