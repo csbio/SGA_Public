@@ -552,6 +552,10 @@ sgadata.dm_normmean = zeros(length(sgadata.colsize),1)+NaN;
 sgadata.dm_normvar = zeros(length(sgadata.colsize),1)+NaN;
 sgadata.dm_num = zeros(length(sgadata.colsize),1)+NaN;
 
+sgadata.batchnorm_colsize_nonegs = max(sgadata.batchnorm_colsize, 1);
+sgadata.batchnorm_colsize_nonegs(isnan(sgadata.batchnorm_colsize)) = NaN;
+field = 'batchnorm_colsize_nonegs';
+
 fprintf(['Computing average for double mutants...\n|' blanks(50) '|\n|']);
 
 for i = 1:length(all_querys)
@@ -628,22 +632,27 @@ fg_smfit(a,:) = sm_fitness(b,:);
 final_smfit = fg_smfit(:,1);
 final_smfit_std = fg_smfit(:,2);
 
+field = 'batchnorm_colsize';
+
 all_arrays = unique(sgadata.arrays);
 
 model_fits = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 model_fit_std = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 
+all_nans = find(isnan(sgadata.(field)));
+ind_his3 = strmatch('YOR202W', sgadata.orfnames,'exact');
+
 fprintf(['Model fitting...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
     
     all_ind = array_map{all_arrays(i)};
-    all_ind = setdiff(all_ind, find(isnan(sgadata.(field))));
+    all_ind = setdiff(all_ind, all_nans);
    
     if isempty(all_ind)
        continue;
     end
    
-    if all_arrays(i) == strmatch(border_strain_orf,sgadata.orfnames)
+    if all_arrays(i) == ind_his3
        continue;
     end
 
