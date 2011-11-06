@@ -152,29 +152,29 @@ fprintf(['\nChr ' num2str(ic) ' - Function in progress...\n|' blanks(50) '|\n|']
             boundary_right2 = chr_length.length(ic);
         end
         
-%% Figure plotting. If uncommented, will create a plot for each query. Good to try out the first time you run a linkage analysis on a new dataset.
-%         figure(q);
-%         hold on;
-%         for a = 1 : length(ia)
-%             patch([all_data(ic).coord_col(a,1) all_data(ic).coord_col(a,1) all_data(ic).coord_col(a,2) all_data(ic).coord_col(a,2)],[0 all_data(ic).scores(q,a) all_data(ic).scores(q,a) 0],'k');
-%         end
-%         plot(1:chr_length.length(ic), linkage_profile(q,:),'r-','LineWidth',3);
-% %        plot(1:chr_length.length(ic), profile(q).median,'c-','LineWidth',3);
-%         
-%         plot([boundary_left2 boundary_left2], [-100 50],'r-','LineWidth',3); 
-%         plot([boundary_right2 boundary_right2], [-100 50],'r-','LineWidth',3);
-%         
-% 
-%         %plot([chr_length.length(ic)-smooth_window2 chr_length.length(ic)],[-200 -200], 'k-','LineWidth',2);
-%         %plot([boundary_right-smooth_window2/2 boundary_right+smooth_window2/2],[-100 -100],'k-','LineWidth',2);
-%         grid on;
-%         set(gca,'XLim',[1 chr_length.length(ic)]);
-%         
-%         title(all_data(ic).labels_row(q));
-%         linkage_profile(q, 1:boundary_left2-1) = 0;
-%         linkage_profile(q, boundary_right2+1:end) = 0;
-% %         
-          
+% Figure plotting. If uncommented, will create a plot for each query. Good to try out the first time you run a linkage analysis on a new dataset.
+        figure(q);
+        hold on;
+        for a = 1 : length(ia)
+            patch([all_data(ic).coord_col(a,1) all_data(ic).coord_col(a,1) all_data(ic).coord_col(a,2) all_data(ic).coord_col(a,2)],[0 all_data(ic).scores(q,a) all_data(ic).scores(q,a) 0],'k');
+        end
+        plot(1:chr_length.length(ic), linkage_profile(q,:),'r-','LineWidth',3);
+        %plot(1:chr_length.length(ic), profile(q).median,'c-','LineWidth',3);
+        
+        plot([boundary_left2 boundary_left2], [-100 50],'r-','LineWidth',3); 
+        plot([boundary_right2 boundary_right2], [-100 50],'r-','LineWidth',3);
+        
+
+        %plot([chr_length.length(ic)-smooth_window2 chr_length.length(ic)],[-200 -200], 'k-','LineWidth',2);
+        %plot([boundary_right-smooth_window2/2 boundary_right+smooth_window2/2],[-100 -100],'k-','LineWidth',2);
+        grid on;
+        set(gca,'XLim',[1 chr_length.length(ic)]);
+        
+        title(all_data(ic).labels_row(q));
+        linkage_profile(q, 1:boundary_left2-1) = 0;
+        linkage_profile(q, boundary_right2+1:end) = 0;
+        
+         
         lnkg.coord_mean(iq(q),:) = [boundary_left2 boundary_right2];
 %        lnkg.coord_median(iq(q),:) = [boundary_left boundary_right];
         
