@@ -268,6 +268,7 @@ all_querys = unique(sgadata.querys);
 result = sgadata.(field);
 
 his3_ind = strmatch(border_strain_orf,sgadata.orfnames,'exact');
+assert(~isempty(his3_ind), 'is %s the correct border strain?\n', border_strin_orf);
 
 fprintf(['Running the hold-one-out filter...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_querys)
