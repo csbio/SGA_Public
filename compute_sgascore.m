@@ -263,7 +263,7 @@ sgadata.finalplatecorr_colsize = ...
     apply_plate_normalization(sgadata, 'compcorr_colsize', ignore_cols, default_median_colsize, plate_id_map);
 
 % Do filtering based on held-out CV values
-sgadata.filt_colsize = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', border_strain_orf, plate_id_map);
+sgadata.filt_colsize = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', border_strain_orf, query_map, plate_id_map);
 
 
 %% Filters section

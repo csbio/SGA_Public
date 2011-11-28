@@ -53,13 +53,20 @@ function result = apply_jackknife_correction(sgadata,field,border_strain_orf,que
 					continue;
 				end
 		
+
+
 				ind3 = find(~isnan(curr_mat(j,:)));
-				vals = jackknife(@nanstd,curr_mat(j,ind3));		 
+
+				%vals = jackknife(@nanstd,curr_mat(j,ind3));		 
+				%tot_dev = nanvar(curr_mat(j,ind3))*(length(vals)-1);
+				%jackknife_dev = (vals.^2).*(length(vals)-2);
+				%t = find(tot_dev - jackknife_dev > 0.9*tot_dev); % find colonies that contribute more than 90% of total variance.
+
+
+     			x = curr_mat(j,ind3);
+     			vals = (x-nanmean(x)).^2;
+            t = find(vals./sum(vals) > 0.9); % find colonies that contribute more than 90% of total variance.
 						
-				tot_dev = nanvar(curr_mat(j,ind3))*(length(vals)-1);
-				jackknife_dev = (vals.^2).*(length(vals)-2);
-						
-				t = find(tot_dev - jackknife_dev > 0.9*tot_dev); % find colonies that contribute more than 90% of total variance.
 						
 				if length(t) <= 0.25 * length(vals)						
 					result(ind_mat(j,ind3(t))) = NaN;
@@ -77,10 +84,3 @@ function result = apply_jackknife_correction(sgadata,field,border_strain_orf,que
 
 end
 
-
-%{
-     x = curr_mat(j,ind3);
-     vars = (x-nanmean(x)).^2;
-     
-            t = find(vars./sum(vars) > 0.9); % find colonies that contribute more than 90% of total variance.
-%}
