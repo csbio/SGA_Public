@@ -74,7 +74,7 @@ function newdata = apply_spatial_normalization(sgadata,field,ignore_cols,plate_i
         newdata(plate_map(:)) = newdata(plate_map(:)) - (filtered(:)-nanmean(filtered(:)));
         
         % Print progress
-        print_progress(length(all_plates),i);
+        print_progress(lfid, length(all_plates),i);
         
     end 
     log_printf(lfid, '|\n');

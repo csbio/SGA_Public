@@ -52,7 +52,7 @@ function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_
         sgadata.neighbor_cols(plate_map(:),:) = sgadata.(field)(nhbr_inds);
         
         % Print progress
-        print_progress(length(all_plates),i);
+        print_progress(lfid, length(all_plates),i);
         
     end 
     log_printf(lfid, '|\n');
@@ -105,7 +105,7 @@ function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_
         newdata(ind2) = data2;
         
         % Print progress
-        print_progress(length(2:(fix(length(col_cutoffs)/2)+2)), i);
+        print_progress(lfid, length(2:(fix(length(col_cutoffs)/2)+2)), i);
         
     end
     log_printf(lfid, '|\n');

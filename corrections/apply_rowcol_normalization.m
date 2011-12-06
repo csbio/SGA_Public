@@ -94,7 +94,7 @@ function newdata = apply_rowcol_normalization(sgadata,field,ignore_cols,plate_id
         end
         
         % Print progress
-        print_progress(length(curr_plates), i);
+        print_progress(lfid, length(curr_plates), i);
         
     end
     

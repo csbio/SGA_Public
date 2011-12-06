@@ -76,7 +76,7 @@ function result = apply_jackknife_correction(sgadata,field,border_strain_orf,que
 		end
 	 
 		% Print progress
-		print_progress(length(all_querys), i);
+		print_progress(lfid, length(all_querys), i);
 
 	end
 	log_printf(lfid, '|\n');

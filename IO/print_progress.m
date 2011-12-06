@@ -11,7 +11,7 @@
 %
 %%
 
-function print_progress(total, step, lfid)
+function print_progress(lfid, total, step)
     
     % Determine how much progress made since the last step of the loop
     x = fix(step / (total/50)) - fix((step-1)/(total/50));

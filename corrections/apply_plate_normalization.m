@@ -54,7 +54,7 @@ function result = apply_plate_normalization(sgadata, field, ignore_cols, overall
         result(ind) = savedata(ind)*(overall_med/plate_median);
         
         % Print progress
-        print_progress(length(all_plates), i);
+        print_progress(lfid, length(all_plates), i);
         
     end
     log_printf(lfid, '|\n');

@@ -142,7 +142,7 @@ plate_id_map = cell(max(all_plateids),1);
 log_printf(lfid, ['\nConstructing plateid->ind map...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_plateids)
     plate_id_map{all_plateids(i)} = find(sgadata.plateids == all_plateids(i));
-    print_progress(length(all_plateids),i);
+    print_progress(lfid, length(all_plateids),i);
 end
 log_printf(lfid, '|\n');
 
@@ -261,7 +261,7 @@ for i = 1:length(all_arrplates)
     end
     
     % Print progress
-    print_progress(length(all_arrplates), i);
+    print_progress(lfid, length(all_arrplates), i);
     
 end
 
@@ -393,7 +393,7 @@ for i = 1:length(all_arrplates)
     array_means(i,:) = nanmean(t,2);
     
     % Print progress
-    print_progress(length(all_arrplates),i);
+    print_progress(lfid, length(all_arrplates),i);
     
 end
 log_printf(lfid, '|\n');
@@ -439,7 +439,7 @@ for i=1:length(all_arrplates)
     save_mats(i).batch = curr_batch;
     
     % Print progress
-    print_progress(length(all_arrplates),i);
+    print_progress(lfid, length(all_arrplates),i);
     
 end
 log_printf(lfid, '|\n');
@@ -470,7 +470,7 @@ for j = 1:length(all_arrplates)
     sgadata.(outfield)(save_mats(j).mat_ind(:)) = sgadata.(outfield)(save_mats(j).mat_ind(:)) + (tnorm(:)-t(:));
     
     % Print progress
-    print_progress(length(all_arrplates),j);
+    print_progress(lfid, length(all_arrplates),j);
     
 end
 clear save_mats;
@@ -495,7 +495,7 @@ for i = 1:length(all_arrays)
     t(isnan(sgadata.(field)(ind))) = NaN;
     array_vars(i,:)=[nanmean(log(t)),nanvar(log(t))];
     
-    print_progress(length(all_arrays),i);
+    print_progress(lfid, length(all_arrays),i);
 end
 log_printf(lfid, '|\n');
 
@@ -550,7 +550,7 @@ for i = 1:length(all_querys)
     sgadata.dm_num(ind) = nm(n);
     
     % Print progress
-    print_progress(length(all_querys), i);
+    print_progress(lfid, length(all_querys), i);
     
 end
 log_printf(lfid, '|\n');
@@ -582,7 +582,7 @@ for i = 1:length(all_querys)
     end
     
     % Print progress
-    print_progress(length(all_querys), i);
+    print_progress(lfid, length(all_querys), i);
 end
 log_printf(lfid, '|\n');
 
@@ -673,7 +673,7 @@ for i = 1:length(all_arrays)
     sgadata.arraymean_corrected(all_ind) = nanmean(query_effects + arrmean);
     
     % Print progress
-    print_progress(length(all_arrays),i);
+    print_progress(lfid, length(all_arrays),i);
    
 end
 

@@ -10,11 +10,11 @@
 %
 %%
 
-function output_interaction_data(outputfile,orfnames,escores,escores_std,background_mean,background_std,smfit,smfit_std,dm_expected,dm_actual,dm_actual_std)
+function output_interaction_data(outputfile,orfnames,escores,escores_std,background_mean,background_std,smfit,smfit_std,dm_expected,dm_actual,dm_actual_std,lfid)
 
 pvals = sqrt(normcdf(-abs(escores./escores_std)) .* normcdf(-abs(log((background_mean + escores)./background_mean) ./ log(background_std) )));
 
-fprintf(['Printing output file...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Printing output file...\n|' blanks(50) '|\n|']);
 
 fid = fopen(outputfile,'w');
 for i = 1:length(escores)
@@ -28,9 +28,9 @@ for i = 1:length(escores)
     end
     
     % Print progress
-    print_progress(length(escores), i);
+    print_progress(lfid, length(escores), i);
     
 end
 fclose(fid);
 
-fprintf('|\n');
+log_printf(lfid,'|\n');
