@@ -11,19 +11,19 @@
 %
 %%
 
-function print_progress(total, step)
+function print_progress(total, step, lfid)
     
     % Determine how much progress made since the last step of the loop
     x = fix(step / (total/50)) - fix((step-1)/(total/50));
     
     for i = 1 : x
-        fprintf('*');
+        log_printf(lfid, '*');
     end
     
     % Fixes a little rounding issue at the end
     if step == total 
         df = 50 - fix(step / (total/50));
         for i = 1 : df
-            fprintf('*');
+            log_printf(lfid, '*');
         end
     end

@@ -16,11 +16,11 @@
 %
 %%
 
-function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_id_map)
+function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_id_map,lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    fprintf('\nCompetition correction script:\n\t%s\n',p);    
+    log_printf(lfid, '\nCompetition correction script:\n\t%s\n',p);    
     
     % Get indices of neighboring colonies
     colony_neighbor_inds = get_colony_neighbor_indices_list();
@@ -31,7 +31,7 @@ function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_
     % List of colony sizes for each colony's neighbors
     sgadata.neighbor_cols = zeros(length(sgadata.colsize),3);   
 
-    fprintf(['Mapping neighboring colonies...\n|', blanks(50), '|\n|']);
+    log_printf(lfid, ['Mapping neighboring colonies...\n|', blanks(50), '|\n|']);
     for i=1:length(all_plates)
         
         % List of sgadata indices to this plate colonies
@@ -55,7 +55,7 @@ function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_
         print_progress(length(all_plates),i);
         
     end 
-    fprintf('|\n');
+    log_printf(lfid, '|\n');
     
     sgadata.neighbor_cols(sgadata.neighbor_cols == sgadata.(field)(1)) = NaN;
     
@@ -77,7 +77,7 @@ function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_
     comp_corr_global=zeros(length(sgadata.colsize),1);
     newdata = sgadata.(field);
     
-    fprintf(['\nCompetition correction...\n|' blanks(50) '|\n|']);
+    log_printf(lfid, ['\nCompetition correction...\n|' blanks(50) '|\n|']);
     for i = 2:(fix(length(col_cutoffs)/2)+2) % correct 0-70% bins each independently
         
         ind2 = find(min(sgadata.neighbor_cols,[],2) >= col_cutoffs(i-1) & ...
@@ -108,7 +108,7 @@ function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_
         print_progress(length(2:(fix(length(col_cutoffs)/2)+2)), i);
         
     end
-    fprintf('|\n');
+    log_printf(lfid, '|\n');
     
     newdata = sgadata.rowcolcorr_colsize - (sgadata.residual_spatialnorm - newdata);
     

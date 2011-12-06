@@ -16,18 +16,18 @@
 %
 %%
 
-function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile)
+function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile,lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    fprintf('\nLinkage filter script:\n\t%s\n\n',p);
+    log_printf(lfid, '\nLinkage filter script:\n\t%s\n\n',p);
     
     % Load chromosomal coordinates
 
-    %fprintf('Using standard chromosome coordinates\n');
+    %log_printf(lfid, 'Using standard chromosome coordinates\n');
     %chromdata = importdata('chrom_coordinates.txt');
 
-    fprintf('Using TSA chromosome coordinates\n');
+    log_printf(lfid, 'Using TSA chromosome coordinates\n');
     chromdata = importdata('chrom_coordinates_wTS_110907.txt'); %ek 110907
 
     orfs_coords = chromdata.textdata;
@@ -47,10 +47,10 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
     % If no single query-specific linkage info is available, assume 200kb
     all_querys = unique(sgadata.querys); % BJV this is just  1:max(sgadata.querys) ie 1:1713
     ind = find(linkage_reg(all_querys,1) < 0);
-    fprintf('No pre-defined linkage info for these queries (200 kb have to be assumed):\n\tDouble Queries will be parsed further\n');
-    fprintf('%s\n', sgadata.orfnames{all_querys(ind)});
+    log_printf(lfid, 'No pre-defined linkage info for these queries (200 kb have to be assumed):\n\tDouble Queries will be parsed further\n');
+    log_printf(lfid, '%s\n', sgadata.orfnames{all_querys(ind)});
     
-    fprintf('\nNo coordinate or linkage info for these queries:\n');
+    log_printf(lfid, '\nNo coordinate or linkage info for these queries:\n');
     for i = 1:length(ind)
         orf_string = sgadata.orfnames{all_querys(ind(i))};
         split_genes_char = findstr(orf_string, '+'); % may be double
@@ -95,7 +95,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
         elseif(~isempty(c1)) % insert default for this ORF
             linkage_reg(all_querys(ind(i)),[1,2]) = [max(chrom_coords(c1,2)-linkage_dist,1),chrom_coords(c1,3)+linkage_dist];
         else
-            fprintf('E1 no linkage or coord info for %s in %s\n', orf1, orf_string); % first str empty
+            log_printf(lfid, 'E1 no linkage or coord info for %s in %s\n', orf1, orf_string); % first str empty
         end
 
         % Handle the second "ORF"
@@ -105,7 +105,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
             linkage_reg(all_querys(ind(i)),[3,4]) = [max(chrom_coords(c2,2)-linkage_dist,1),chrom_coords(c2,3)+linkage_dist];
         else
 				if(~isempty(orf2)) % Don't complain about no info for an empty orf (see line 53: orf2 = '')
-            	fprintf('E2 no linkage or coord info for %s in %s\n', orf2, orf_string);
+            	log_printf(lfid, 'E2 no linkage or coord info for %s in %s\n', orf2, orf_string);
 				end
         end
 
@@ -140,7 +140,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
 
     exp_linkage_cols = [];
     
-    fprintf(['Mapping query-specific linkage...\n|', blanks(50), '|\n|']);
+    log_printf(lfid, ['Mapping query-specific linkage...\n|', blanks(50), '|\n|']);
     y = 0;
     
     for i = 1:length(all_querys)
@@ -153,7 +153,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
             curr_chrom = findstr(sgadata.orfnames{all_querys(i)}(2), 'ABCDEFGHIJKLMNOP');
             if isempty(curr_chrom)
                 if ~strcmp('undefined',sgadata.orfnames{all_querys(i)})
-                    fprintf('E1 Could not get a chromosome # for this orf: %s\n', sgadata.orfnames{all_querys(i)});
+                    log_printf(lfid, 'E1 Could not get a chromosome # for this orf: %s\n', sgadata.orfnames{all_querys(i)});
                 end
                 continue;
             end
@@ -179,7 +179,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
             curr_chrom = findstr(whole_string(split_char+2), 'ABCDEFGHIJKLMNOP');
             if isempty(curr_chrom)
                 if ~strcmp('undefined',sgadata.orfnames{all_querys(i)})
-                    fprintf('E2 Could not get a chromosome # for this orf: %s\n', sgadata.orfnames{all_querys(i)});
+                    log_printf(lfid, 'E2 Could not get a chromosome # for this orf: %s\n', sgadata.orfnames{all_querys(i)});
                 end
                 continue;
             end
@@ -203,10 +203,10 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
         % Print progress
         x = fix(i * 50/length(all_querys));
         if x > y
-            fprintf('*')
+            log_printf(lfid, '*')
             y = x;
         end
     end
-    fprintf('|\n');
+    log_printf(lfid, '|\n');
 
     all_linkage_cols = [all_linkage_cols; exp_linkage_cols];

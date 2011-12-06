@@ -18,11 +18,11 @@
 %
 %%
 
-function result = apply_jackknife_correction(sgadata,field,border_strain_orf,query_map,plate_id_map)
+function result = apply_jackknife_correction(sgadata,field,border_strain_orf,query_map,plate_id_map,lfid)
 
 	% Print the name and path of this script
 	p = mfilename('fullpath');
-	fprintf('\nJackknife variance correction script:\n\t%s\n\n',p);		
+	log_printf(lfid, '\nJackknife variance correction script:\n\t%s\n\n',p);		
 
 	all_querys = unique(sgadata.querys);
 	result = sgadata.(field);
@@ -30,7 +30,7 @@ function result = apply_jackknife_correction(sgadata,field,border_strain_orf,que
 	border_id = strmatch(border_strain_orf,sgadata.orfnames, 'exact');
 	assert(length(border_id) == 1, 'is %s the correct border strain?\n', border_strain_orf);
 
-	fprintf(['Running the hold-one-out filter...\n|' blanks(50) '|\n|']);
+	log_printf(lfid, ['Running the hold-one-out filter...\n|' blanks(50) '|\n|']);
 	for i = 1:length(all_querys)
 		
 		ind1 = query_map{all_querys(i)};
@@ -79,7 +79,7 @@ function result = apply_jackknife_correction(sgadata,field,border_strain_orf,que
 		print_progress(length(all_querys), i);
 
 	end
-	fprintf('|\n');
+	log_printf(lfid, '|\n');
 
 end
 

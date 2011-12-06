@@ -23,13 +23,7 @@
 %          Anastasia Baryshnikova (a.baryshnikova@utoronto.ca),
 %          Benjamin VanderSluis (bvander@cs.umn.edu)
 %
-% Last revision: 2011-07-22
-%
-% Updates:
-%   2010-12-22  Re-implemented the hold-one-out filter to better identify colonies that contribute most of the variance in every group of 4 spots
-%   2011-04-20  Restored the adjustment for colony size distribution in order to minimize the number of significant genetic interactios called
-%   2011-05-06  Option to skip perl step (with warning)
-%   2011-06-08  Matlab version tracking and blacklisting of R2010b (SVD bug #673458); begin parallelization stuff
+% Last revision: 2011-12-06
 %
 %% Checks before starting
 
@@ -61,6 +55,11 @@ else
     outputdir = join_by_delimiter(tmp(1:end-1), '/');
     if ~exist(outputdir,'dir')
         error(['Output directory ' outputdir ' does not exist.']);
+    else
+        try
+            logfile = fopen([outputfile '.log'], 'w');
+        catch
+            fprintf('cannot open log file: %s\n', [outputfile '.log']
     end
 end
 
@@ -74,17 +73,38 @@ end
 
 %% Load raw data
 if(skip_perl_step)
-	fprintf('Skipping perl preprocessing\n');
+	log_printf(lfid, 'Skipping perl preprocessing\n');
 end
 sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step);
-fprintf('Data loaded.\n');
+log_printf(lfid, 'Data loaded.\n');
 
 % Border strain - SGA = YOR202W (HIS3) TSA = YMR271C (URA10)
 if ~exist('border_strain_orf', 'var')
-	border_strain_orf = 'YOR202W';
+	border_strain_orf = 'YOR202W_dma1';
 end
 	
-fprintf('using border strain %s\n', border_strain_orf);
+ind_border = strmatch(border_strain_orf, sgadata.orfnames,'exact');
+num_border = sum(sgadata.arrays == ind_border);
+log_printf(lfid, 'using border strain %s\n', border_strain_orf);
+log_printf(lfid, 'border strain array matches %d colonies (%d%%); expected (37%%)\n', ...
+                 num_border, floor(100*num_border/length(sgadata.arrays)));
+
+% report the number of strains of different types from the orfmap file
+% note, not all of these are mutually exclusive with all others
+strain_types = {'sn' 'dma' 'tsq' 'damp' 'tsa' 'trip' 'unann' 'total'};
+strain_type_counts = nan(1,8); % 
+	strain_type_counts(1) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_sn')));
+	strain_type_counts(2) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_dma')));
+	strain_type_counts(3) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_tsq')));
+	strain_type_counts(4) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_damp')));
+	strain_type_counts(5) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_tsa')));
+	strain_type_counts(6) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '+')));
+	strain_type_counts(7) = sum(cellfun(@isempty, strfind(sgadata.orfnames, '_')));
+	strain_type_counts(8) = length(sgadata.orfnames);
+log_printf(lfid, '\n\nStrain Summary:\n
+for i=1:length(strain_types)
+	log_printf(lfid, '%s\t\t%d\n', strain_types{i}, strain_type_counts(i));
+end
  
 
 % Seed the random number generator % may throw error in older matlab versions
@@ -97,12 +117,14 @@ RandStream.setGlobalStream(RSTREAM); clear RSTREM;
 dat = importdata(removearraylist);
 [t, ind1, ind2] = intersect(sgadata.orfnames, dat);
 ignore_cols1 = find(ismember(sgadata.arrays, ind1));
+log_printf(lfid, '%d colonies ignored from "bad arrays"\n', length(ignore_cols1));
 
 % Get colonies corresponding to linkage
 all_linkage_cols = [];
 if(~skip_linkage_step)
 	all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile);
 end
+log_printf(lfid, '%d colonies ignored from linkage\n', length(all_linkage_cols));
 
 ignore_cols = unique([ignore_cols1; all_linkage_cols]);
 
@@ -117,16 +139,16 @@ sgadata.plateids = all_plateids_new(n);
 all_plateids = unique(sgadata.plateids);
 plate_id_map = cell(max(all_plateids),1);
 
-fprintf(['\nConstructing plateid->ind map...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['\nConstructing plateid->ind map...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_plateids)
     plate_id_map{all_plateids(i)} = find(sgadata.plateids == all_plateids(i));
     print_progress(length(all_plateids),i);
 end
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
 %% Speed optimization #2: Construct query->ind mapping
 
-fprintf('Constructing query->ind map...\n');
+log_printf(lfid, 'Constructing query->ind map...\n');
 
 all_querys = unique(sgadata.querys);
 query_map = cell(max(all_querys),1);
@@ -137,7 +159,7 @@ end
 
 %% Speed optimization #3: Construct array->ind mapping
 
-fprintf('Constructing array->ind map...\n');
+log_printf(lfid, 'Constructing array->ind map...\n');
 
 all_arrays = unique(sgadata.arrays);
 array_map = cell(max(all_arrays),1);
@@ -198,7 +220,7 @@ sgadata.arraymedian = sgadata.(field);
 
 array_means = zeros(length(all_arrplates),width*height)+NaN;
 
-fprintf(['Calculating colony residuals...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Calculating colony residuals...\n|' blanks(50) '|\n|']);
 
 for i = 1:length(all_arrplates)
     currplates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
@@ -243,7 +265,7 @@ for i = 1:length(all_arrplates)
     
 end
 
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
 % Spatial normalization
 sgadata.spatialnorm_colsize = ...
@@ -301,7 +323,7 @@ sgadata.(field)(remove_ind) = NaN;
 
 sgadata.(field)(ignore_cols) = NaN;
 
-fprintf('Finished applying filters...\n');
+log_printf(lfid, 'Finished applying filters...\n');
 
 %% Remove Triple-Specific interactions BJV
 % mostly known slow-growers in uracil selection step
@@ -348,7 +370,7 @@ height = 32;
 
 array_means = zeros(length(all_arrplates),width*height)+NaN;
 
-fprintf(['Getting arrayplate means...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Getting arrayplate means...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrplates)
     
     currplates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
@@ -374,14 +396,14 @@ for i = 1:length(all_arrplates)
     print_progress(length(all_arrplates),i);
     
 end
-fprintf('|\n');
+log_printf(lfid, '|\n');
     
 
 % Do batch normalization using LDA
 
 save_mats=struct;
 
-fprintf(['Preparing for batch normalization...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Preparing for batch normalization...\n|' blanks(50) '|\n|']);
 for i=1:length(all_arrplates)
     
     curr_plates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
@@ -420,7 +442,7 @@ for i=1:length(all_arrplates)
     print_progress(length(all_arrplates),i);
     
 end
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
     
 sgadata.batchnorm_colsize = sgadata.(field);
@@ -430,7 +452,7 @@ outfield = 'batchnorm_colsize';
 
 perc_var = 0.1;
 
-fprintf(['Batch normalization...\n|', blanks(50), '|\n|']);
+log_printf(lfid, ['Batch normalization...\n|', blanks(50), '|\n|']);
 
 for j = 1:length(all_arrplates)
     
@@ -453,7 +475,7 @@ for j = 1:length(all_arrplates)
 end
 clear save_mats;
 
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
 field = 'batchnorm_colsize';
 
@@ -466,7 +488,7 @@ all_arrays = unique(sgadata.arrays);
 ind2 = query_map{strmatch('undefined',sgadata.orfnames)};
 
 array_vars = zeros(length(all_arrays),2);
-fprintf(['Calculating array WT variance...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Calculating array WT variance...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
     ind = intersect(ind2, array_map{all_arrays(i)});
     t = max(sgadata.(field)(ind),1);
@@ -475,7 +497,7 @@ for i = 1:length(all_arrays)
     
     print_progress(length(all_arrays),i);
 end
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
 nanind = find(isnan(array_vars(:,1)));
 
@@ -503,7 +525,7 @@ sgadata.batchnorm_colsize_nonegs = max(sgadata.batchnorm_colsize, 1);
 sgadata.batchnorm_colsize_nonegs(isnan(sgadata.batchnorm_colsize)) = NaN;
 field = 'batchnorm_colsize_nonegs';
 
-fprintf(['Computing average for double mutants...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Computing average for double mutants...\n|' blanks(50) '|\n|']);
 
 for i = 1:length(all_querys)
     
@@ -531,14 +553,14 @@ for i = 1:length(all_querys)
     print_progress(length(all_querys), i);
     
 end
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
 % Pool across arrayplates for each query
 all_arrayplateids = unique(sgadata.arrayplateids);
 query_arrplate_vars = [];   %zeros(length(all_querys),length(all_arrplates))+NaN;
 query_arrplate_relerr = []; %zeros(length(all_querys),length(all_arrplates))+NaN;
 
-fprintf(['Pooling across arrayplates for each query...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Pooling across arrayplates for each query...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_querys)
     
     ind = query_map{all_querys(i)};
@@ -562,7 +584,7 @@ for i = 1:length(all_querys)
     % Print progress
     print_progress(length(all_querys), i);
 end
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
 
 %%
@@ -587,9 +609,9 @@ model_fits = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 model_fit_std = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 
 all_nans = find(isnan(sgadata.(field)));
-ind_his3 = strmatch('YOR202W', sgadata.orfnames,'exact');
+ind_his3 = strmatch(border_strain_orf, sgadata.orfnames,'exact');
 
-fprintf(['Model fitting...\n|' blanks(50) '|\n|']);
+log_printf(lfid, ['Model fitting...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
     
     all_ind = array_map{all_arrays(i)};
@@ -658,7 +680,7 @@ end
 %FIXME why are we short here
 sgadata.arraymean_corrected = sgadata.arraymean_corrected';
 sgadata.arraymean_corrected(end:length(sgadata.arraymedian)) = nan;
-fprintf('|\n');
+log_printf(lfid, '|\n');
 
 
 % Fill in SM fitness for arrays that appear here that aren't in standard

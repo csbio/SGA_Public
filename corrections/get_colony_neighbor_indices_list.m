@@ -14,11 +14,11 @@
 %
 %%
 
-function colony_neighbors_list = get_colony_neighbor_indices_list()
+function colony_neighbors_list = get_colony_neighbor_indices_list(lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    fprintf('\n\tGet colony neighbor indices script:\n\t\t%s\n\n',p);
+    log_printf(lfid, '\n\tGet colony neighbor indices script:\n\t\t%s\n\n',p);
 
     tmp_inds = zeros(32,48);
     tmp_inds(:)=1:length(tmp_inds(:));

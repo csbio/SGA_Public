@@ -16,11 +16,11 @@
 %
 %%
 
-function newdata = apply_rowcol_normalization(sgadata,field,ignore_cols,plate_id_map)
+function newdata = apply_rowcol_normalization(sgadata,field,ignore_cols,plate_id_map,lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    fprintf('\nRow/column correction script:\n\t%s\n\n',p);
+    log_printf(lfid, '\nRow/column correction script:\n\t%s\n\n',p);
 
     if ~exist('ignore_cols')
         ignore_cols=[];
@@ -33,7 +33,7 @@ function newdata = apply_rowcol_normalization(sgadata,field,ignore_cols,plate_id
     % List of unique plateids
     curr_plates = unique(sgadata.plateids);
 
-    fprintf(['Row/column correction...\n|' blanks(50) '|\n|']);
+    log_printf(lfid, ['Row/column correction...\n|' blanks(50) '|\n|']);
     for i = 1:length(curr_plates)
         
         ind = plate_id_map{curr_plates(i)};
@@ -98,5 +98,5 @@ function newdata = apply_rowcol_normalization(sgadata,field,ignore_cols,plate_id
         
     end
     
-    fprintf('|\n');
+    log_printf(lfid, '|\n');
 

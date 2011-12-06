@@ -16,11 +16,11 @@
 %
 %%
 
-function newdata = apply_spatial_normalization(sgadata,field,ignore_cols,plate_id_map)
+function newdata = apply_spatial_normalization(sgadata,field,ignore_cols,plate_id_map,lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    fprintf('\nSpatial correction script:\n\t%s\n\n',p);
+    log_printf(lfid, '\nSpatial correction script:\n\t%s\n\n',p);
 
     if ~exist('ignore_cols')
         ignore_cols = [];
@@ -37,7 +37,7 @@ function newdata = apply_spatial_normalization(sgadata,field,ignore_cols,plate_i
     olddata = newdata;
     olddata(ignore_cols) = NaN;
     
-    fprintf(['Spatial normalization...\n|' blanks(50) '|\n|']);
+    log_printf(lfid, ['Spatial normalization...\n|' blanks(50) '|\n|']);
     for i = 1:length(all_plates)
         
         % List of sgadata indices to this plate colonies
@@ -77,7 +77,7 @@ function newdata = apply_spatial_normalization(sgadata,field,ignore_cols,plate_i
         print_progress(length(all_plates),i);
         
     end 
-    fprintf('|\n');
+    log_printf(lfid, '|\n');
     
     sgadata.logresidual_spatialnorm = newdata;
     sgadata.residual_spatialnorm = exp(sgadata.logresidual_spatialnorm).*sgadata.arraymedian-sgadata.arraymedian;

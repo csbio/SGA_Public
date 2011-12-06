@@ -17,11 +17,11 @@
 %
 %%
 
-function result = apply_plate_normalization(sgadata, field, ignore_cols, overall_med, plate_id_map)
+function result = apply_plate_normalization(sgadata, field, ignore_cols, overall_med, plate_id_map,lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    fprintf('\nPlate normalization script:\n\t%s\n\n',p);
+    log_printf(lfid, '\nPlate normalization script:\n\t%s\n\n',p);
 
     all_plates = unique(sgadata.plateids);
     result = sgadata.(field);
@@ -38,7 +38,7 @@ function result = apply_plate_normalization(sgadata, field, ignore_cols, overall
     savedata = sgadata.(field);
     sgadata.(field)(ignore_cols) = NaN;
     
-    fprintf(['Plate normalization...\n|', blanks(50), '|\n|']);
+    log_printf(lfid, ['Plate normalization...\n|', blanks(50), '|\n|']);
 
     for i=1:length(all_plates)
         
@@ -57,4 +57,4 @@ function result = apply_plate_normalization(sgadata, field, ignore_cols, overall
         print_progress(length(all_plates), i);
         
     end
-    fprintf('|\n');
+    log_printf(lfid, '|\n');

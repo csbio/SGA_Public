@@ -23,21 +23,21 @@
 % Last revision: 2011-02-09
 %
 %%
-function sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step)
+function sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step, lfid)
 
 % Print the name and path of this script
 p = mfilename('fullpath');
-fprintf('\nLoad raw SGA data with batch script: %s\n\n',p);
+log_printf(lfid, '\nLoad raw SGA data with batch script: %s\n\n',p);
 
 % First, run perl script to convert data to completely numeric (this speeds
 % the input process up)
 if(~skip_perl_step)
-    fprintf('beginning perl preprocessing\n');
+    log_printf(lfid, 'beginning perl preprocessing\n');
     tic
     perl('process_rawsga_dmdata.pl',inputfile);
     toc
 else
-    fprintf('skipping perl preprocessing...\n');
+    log_printf(lfid, 'skipping perl preprocessing...\n');
 end
 
 % Fields: 

@@ -1,8 +1,8 @@
-function linked_orfs = get_linked_ORFs(orfname,genenames,bp_dist,chrom_coords)
+function linked_orfs = get_linked_ORFs(orfname,genenames,bp_dist,chrom_coords,lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    fprintf('\nGet linked ORFs script: %s\n\n',p);
+    log_printf(lfid, '\nGet linked ORFs script: %s\n\n',p);
     
     linked_orfs = [];
 
