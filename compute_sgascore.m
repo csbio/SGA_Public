@@ -87,25 +87,36 @@ end
 ind_border = strmatch(border_strain_orf, sgadata.orfnames,'exact');
 num_border = sum(sgadata.arrays == ind_border);
 log_printf(lfid, 'using border strain %s\n', border_strain_orf);
-log_printf(lfid, 'border strain array matches %d colonies (%d%%); expected (37%%)\n', ...
+log_printf(lfid, 'border strain array matches %d colonies (%d%%); expected (19%%)\n', ...
                  num_border, floor(100*num_border/length(sgadata.arrays)));
 
 % report the number of strains of different types from the orfmap file
 % note, not all of these are mutually exclusive with all others
+query_strains = sgadata.orfnames(unique(sgadata.querys));
+array_strains = sgadata.orfnames(unique(sgadata.arrays));
 strain_types = {'sn' 'dma' 'tsq' 'damp' 'tsa' 'trip' 'unann' 'total'};
-strain_type_counts = nan(1,8); % 
-	strain_type_counts(1) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_sn')));
-	strain_type_counts(2) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_dma')));
-	strain_type_counts(3) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_tsq')));
-	strain_type_counts(4) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_damp')));
-	strain_type_counts(5) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '_tsa')));
-	strain_type_counts(6) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '+')));
-	strain_type_counts(7) = sum(cellfun(@isempty, strfind(sgadata.orfnames, '_')));
-	strain_type_counts(8) = length(sgadata.orfnames);
+strain_type_counts = nan(2,8); % query,array ; type
+	strain_type_counts(1,1) = sum(~cellfun(@isempty, strfind(query_strains, '_sn')));
+	strain_type_counts(1,2) = sum(~cellfun(@isempty, strfind(query_strains, '_dma')));
+	strain_type_counts(1,3) = sum(~cellfun(@isempty, strfind(query_strains, '_tsq')));
+	strain_type_counts(1,4) = sum(~cellfun(@isempty, strfind(query_strains, '_damp')));
+	strain_type_counts(1,5) = sum(~cellfun(@isempty, strfind(query_strains, '_tsa')));
+	strain_type_counts(1,6) = sum(~cellfun(@isempty, strfind(query_strains, '+')));
+	strain_type_counts(1,7) = sum(cellfun(@isempty, strfind(query_strains, '_')));
+	strain_type_counts(1,8) = length(query_strains);
+
+	strain_type_counts(2,1) = sum(~cellfun(@isempty, strfind(array_strains, '_sn')));
+	strain_type_counts(2,2) = sum(~cellfun(@isempty, strfind(array_strains, '_dma')));
+	strain_type_counts(2,3) = sum(~cellfun(@isempty, strfind(array_strains, '_tsq')));
+	strain_type_counts(2,4) = sum(~cellfun(@isempty, strfind(array_strains, '_damp')));
+	strain_type_counts(2,5) = sum(~cellfun(@isempty, strfind(array_strains, '_tsa')));
+	strain_type_counts(2,6) = sum(~cellfun(@isempty, strfind(array_strains, '+')));
+	strain_type_counts(2,7) = sum(cellfun(@isempty, strfind(array_strains, '_')));
+	strain_type_counts(2,8) = length(array_strains);
 log_printf(lfid, '\n\nStrain Summary:\n');
-for i=1:length(strain_types)
-	log_printf(lfid, '%s\t\t%d\n', strain_types{i}, strain_type_counts(i));
-end
+log_printf(lfid, '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n',   'type' , strain_types{:});
+log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n',   'query' , strain_type_counts(1,:));
+log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n\n', 'array' , strain_type_counts(2,:));
  
 
 % Seed the random number generator % may throw error in older matlab versions
@@ -193,7 +204,7 @@ default_median_colsize = 510;
 
 % Plate normalization
 sgadata.colsize_platenorm = ...
-    apply_plate_normalization(sgadata, 'colsize', ignore_cols, default_median_colsize, plate_id_map);
+    apply_plate_normalization(sgadata, 'colsize', ignore_cols, default_median_colsize, plate_id_map, lfid);
 
 
 % Filter very large colonies
