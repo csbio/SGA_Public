@@ -23,7 +23,7 @@ function newdata = apply_competition_correction(sgadata,field,ignore_cols,plate_
     log_printf(lfid, '\nCompetition correction script:\n\t%s\n',p);    
     
     % Get indices of neighboring colonies
-    colony_neighbor_inds = get_colony_neighbor_indices_list();
+    colony_neighbor_inds = get_colony_neighbor_indices_list(lfid);
     
     % List of unique plateids
     all_plates = unique(sgadata.plateids);

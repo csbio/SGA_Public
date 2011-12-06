@@ -16,7 +16,7 @@
 %
 %%
 
-function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile,lfid)
+function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
@@ -112,7 +112,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
     end
 
     % URA3 linkage (WT-specific)
-    t = get_linked_ORFs('YEL021W', orfs_coords, linkage_dist, chrom_coords);
+    t = get_linked_ORFs('YEL021W', orfs_coords, linkage_dist, chrom_coords, lfid);
     [int,ia,ib] = intersect(t, sgadata.orfnames);
     ura3_linkage_cols = find(ismember(sgadata.arrays,ib) & ismember(sgadata.querys,strmatch('undefined',sgadata.orfnames)));
     all_linkage_cols = [all_linkage_cols; ura3_linkage_cols];
@@ -127,13 +127,13 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
     %}
 
     % LYP1 linkage
-    t = get_linked_ORFs('YNL268W', orfs_coords, linkage_dist, chrom_coords);
+    t = get_linked_ORFs('YNL268W', orfs_coords, linkage_dist, chrom_coords, lfid);
     [int,ia,ib] = intersect(t, sgadata.orfnames);
     lyp1_linkage_cols = find(ismember(sgadata.arrays,ib));
     all_linkage_cols = [all_linkage_cols; lyp1_linkage_cols];
     
     % CAN1 linkage
-    t = get_linked_ORFs('YEL063C', orfs_coords, linkage_dist, chrom_coords);
+    t = get_linked_ORFs('YEL063C', orfs_coords, linkage_dist, chrom_coords, lfid);
     [int,ia,ib] = intersect(t, sgadata.orfnames);
     can1_linkage_cols = find(ismember(sgadata.arrays,ib));
     all_linkage_cols = [all_linkage_cols; can1_linkage_cols];
@@ -203,7 +203,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
         % Print progress
         x = fix(i * 50/length(all_querys));
         if x > y
-            log_printf(lfid, '*')
+            log_printf(lfid, '*');
             y = x;
         end
     end

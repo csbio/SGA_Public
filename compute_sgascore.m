@@ -27,7 +27,7 @@
 %
 %% Checks before starting
 
-tic
+compute_sgascore_tic = tic;
 % Check inputs
 vars_to_check = {'inputfile','removearraylist','linkagefile','smfitnessfile'};
 for i = 1 : length(vars_to_check) 
@@ -57,9 +57,10 @@ else
         error(['Output directory ' outputdir ' does not exist.']);
     else
         try
-            logfile = fopen([outputfile '.log'], 'w');
+            lfid = fopen([outputfile '.log'], 'w');
         catch
-            fprintf('cannot open log file: %s\n', [outputfile '.log']
+            fprintf('cannot open log file: %s\n', [outputfile '.log']);
+        end
     end
 end
 
@@ -75,7 +76,7 @@ end
 if(skip_perl_step)
 	log_printf(lfid, 'Skipping perl preprocessing\n');
 end
-sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step);
+sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step, lfid);
 log_printf(lfid, 'Data loaded.\n');
 
 % Border strain - SGA = YOR202W (HIS3) TSA = YMR271C (URA10)
@@ -101,7 +102,7 @@ strain_type_counts = nan(1,8); %
 	strain_type_counts(6) = sum(~cellfun(@isempty, strfind(sgadata.orfnames, '+')));
 	strain_type_counts(7) = sum(cellfun(@isempty, strfind(sgadata.orfnames, '_')));
 	strain_type_counts(8) = length(sgadata.orfnames);
-log_printf(lfid, '\n\nStrain Summary:\n
+log_printf(lfid, '\n\nStrain Summary:\n');
 for i=1:length(strain_types)
 	log_printf(lfid, '%s\t\t%d\n', strain_types{i}, strain_type_counts(i));
 end
@@ -122,7 +123,7 @@ log_printf(lfid, '%d colonies ignored from "bad arrays"\n', length(ignore_cols1)
 % Get colonies corresponding to linkage
 all_linkage_cols = [];
 if(~skip_linkage_step)
-	all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile);
+	all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
 end
 log_printf(lfid, '%d colonies ignored from linkage\n', length(all_linkage_cols));
 
@@ -269,23 +270,24 @@ log_printf(lfid, '|\n');
 
 % Spatial normalization
 sgadata.spatialnorm_colsize = ...
-    apply_spatial_normalization(sgadata, 'logresidual', ignore_cols, plate_id_map);
+    apply_spatial_normalization(sgadata, 'logresidual', ignore_cols, plate_id_map, lfid);
 
 % Row/column correction
 sgadata.rowcolcorr_colsize = ...
-    apply_rowcol_normalization(sgadata, 'spatialnorm_colsize', ignore_cols, plate_id_map);
+    apply_rowcol_normalization(sgadata, 'spatialnorm_colsize', ignore_cols, plate_id_map, lfid);
 
 % Competition correction
 sgadata.residual_spatialnorm = sgadata.rowcolcorr_colsize - sgadata.arraymedian;
 sgadata.compcorr_colsize = ...
-    apply_competition_correction(sgadata, 'residual_spatialnorm', ignore_cols, plate_id_map);
+    apply_competition_correction(sgadata, 'residual_spatialnorm', ignore_cols, plate_id_map, lfid);
 
 % One last round of plate scaling
-sgadata.finalplatecorr_colsize = ...
-    apply_plate_normalization(sgadata, 'compcorr_colsize', ignore_cols, default_median_colsize, plate_id_map);
+sgadata.finalplatecorr_colsize = apply_plate_normalization(sgadata, 'compcorr_colsize', ...
+                                 ignore_cols, default_median_colsize, plate_id_map, lfid);
 
 % Do filtering based on held-out CV values
-sgadata.filt_colsize = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', border_strain_orf, query_map, plate_id_map);
+sgadata.filt_colsize = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', ...
+                       border_strain_orf, query_map, plate_id_map, lfid);
 
 
 %% Filters section
@@ -793,10 +795,12 @@ end
 
 %% Printing out
 
-output_interaction_data([outputfile,'.txt'],sgadata.orfnames,complete_mat,complete_mat_std,backgd_mean,backgd_std,final_smfit,final_smfit_std,dm_expected,dm_actual,dm_actual_std);
+output_interaction_data([outputfile,'.txt'],sgadata.orfnames,complete_mat,complete_mat_std,backgd_mean,backgd_std,final_smfit,final_smfit_std,dm_expected,dm_actual,dm_actual_std,lfid);
 
 %% Final save
 
 save('-v7.3',[outputfile,'_matfile']);
 
-toc
+compute_sgascore_time = toc(compute_sgascore_tic);
+log_printf(lfid, 'total time elapsed: %.2f hours\n', compute_sgascore_time/3600);
+fclose(lfid);
