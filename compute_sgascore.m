@@ -498,7 +498,8 @@ all_arrays = unique(sgadata.arrays);
 
 %BJV add 'exact' here for AB/MC WTs only
 %ind2 = query_map{strmatch('undefined',sgadata.orfnames,'exact')};
-ind2 = query_map{strmatch('undefined',sgadata.orfnames)};
+%ind2 = query_map{strmatch('undefined',sgadata.orfnames)};
+ind2 = query_map{strmatch('undefined_sn4757',sgadata.orfnames, 'exact')};
 
 array_vars = zeros(length(all_arrays),2);
 log_printf(lfid, ['Calculating array WT variance...\n|' blanks(50) '|\n|']);
@@ -797,7 +798,8 @@ end
 
 if(~skip_wt_remove)
 	% add 'exact' here to match undefinied+YDL227C
-	ind = strmatch('undefined',sgadata.orfnames);
+	ind = strmatch('undefined_sn4757',sgadata.orfnames, 'exact');
+	%ind = strmatch('undefined',sgadata.orfnames);
 	%ind = strmatch('undefined',sgadata.orfnames, 'exact');
 	complete_mat(ind,:)=NaN;
 	complete_mat(:,ind)=NaN;
