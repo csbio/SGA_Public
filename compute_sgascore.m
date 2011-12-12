@@ -41,7 +41,7 @@ for i = 1 : length(vars_to_check)
 end
 
 if(~exist('skip_linkage_step', 'var'))
-	skip_linkage_step = false;
+    skip_linkage_step = false;
 end
 if ~exist('skip_perl_step', 'var')
     skip_perl_step = false;
@@ -74,16 +74,16 @@ end
 
 %% Load raw data
 if(skip_perl_step)
-	log_printf(lfid, 'Skipping perl preprocessing\n');
+    log_printf(lfid, 'Skipping perl preprocessing\n');
 end
 sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step, lfid);
 log_printf(lfid, 'Data loaded.\n');
 
 % Border strain - SGA = YOR202W (HIS3) TSA = YMR271C (URA10)
 if ~exist('border_strain_orf', 'var')
-	border_strain_orf = 'YOR202W_dma1';
+    border_strain_orf = 'YOR202W_dma1';
 end
-	
+
 ind_border = strmatch(border_strain_orf, sgadata.orfnames,'exact');
 num_border = sum(sgadata.arrays == ind_border);
 log_printf(lfid, 'using border strain %s\n', border_strain_orf);
@@ -96,23 +96,23 @@ query_strains = sgadata.orfnames(unique(sgadata.querys));
 array_strains = sgadata.orfnames(unique(sgadata.arrays));
 strain_types = {'sn' 'dma' 'tsq' 'damp' 'tsa' 'trip' 'unann' 'total'};
 strain_type_counts = nan(2,8); % query,array ; type
-	strain_type_counts(1,1) = sum(~cellfun(@isempty, strfind(query_strains, '_sn')));
-	strain_type_counts(1,2) = sum(~cellfun(@isempty, strfind(query_strains, '_dma')));
-	strain_type_counts(1,3) = sum(~cellfun(@isempty, strfind(query_strains, '_tsq')));
-	strain_type_counts(1,4) = sum(~cellfun(@isempty, strfind(query_strains, '_damp')));
-	strain_type_counts(1,5) = sum(~cellfun(@isempty, strfind(query_strains, '_tsa')));
-	strain_type_counts(1,6) = sum(~cellfun(@isempty, strfind(query_strains, '+')));
-	strain_type_counts(1,7) = sum(cellfun(@isempty, strfind(query_strains, '_')));
-	strain_type_counts(1,8) = length(query_strains);
+    strain_type_counts(1,1) = sum(~cellfun(@isempty, strfind(query_strains, '_sn')));
+    strain_type_counts(1,2) = sum(~cellfun(@isempty, strfind(query_strains, '_dma')));
+    strain_type_counts(1,3) = sum(~cellfun(@isempty, strfind(query_strains, '_tsq')));
+    strain_type_counts(1,4) = sum(~cellfun(@isempty, strfind(query_strains, '_damp')));
+    strain_type_counts(1,5) = sum(~cellfun(@isempty, strfind(query_strains, '_tsa')));
+    strain_type_counts(1,6) = sum(~cellfun(@isempty, strfind(query_strains, '+')));
+    strain_type_counts(1,7) = sum(cellfun(@isempty, strfind(query_strains, '_')));
+    strain_type_counts(1,8) = length(query_strains);
 
-	strain_type_counts(2,1) = sum(~cellfun(@isempty, strfind(array_strains, '_sn')));
-	strain_type_counts(2,2) = sum(~cellfun(@isempty, strfind(array_strains, '_dma')));
-	strain_type_counts(2,3) = sum(~cellfun(@isempty, strfind(array_strains, '_tsq')));
-	strain_type_counts(2,4) = sum(~cellfun(@isempty, strfind(array_strains, '_damp')));
-	strain_type_counts(2,5) = sum(~cellfun(@isempty, strfind(array_strains, '_tsa')));
-	strain_type_counts(2,6) = sum(~cellfun(@isempty, strfind(array_strains, '+')));
-	strain_type_counts(2,7) = sum(cellfun(@isempty, strfind(array_strains, '_')));
-	strain_type_counts(2,8) = length(array_strains);
+    strain_type_counts(2,1) = sum(~cellfun(@isempty, strfind(array_strains, '_sn')));
+    strain_type_counts(2,2) = sum(~cellfun(@isempty, strfind(array_strains, '_dma')));
+    strain_type_counts(2,3) = sum(~cellfun(@isempty, strfind(array_strains, '_tsq')));
+    strain_type_counts(2,4) = sum(~cellfun(@isempty, strfind(array_strains, '_damp')));
+    strain_type_counts(2,5) = sum(~cellfun(@isempty, strfind(array_strains, '_tsa')));
+    strain_type_counts(2,6) = sum(~cellfun(@isempty, strfind(array_strains, '+')));
+    strain_type_counts(2,7) = sum(cellfun(@isempty, strfind(array_strains, '_')));
+    strain_type_counts(2,8) = length(array_strains);
 log_printf(lfid, '\n\nStrain Summary:\n');
 log_printf(lfid, '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n',   'type' , strain_types{:});
 log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n',   'query' , strain_type_counts(1,:));
@@ -134,7 +134,7 @@ log_printf(lfid, '%d colonies ignored from "bad arrays"\n', length(ignore_cols1)
 % Get colonies corresponding to linkage
 all_linkage_cols = [];
 if(~skip_linkage_step)
-	all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
+    all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
 end
 log_printf(lfid, '%d colonies ignored from linkage\n', length(all_linkage_cols));
 
@@ -345,7 +345,7 @@ log_printf(lfid, 'Finished applying filters...\n');
 triple_remove_list = {'YKL216W', 'YJL130C',  'YLR420W',  'YML106W',  'YBL039C',  ...
                      'YJR103W',  'YMR271C',  'YLR233C',  'YOL009C',  'YJR090C'};
 for i=1:length(triple_remove_list)
-	triple_remove_list{i} = strmatch(triple_remove_list{i}, sgadata.orfnames, 'exact');
+    triple_remove_list{i} = strmatch(triple_remove_list{i}, sgadata.orfnames, 'exact');
 end
 triple_remove_list = triple_remove_list(~cellfun('isempty', triple_remove_list));
 triple_remove_list = cell2mat(triple_remove_list);
@@ -359,10 +359,10 @@ triple_queries = find(~cellfun(@isempty, cellfun(@strfind, sgadata.orfnames, plu
 triple_queries_bool = boolean(zeros(length(sgadata.querys), 1));
 triple_remove_bool  = boolean(zeros(length(sgadata.arrays), 1));
 for i=1:length(triple_queries)
-	triple_queries_bool = triple_queries_bool | sgadata.querys == triple_queries(i);
+    triple_queries_bool = triple_queries_bool | sgadata.querys == triple_queries(i);
 end
 for i=1:length(triple_remove_list)
-	triple_remove_bool = triple_remove_bool | sgadata.arrays == triple_remove_list(i);
+    triple_remove_bool = triple_remove_bool | sgadata.arrays == triple_remove_list(i);
 end
 
 sgadata.(field)(triple_queries_bool & triple_remove_bool) = NaN;
@@ -499,7 +499,15 @@ all_arrays = unique(sgadata.arrays);
 %BJV add 'exact' here for AB/MC WTs only
 %ind2 = query_map{strmatch('undefined',sgadata.orfnames,'exact')};
 %ind2 = query_map{strmatch('undefined',sgadata.orfnames)};
-ind2 = query_map{strmatch('undefined_sn4757',sgadata.orfnames, 'exact')};
+
+wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames, 'exact');
+if(isemtpy(wild_type_id))
+    log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
+    save('-v7.3',[outputfile,'_matfile']);
+    return
+else
+
+ind2 = query_map{wild_type_id};
 
 array_vars = zeros(length(all_arrays),2);
 log_printf(lfid, ['Calculating array WT variance...\n|' blanks(50) '|\n|']);
@@ -614,6 +622,8 @@ fg_smfit = zeros(length(sgadata.orfnames),2) + NaN;
 fg_smfit(a,:) = sm_fitness(b,:);
 final_smfit = fg_smfit(:,1);
 final_smfit_std = fg_smfit(:,2);
+log_printf(lfid, 'Strains not in fitness file: %d\n\n', length(sgadata.orfnames) - length(int));
+log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,:))); % of those we want (intersection)
 
 field = 'batchnorm_colsize';
 
@@ -793,16 +803,16 @@ clear eps eps_std afit;
 
 % Remove "undefined"
 if ~exist('skip_wt_remove', 'var')
-	skip_wt_remove = false;
+    skip_wt_remove = false;
 end
 
 if(~skip_wt_remove)
-	% add 'exact' here to match undefinied+YDL227C
-	ind = strmatch('undefined_sn4757',sgadata.orfnames, 'exact');
-	%ind = strmatch('undefined',sgadata.orfnames);
-	%ind = strmatch('undefined',sgadata.orfnames, 'exact');
-	complete_mat(ind,:)=NaN;
-	complete_mat(:,ind)=NaN;
+    % add 'exact' here to match undefinied+YDL227C
+    ind = strmatch('undefined_sn4757',sgadata.orfnames, 'exact');
+    %ind = strmatch('undefined',sgadata.orfnames);
+    %ind = strmatch('undefined',sgadata.orfnames, 'exact');
+    complete_mat(ind,:)=NaN;
+    complete_mat(:,ind)=NaN;
 end
 
 
