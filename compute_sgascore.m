@@ -505,7 +505,7 @@ if(isemtpy(wild_type_id))
     log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
     save('-v7.3',[outputfile,'_matfile']);
     return
-else
+end
 
 ind2 = query_map{wild_type_id};
 
@@ -623,7 +623,7 @@ fg_smfit(a,:) = sm_fitness(b,:);
 final_smfit = fg_smfit(:,1);
 final_smfit_std = fg_smfit(:,2);
 log_printf(lfid, 'Strains not in fitness file: %d\n\n', length(sgadata.orfnames) - length(int));
-log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,:))); % of those we want (intersection)
+log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,:)))); % of those we want (intersection)
 
 field = 'batchnorm_colsize';
 
