@@ -24,11 +24,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
     
     % Load chromosomal coordinates
 
-    %log_printf(lfid, 'Using standard chromosome coordinates\n');
-    %chromdata = importdata('chrom_coordinates.txt');
-
-    log_printf(lfid, 'Using TSA chromosome coordinates\n');
-    chromdata = importdata('chrom_coordinates_wTS_110907.txt'); %ek 110907
+    chromdata = importdata('chrom_coordinates_111129.txt'); 
 
     orfs_coords = chromdata.textdata;
     chrom_coords = [chromdata.data(:,1),chromdata.data(:,2),chromdata.data(:,3)];

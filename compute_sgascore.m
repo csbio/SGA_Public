@@ -90,6 +90,14 @@ log_printf(lfid, 'using border strain %s\n', border_strain_orf);
 log_printf(lfid, 'border strain array matches %d colonies (%d%%); expected (19%%)\n', ...
                  num_border, floor(100*num_border/length(sgadata.arrays)));
 
+sgadata.short_orf_names = sgadata.orfnames;
+for i=1:length(sgadata.short_orf_names)
+	delim_ix = strfind(sgadata.orfnames{i}, '_');
+	if(~isempty(delim_ix))
+		sgadata.short_orf_names{i} = sgadata.orfnames{i}(1:delim_ix(1));
+	end
+end
+
 % report the number of strains of different types from the orfmap file
 % note, not all of these are mutually exclusive with all others
 query_strains = sgadata.orfnames(unique(sgadata.querys));
