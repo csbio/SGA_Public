@@ -23,8 +23,7 @@ function all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, l
     log_printf(lfid, '\nLinkage filter script:\n\t%s\n\n',p);
     
     % Load chromosomal coordinates
-
-    coord_fid = fopen('chrom_coordinates_111220.txt', 'r');
+    chromdata = importdata('chrom_coordinates_111220.txt', 'r');
 
     orfs_coords = chromdata.textdata;
     chrom_coords = [chromdata.data(:,1),chromdata.data(:,2),chromdata.data(:,3)];
