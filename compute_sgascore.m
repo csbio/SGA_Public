@@ -142,7 +142,16 @@ log_printf(lfid, '%d colonies ignored from "bad arrays"\n', length(ignore_cols1)
 % Get colonies corresponding to linkage
 all_linkage_cols = [];
 if(~skip_linkage_step)
+    linkage_tic = tic();
     all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
+    old_linkage_time = toc(linkage_tic);
+
+    linkage_tic = tic();
+    all_linkage_cols_new = filter_all_linkage_colonies_queryspecific_new(sgadata, linkagefile, ...
+         all_querys, all_arrays, query_map, array_map, lfid);
+    new_linkage_time = toc(linkage_tic);
+    log_printf(lfid, 'linkage time:\nold:\t%d min\nnew:\t%d min\n\n', fix(old_linkage_time / 60), fix(new_linkage_time / 60));
+    log_printf(lfid, 'linkage cols:\nold:\t%d col\nnew:\t%d col\n\n', length(unique(all_linkage_cols)), length(all_linkage_cols_new));
 end
 log_printf(lfid, '%d colonies ignored from linkage\n', length(all_linkage_cols));
 
@@ -509,7 +518,7 @@ all_arrays = unique(sgadata.arrays);
 %ind2 = query_map{strmatch('undefined',sgadata.orfnames)};
 
 wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames, 'exact');
-if(isemtpy(wild_type_id))
+if(isempty(wild_type_id))
     log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
     save('-v7.3',[outputfile,'_matfile']);
     return
@@ -830,7 +839,7 @@ output_interaction_data([outputfile,'.txt'],sgadata.orfnames,complete_mat,comple
 
 %% Final save
 
-save('-v7.3',[outputfile,'_matfile']);
+save('-v7.3',[outputfile,'.mat']);
 
 compute_sgascore_time = toc(compute_sgascore_tic);
 log_printf(lfid, 'total time elapsed: %.2f hours\n', compute_sgascore_time/3600);
