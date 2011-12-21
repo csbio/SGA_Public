@@ -139,24 +139,6 @@ dat = importdata(removearraylist);
 ignore_cols1 = find(ismember(sgadata.arrays, ind1));
 log_printf(lfid, '%d colonies ignored from "bad arrays"\n', length(ignore_cols1));
 
-% Get colonies corresponding to linkage
-all_linkage_cols = [];
-if(~skip_linkage_step)
-    linkage_tic = tic();
-    all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
-    old_linkage_time = toc(linkage_tic);
-
-    linkage_tic = tic();
-    all_linkage_cols_new = filter_all_linkage_colonies_queryspecific_new(sgadata, linkagefile, ...
-         all_querys, all_arrays, query_map, array_map, lfid);
-    new_linkage_time = toc(linkage_tic);
-    log_printf(lfid, 'linkage time:\nold:\t%d min\nnew:\t%d min\n\n', fix(old_linkage_time / 60), fix(new_linkage_time / 60));
-    log_printf(lfid, 'linkage cols:\nold:\t%d col\nnew:\t%d col\n\n', length(unique(all_linkage_cols)), length(all_linkage_cols_new));
-end
-log_printf(lfid, '%d colonies ignored from linkage\n', length(all_linkage_cols));
-
-ignore_cols = unique([ignore_cols1; all_linkage_cols]);
-
 %% Speed optimization #1: Construct plateid->ind mapping
 
 % Minimize the plateids
@@ -211,6 +193,24 @@ ind384 = sub2ind([16 24], row384, col384);
 % Generate a replicate ID unique across multiple arrayplates
 sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)-1)*384 + double(ind384);
 sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
+
+% Get colonies corresponding to linkage
+all_linkage_cols = [];
+if(~skip_linkage_step)
+    linkage_tic = tic();
+    all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
+    old_linkage_time = toc(linkage_tic);
+
+    linkage_tic = tic();
+    all_linkage_cols_new = filter_all_linkage_colonies_queryspecific_new(sgadata, linkagefile, ...
+         all_querys, all_arrays, query_map, array_map, lfid);
+    new_linkage_time = toc(linkage_tic);
+    log_printf(lfid, 'linkage time:\nold:\t%d min\nnew:\t%d min\n\n', fix(old_linkage_time / 60), fix(new_linkage_time / 60));
+    log_printf(lfid, 'linkage cols:\nold:\t%d col\nnew:\t%d col\n\n', length(unique(all_linkage_cols)), length(all_linkage_cols_new));
+end
+log_printf(lfid, '%d colonies ignored from linkage\n', length(all_linkage_cols));
+
+ignore_cols = unique([ignore_cols1; all_linkage_cols]);
 
 %% Normalizations
 
