@@ -40,8 +40,8 @@ for i = 1 : length(vars_to_check)
     end
 end
 
-if(~exist('skip_linkage_step', 'var'))
-    skip_linkage_step = false;
+if(~exist('skip_linkage_mask', 'var'))
+    skip_linkage_mask = false;
 end
 if ~exist('skip_perl_step', 'var')
     skip_perl_step = false;
@@ -136,8 +136,8 @@ RandStream.setGlobalStream(RSTREAM); clear RSTREM;
 % Get colonies corresponding to questionable arrays
 dat = importdata(removearraylist);
 [t, ind1, ind2] = intersect(sgadata.orfnames, dat);
-ignore_cols1 = find(ismember(sgadata.arrays, ind1));
-log_printf(lfid, '%d colonies ignored from "bad arrays"\n', length(ignore_cols1));
+bad_array_cols = find(ismember(sgadata.arrays, ind1));
+log_printf(lfid, '%d colonies ignored from "bad arrays"\n', length(bad_array_cols));
 
 %% Speed optimization #1: Construct plateid->ind mapping
 
@@ -195,26 +195,22 @@ sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)-1)*384 + dou
 sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 
 % Get colonies corresponding to linkage
-all_linkage_cols = [];
-if(~skip_linkage_step)
-    linkage_tic = tic();
-    all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
-    old_linkage_time = toc(linkage_tic);
+inkage_tic = tic();
+all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
+old_linkage_time = toc(linkage_tic);
 
-    linkage_tic = tic();
-    all_linkage_cols_new = filter_all_linkage_colonies_queryspecific_new(sgadata, linkagefile, ...
-         all_querys, all_arrays, query_map, array_map, lfid);
-    new_linkage_time = toc(linkage_tic);
-    log_printf(lfid, 'linkage time:\nold:\t%d min\nnew:\t%d min\n\n', fix(old_linkage_time / 60), fix(new_linkage_time / 60));
-    log_printf(lfid, 'linkage cols:\nold:\t%d col\nnew:\t%d col\n\n', length(unique(all_linkage_cols)), length(all_linkage_cols_new));
-end
-log_printf(lfid, '%d colonies ignored from linkage\n', length(all_linkage_cols));
+linkage_tic = tic();
+linkage_cols_new = filter_all_linkage_colonies_queryspecific_new(sgadata, linkagefile, ...
+     all_querys, all_arrays, query_map, array_map, lfid);
+new_linkage_time = toc(linkage_tic);
+log_printf(lfid, 'linkage time:\nold:\t%d min\nnew:\t%d min\n\n', fix(old_linkage_time / 60), fix(new_linkage_time / 60));
+log_printf(lfid, 'linkage cols:\nold:\t%d col\nnew:\t%d col\n\n', length(unique(all_linkage_cols)), length(linkage_cols_new));
 
-ignore_cols = unique([ignore_cols1; all_linkage_cols]);
+log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols_new));
+
+ignore_cols = unique([bad_array_cols; linkage_cols_new]);
 
 %% Normalizations
-
-
 % Default median colony size per plate
 default_median_colsize = 510;
 
@@ -339,10 +335,8 @@ tot_cols = zeros(length(all_arrays),1);
 good_cols = zeros(length(all_arrays),1);
 
 for i = 1:length(all_arrays)
-    
    tot_cols(i,1) = length(array_map{all_arrays(i)});
    good_cols(i,1) = length(find(~isnan(sgadata.(field)(array_map{all_arrays(i)}))));
-   
 end
 
 ind = find(good_cols < 0.85 * tot_cols);
@@ -351,7 +345,15 @@ ind = setdiff(ind,strmatch(border_strain_orf,sgadata.orfnames(all_arrays),'exact
 remove_ind = find(ismember(sgadata.arrays, all_arrays(ind)));
 sgadata.(field)(remove_ind) = NaN;
 
-sgadata.(field)(ignore_cols) = NaN;
+
+% Remove "ignore_cols" (bad arrays and linkage if applicable)
+sgadata.(field)(bad_array_cols) = NaN;
+if(~skip_linkage_mask)
+   log_printf(lfid, 'Masking of linkage colonies ENABLED.\n');
+	sgadata.(field)(linkage_cols_new) = NaN;
+else
+   log_printf(lfid, 'Masking of linkage colonies DISABLED.\n');
+end
 
 log_printf(lfid, 'Finished applying filters...\n');
 
@@ -361,34 +363,32 @@ log_printf(lfid, 'Finished applying filters...\n');
 %URA1 URA2 URA4 URA5 URA7 URA8 URA10 EST1 MDM12 GRR1
 triple_remove_list = {'YKL216W', 'YJL130C',  'YLR420W',  'YML106W',  'YBL039C',  ...
                      'YJR103W',  'YMR271C',  'YLR233C',  'YOL009C',  'YJR090C'};
-for i=1:length(triple_remove_list)
-    triple_remove_list{i} = strmatch(triple_remove_list{i}, sgadata.orfnames, 'exact');
-end
-triple_remove_list = triple_remove_list(~cellfun('isempty', triple_remove_list));
-triple_remove_list = cell2mat(triple_remove_list);
-
-% Locate the DM queries as marked with a '+'
-plus_cell = cell(size(sgadata.orfnames));
-plus_cell(:) = {'+'};
-triple_queries = find(~cellfun(@isempty, cellfun(@strfind, sgadata.orfnames, plus_cell, 'UniformOutput', false)));
-
-% Any colony which matches any combination of a query and array above is removed
-triple_queries_bool = boolean(zeros(length(sgadata.querys), 1));
-triple_remove_bool  = boolean(zeros(length(sgadata.arrays), 1));
-for i=1:length(triple_queries)
-    triple_queries_bool = triple_queries_bool | sgadata.querys == triple_queries(i);
-end
-for i=1:length(triple_remove_list)
-    triple_remove_bool = triple_remove_bool | sgadata.arrays == triple_remove_list(i);
-end
-
-sgadata.(field)(triple_queries_bool & triple_remove_bool) = NaN;
-clear plus_cell triple_queries triple_remove_list triple_queries_bool triple_remove_bool
-% This all appears to work. is (field) correct?
+	for i=1:length(triple_remove_list)
+    	triple_remove_list{i} = strmatch(triple_remove_list{i}, sgadata.orfnames, 'exact');
+	end
+	triple_remove_list = triple_remove_list(~cellfun('isempty', triple_remove_list));
+	triple_remove_list = cell2mat(triple_remove_list);
+	
+	% Locate the DM queries as marked with a '+'
+	plus_cell = cell(size(sgadata.orfnames));
+	plus_cell(:) = {'+'};
+	triple_queries = find(~cellfun(@isempty, cellfun(@strfind, sgadata.orfnames, plus_cell, 'UniformOutput', false)));
+	
+	% Any colony which matches any combination of a query and array above is removed
+	triple_queries_bool = boolean(zeros(length(sgadata.querys), 1));
+	triple_remove_bool  = boolean(zeros(length(sgadata.arrays), 1));
+	for i=1:length(triple_queries)
+    	triple_queries_bool = triple_queries_bool | sgadata.querys == triple_queries(i);
+	end
+	for i=1:length(triple_remove_list)
+    	triple_remove_bool = triple_remove_bool | sgadata.arrays == triple_remove_list(i);
+	end
+	
+	sgadata.(field)(triple_queries_bool & triple_remove_bool) = NaN;
+	clear plus_cell triple_queries triple_remove_list triple_queries_bool triple_remove_bool
      
 
 %% Batch correction
-
 % Get array plate means (use all screens, including WT screens)
 
 all_arrplates = unique(sgadata.arrayplateids);
@@ -479,6 +479,14 @@ sgadata.batchnorm_colsize = sgadata.(field);
 outfield = 'batchnorm_colsize';
 
 % Normalize out batch effect. Method: LDA (supervised)
+% MRECK BATCH COLLAPSE, remove when done, burn after reading
+MRECK_BATCH = max(sgadata.batch)+1;
+MRECK_QUERIES = find(~cellfun(@isempty, strfind(sgadata.orfnames, '_collab')));
+for i=1:length(MRECK_QUERIES)
+	sgadata.batch(query_map{all_querys(MRECK_QUERIES(i))}) = MRECK_BATCH;
+end
+log_printf(lfid, 'Re-batching MRECK queryeies (anything marked collab):\n');
+log_printf(lfid, '%d _collab queries\n\n', length(MRECK_QUERIES));
 
 perc_var = 0.1;
 
@@ -520,7 +528,7 @@ all_arrays = unique(sgadata.arrays);
 wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames, 'exact');
 if(isempty(wild_type_id))
     log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
-    save('-v7.3',[outputfile,'_matfile']);
+    save('-v7.3',[outputfile,'.mat']);
     return
 end
 
