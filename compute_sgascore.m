@@ -310,8 +310,11 @@ sgadata.finalplatecorr_colsize = apply_plate_normalization(sgadata, 'compcorr_co
                                  ignore_cols, default_median_colsize, plate_id_map, lfid);
 
 % Do filtering based on held-out CV values
-sgadata.filt_colsize = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', ...
+sgadata.filt_jackknife = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', ...
                        border_strain_orf, query_map, plate_id_map, lfid);
+
+% keep a copy (in jackknife) to replace linkage after batch
+sgadata.filt_colsize = sgadata.filt_jackknife;
 
 
 %% Filters section
@@ -347,13 +350,8 @@ sgadata.(field)(remove_ind) = NaN;
 
 
 % Remove "ignore_cols" (bad arrays and linkage if applicable)
-sgadata.(field)(bad_array_cols) = NaN;
-if(~skip_linkage_mask)
-   log_printf(lfid, 'Masking of linkage colonies ENABLED.\n');
-	sgadata.(field)(linkage_cols_new) = NaN;
-else
-   log_printf(lfid, 'Masking of linkage colonies DISABLED.\n');
-end
+% linkage cols will be replaced later
+sgadata.(field)(ignore) = NaN;
 
 log_printf(lfid, 'Finished applying filters...\n');
 
@@ -659,6 +657,13 @@ model_fit_std = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 
 all_nans = find(isnan(sgadata.(field)));
 ind_his3 = strmatch(border_strain_orf, sgadata.orfnames,'exact');
+
+
+% replace linkage colony values that got removed before batch correction
+if(skip_linkage_mask)
+	sgadata.(field)(linkage_cols_new) = sgadata.filt_jackknife(linkage_cols_new);
+	log_printf(lfid, '* REPLACING linkage colonies.\n');
+end
 
 log_printf(lfid, ['Model fitting...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
