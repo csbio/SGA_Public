@@ -195,20 +195,11 @@ sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)-1)*384 + dou
 sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 
 % Get colonies corresponding to linkage
-inkage_tic = tic();
-all_linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, lfid);
-old_linkage_time = toc(linkage_tic);
-
-linkage_tic = tic();
-linkage_cols_new = filter_all_linkage_colonies_queryspecific_new(sgadata, linkagefile, ...
+linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, ...
      all_querys, all_arrays, query_map, array_map, lfid);
-new_linkage_time = toc(linkage_tic);
-log_printf(lfid, 'linkage time:\nold:\t%d min\nnew:\t%d min\n\n', fix(old_linkage_time / 60), fix(new_linkage_time / 60));
-log_printf(lfid, 'linkage cols:\nold:\t%d col\nnew:\t%d col\n\n', length(unique(all_linkage_cols)), length(linkage_cols_new));
+log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols));
 
-log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols_new));
-
-ignore_cols = unique([bad_array_cols; linkage_cols_new]);
+ignore_cols = unique([bad_array_cols; linkage_cols]);
 
 %% Normalizations
 % Default median colony size per plate
@@ -351,7 +342,7 @@ sgadata.(field)(remove_ind) = NaN;
 
 % Remove "ignore_cols" (bad arrays and linkage if applicable)
 % linkage cols will be replaced later
-sgadata.(field)(ignore) = NaN;
+sgadata.(field)(ignore_cols) = NaN;
 
 log_printf(lfid, 'Finished applying filters...\n');
 
@@ -650,6 +641,12 @@ log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,:))
 
 field = 'batchnorm_colsize';
 
+% replace linkage colony values that got removed before batch correction
+if(skip_linkage_mask)
+	sgadata.(field)(linkage_cols) = sgadata.filt_jackknife(linkage_cols);
+	log_printf(lfid, '* REPLACING linkage colonies.\n');
+end
+
 all_arrays = unique(sgadata.arrays);
 
 model_fits = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
@@ -657,13 +654,6 @@ model_fit_std = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 
 all_nans = find(isnan(sgadata.(field)));
 ind_his3 = strmatch(border_strain_orf, sgadata.orfnames,'exact');
-
-
-% replace linkage colony values that got removed before batch correction
-if(skip_linkage_mask)
-	sgadata.(field)(linkage_cols_new) = sgadata.filt_jackknife(linkage_cols_new);
-	log_printf(lfid, '* REPLACING linkage colonies.\n');
-end
 
 log_printf(lfid, ['Model fitting...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
