@@ -125,7 +125,12 @@ log_printf(lfid, '\n\nStrain Summary:\n');
 log_printf(lfid, '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n',   'type' , strain_types{:});
 log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n',   'query' , strain_type_counts(1,:));
 log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n\n', 'array' , strain_type_counts(2,:));
- 
+unique_array_plate_count = length(unique(sgadata.arrayplateids));
+log_printf(lfid, 'number of unique array plates found: %d\n', unique_array_plate_count);
+if ~ismember(unique_array_plate_count, [4, 14])
+    log_printf(lfid, 'TERMINAL unknown array configuration (%d) or incorrect array plate mapping');
+    return
+end
 
 % Seed the random number generator % may throw error in older matlab versions
 RSTREAM = RandStream.create('mt19937ar','Seed', 'shuffle');
