@@ -216,7 +216,10 @@ sgadata.colsize_platenorm = ...
     apply_plate_normalization(sgadata, 'colsize', ignore_cols, default_median_colsize, plate_id_map, lfid);
 
 
+%------------------------------------------------------------------------------
+% Old method (old)
 % Filter very large colonies
+%{
 ind = find(sgadata.colsize_platenorm >= 1.5*default_median_colsize & ...
     sgadata.rows > 2 & sgadata.rows < 31 & ...
     sgadata.cols > 2 & sgadata.cols < 47);
@@ -227,66 +230,47 @@ spots_to_remove = all_spots(num_big_colonies_per_spot >= 3);
 
 ii = find(ismember(sgadata.spots, spots_to_remove));
 sgadata.colsize_platenorm(ii) = NaN;
+%}
+%------------------------------------------------------------------------------
+% New method (new)
+%{
+% Get colony residuals I (for an initial median)
+[~, ~, sgadata.dirty_arraymedian] = calculate_colony_residuals(sgadata, 'colsize_platenorm', plate_id_map, lfid);
 
+% Filter large colonies
+ind = find(sgadata.colsize_platenorm >= 2.0*sgadata.dirty_arraymedian& ...
+    sgadata.rows > 2 & sgadata.rows < 31 & ...
+    sgadata.cols > 2 & sgadata.cols < 47);
 
-% Get colony residuals
-all_arrplates = unique(sgadata.arrayplateids);
-width = 48;
-height = 32;
-field = 'colsize_platenorm';
+all_spots = unique(sgadata.spots(ind));
+num_big_colonies_per_spot = histc(sgadata.spots(ind), all_spots);
+spots_to_remove = all_spots(num_big_colonies_per_spot >= 3);
 
-sgadata.residual = sgadata.(field);
-sgadata.logresidual = sgadata.(field);
-sgadata.arraymedian = sgadata.(field);
+ii = find(ismember(sgadata.spots, spots_to_remove));
+sgadata.colsize_platenorm(ii) = NaN;
+%}
+%------------------------------------------------------------------------------
+% New new method (hybrid)
+% Get colony residuals I (for an initial median)
+[~, ~, sgadata.dirty_arraymedian] = calculate_colony_residuals(sgadata, 'colsize_platenorm', plate_id_map, lfid);
 
-array_means = zeros(length(all_arrplates),width*height)+NaN;
+% Filter large colonies
+ind = find((sgadata.colsize_platenorm > ...
+    min(2.0*sgadata.dirty_arraymedian, 1.5*default_median_colsieze))  & ...
+    sgadata.rows > 2 & sgadata.rows < 31 & ...
+    sgadata.cols > 2 & sgadata.cols < 47);
 
-log_printf(lfid, ['Calculating colony residuals...\n|' blanks(50) '|\n|']);
+all_spots = unique(sgadata.spots(ind));
+num_big_colonies_per_spot = histc(sgadata.spots(ind), all_spots);
+spots_to_remove = all_spots(num_big_colonies_per_spot >= 3);
 
-for i = 1:length(all_arrplates)
-    currplates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
-    t=[];   % stores the list of colony sizes for this arrayplate
-    save_inds = struct;
-    
-    for j = 1:length(currplates)
-   
-        % Get a matrix of colony sizes (d) and colony indices (d_map) for the plate
-        ind = plate_id_map{currplates(j)};
-        d = zeros(32,48);
-        d(:,[1,2,47,48]) = NaN;
-        d([1,2,31,32],:) = NaN;
-        
-        d_map = zeros(32,48)+1; % Default reference to 1st index
-        
-        iii = sub2ind([32,48], sgadata.rows(ind), sgadata.cols(ind));
-        d_map(iii) = ind;
-        d(iii) = sgadata.(field)(ind);
-        
-        t = [t,d(:)];
-        save_inds(j).ind_mat = d_map(:);
-        save_inds(j).dat_mat = d(:);
-        
-    end
-    
-    array_means(i,:) = nanmedian(t,2);
-    array_means(i,array_means(i,:) <= 0)=NaN;
-    
-    for j=1:length(currplates)
-        
-        t = sgadata.(field)(save_inds(j).ind_mat);
-        t(t <= 0)=NaN;
-        sgadata.logresidual(save_inds(j).ind_mat)=log(t./array_means(i,:)');
-        sgadata.arraymedian(save_inds(j).ind_mat)=array_means(i,:)';
-        sgadata.residual(save_inds(j).ind_mat)=t-array_means(i,:)';
-        
-    end
-    
-    % Print progress
-    print_progress(lfid, length(all_arrplates), i);
-    
-end
+big_colony_ix = find(ismember(sgadata.spots, spots_to_remove));
+sgadata.colsize_platenorm(big_colony_ix) = NaN;
 
-log_printf(lfid, '|\n');
+%------------------------------------------------------------------------------
+% Get colony residuals II logresiduals and medians
+[sgadata.residual, sgadata.logresidual, sgadata.arraymedian] = ...
+    calculate_colony_residuals(sgadata, 'colsize_platenorm', plate_id_map, lfid);
 
 % Spatial normalization
 sgadata.spatialnorm_colsize = ...
@@ -642,7 +626,7 @@ fg_smfit(a,:) = sm_fitness(b,:);
 final_smfit = fg_smfit(:,1);
 final_smfit_std = fg_smfit(:,2);
 log_printf(lfid, 'Strains not in fitness file: %d\n\n', length(sgadata.orfnames) - length(int));
-log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,:)))); % of those we want (intersection)
+log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,1)))); % of those we want (intersection)
 
 field = 'batchnorm_colsize';
 
@@ -843,7 +827,7 @@ end
 
 %% Printing out
 
-output_interaction_data([outputfile,'.txt'],sgadata.orfnames,complete_mat,complete_mat_std,backgd_mean,backgd_std,final_smfit,final_smfit_std,dm_expected,dm_actual,dm_actual_std,lfid);
+output_interaction_data(outputfile,sgadata.orfnames,complete_mat,complete_mat_std,backgd_mean,backgd_std,final_smfit,final_smfit_std,dm_expected,dm_actual,dm_actual_std,lfid);
 
 %% Final save
 

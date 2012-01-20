@@ -16,7 +16,7 @@ pvals = sqrt(normcdf(-abs(escores./escores_std)) .* normcdf(-abs(log((background
 
 log_printf(lfid, ['Printing output file...\n|' blanks(50) '|\n|']);
 
-fid = fopen(outputfile,'w');
+fid = fopen([outputfile '.txt'],'w');
 for i = 1:length(escores)
     for j = 1:length(escores)
         if ~isnan(escores(i,j))
@@ -30,6 +30,12 @@ for i = 1:length(escores)
     % Print progress
     print_progress(lfid, length(escores), i);
     
+end
+fclose(fid);
+
+fid = fopen([outputfile '.orf'], 'w');
+for i=1:length(orfnames)
+	fprintf(fid, '%s\n', orfnames{i});
 end
 fclose(fid);
 
