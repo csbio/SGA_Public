@@ -210,16 +210,11 @@ ignore_cols = unique([bad_array_cols; linkage_cols]);
 % Default median colony size per plate
 default_median_colsize = 510;
 
-
 % Plate normalization
 sgadata.colsize_platenorm = ...
     apply_plate_normalization(sgadata, 'colsize', ignore_cols, default_median_colsize, plate_id_map, lfid);
 
-
-%------------------------------------------------------------------------------
-% Old method (old)
 % Filter very large colonies
-%{
 ind = find(sgadata.colsize_platenorm >= 1.5*default_median_colsize & ...
     sgadata.rows > 2 & sgadata.rows < 31 & ...
     sgadata.cols > 2 & sgadata.cols < 47);
@@ -228,47 +223,9 @@ all_spots = unique(sgadata.spots(ind));
 num_big_colonies_per_spot = histc(sgadata.spots(ind), all_spots);
 spots_to_remove = all_spots(num_big_colonies_per_spot >= 3);
 
-ii = find(ismember(sgadata.spots, spots_to_remove));
-sgadata.colsize_platenorm(ii) = NaN;
-%}
-%------------------------------------------------------------------------------
-% New method (new)
-%{
-% Get colony residuals I (for an initial median)
-[~, ~, sgadata.dirty_arraymedian] = calculate_colony_residuals(sgadata, 'colsize_platenorm', plate_id_map, lfid);
+sgadata.colsize_platenorm(ismember(sgadata.spots, spots_to_remove)) = NaN;
 
-% Filter large colonies
-ind = find(sgadata.colsize_platenorm >= 2.0*sgadata.dirty_arraymedian& ...
-    sgadata.rows > 2 & sgadata.rows < 31 & ...
-    sgadata.cols > 2 & sgadata.cols < 47);
-
-all_spots = unique(sgadata.spots(ind));
-num_big_colonies_per_spot = histc(sgadata.spots(ind), all_spots);
-spots_to_remove = all_spots(num_big_colonies_per_spot >= 3);
-
-ii = find(ismember(sgadata.spots, spots_to_remove));
-sgadata.colsize_platenorm(ii) = NaN;
-%}
-%------------------------------------------------------------------------------
-% New new method (hybrid)
-% Get colony residuals I (for an initial median)
-[~, ~, sgadata.dirty_arraymedian] = calculate_colony_residuals(sgadata, 'colsize_platenorm', plate_id_map, lfid);
-
-% Filter large colonies
-ind = find((sgadata.colsize_platenorm > ...
-    min(2.0*sgadata.dirty_arraymedian, 1.5*default_median_colsieze))  & ...
-    sgadata.rows > 2 & sgadata.rows < 31 & ...
-    sgadata.cols > 2 & sgadata.cols < 47);
-
-all_spots = unique(sgadata.spots(ind));
-num_big_colonies_per_spot = histc(sgadata.spots(ind), all_spots);
-spots_to_remove = all_spots(num_big_colonies_per_spot >= 3);
-
-big_colony_ix = find(ismember(sgadata.spots, spots_to_remove));
-sgadata.colsize_platenorm(big_colony_ix) = NaN;
-
-%------------------------------------------------------------------------------
-% Get colony residuals II logresiduals and medians
+% Get colony residuals logresiduals and medians
 [sgadata.residual, sgadata.logresidual, sgadata.arraymedian] = ...
     calculate_colony_residuals(sgadata, 'colsize_platenorm', plate_id_map, lfid);
 
