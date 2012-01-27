@@ -79,10 +79,12 @@ function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecif
     lyp_can_linkage = unique([lyp1_linkage_arrays; can1_linkage_arrays]);
 
     all_linkage_cols_bool = boolean(zeros(size(sgadata.arrays))); % holds result, pre-allocated
-    wild_type_id =  strmatch('undefined_sn4757', sgadata.orfnames, 'exact');
+    wild_type_id =  strmatch('undefined_sn4757', sgadata.orfnames);
 
     for i=1:length(ura3_linkage_arrays)
-        all_linkage_cols_bool(intersect(array_map{all_arrays(ura3_linkage_arrays(i))}, query_map{wild_type_id})) = true;
+     for j=1:length(wild_type_id)
+        all_linkage_cols_bool(intersect(array_map{all_arrays(ura3_linkage_arrays(i))}, query_map{wild_type_id(j)})) = true;
+     end
     end
     for i=1:length(lyp_can_linkage)
         all_linkage_cols_bool(array_map{all_arrays(lyp_can_linkage(i))}) = true;
@@ -112,7 +114,7 @@ function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecif
         print_progress(lfid, length(all_querys), i);
     end
 
-    log_printf(lfid, '|\nLinkage Query Process Report');
+    log_printf(lfid, '|\nLinkage Query Process Report\n');
     for i=1:length(match_code_labels)
         log_printf(lfid, '\t%s\t%d\n', match_code_labels{i}, match_code_counts(i));
     end
@@ -184,13 +186,3 @@ function[orf_list] = split_orfs(orf_string)
     	  orf_list = {orf_string(1:ix(1)-1) orf_string(ix(1)+1:end)};
     end
 end 
-
-function[short_orf] = strip_annotation(orf_string)
-% splits off the LAST annotation (eg. Orf_sn_rep -> Orf_sn)
-    ix = strfind(orf_string, '_');
-    if(isempty(ix))
-        short_orf = orf_string;
-    else
-        short_orf = orf_string(1:ix(end)-1);
-    end
-end

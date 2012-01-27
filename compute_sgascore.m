@@ -94,7 +94,7 @@ sgadata.short_orf_names = sgadata.orfnames;
 for i=1:length(sgadata.short_orf_names)
 	delim_ix = strfind(sgadata.orfnames{i}, '_');
 	if(~isempty(delim_ix))
-		sgadata.short_orf_names{i} = sgadata.orfnames{i}(1:delim_ix(1));
+		sgadata.short_orf_names{i} = sgadata.orfnames{i}(1:delim_ix(1)-1);
 	end
 end
 
@@ -455,12 +455,8 @@ field = 'batchnorm_colsize';
 
 %% Calculate array WT variance
 all_arrays = unique(sgadata.arrays);
+wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames);
 
-%BJV add 'exact' here for AB/MC WTs only
-%ind2 = query_map{strmatch('undefined',sgadata.orfnames,'exact')};
-%ind2 = query_map{strmatch('undefined',sgadata.orfnames)};
-
-wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames, 'exact');
 if(isempty(wild_type_id))
     log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
     save('-v7.3',[outputfile,'.mat']);
@@ -569,9 +565,8 @@ end
 log_printf(lfid, '|\n');
 
 
-%%
-
-% Load the single mutant fitness file
+% Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
+%{
 [data.f1, data.f2, data.f3] = textread(smfitnessfile,'%s %f %f');
 sm_fitness_orfs = data.f1;
 sm_fitness = [data.f2 data.f3];
@@ -584,6 +579,37 @@ final_smfit = fg_smfit(:,1);
 final_smfit_std = fg_smfit(:,2);
 log_printf(lfid, 'Strains not in fitness file: %d\n\n', length(sgadata.orfnames) - length(int));
 log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,1)))); % of those we want (intersection)
+%}
+
+% Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
+[fitness_data.ORF, fitness_data.SMF, fitness_data.STD] = textread(smfitnessfile,'%s %f %f');
+fitness_report_header = {'Exact match', 'Partial Match', 'Not Found', 'NaN in file'};
+fitness_report_counts = zeros(1,4);
+fitness_hash = hash_strings(fitness_data.ORF);
+
+final_smfit = zeros(length(sgadata.orfnames),1) + NaN;
+final_smfit_std = zeros(length(sgadata.orfnames),1) + NaN;
+for i=1:length(sgadata.orfnames)
+    if fitness_hash.containsKey(sgadata.orfnames{i})
+        final_smfit(i)     = fitness_data.SMF(fitness_hash.get(sgadata.orfnames{i}));
+        final_smfit_std(i) = fitness_data.STD(fitness_hash.get(sgadata.orfnames{i}));
+        fitness_report_counts(1) = fitness_report_counts(1)+1;
+    elseif fitness_hash.containsKey(strip_annotation(sgadata.orfnames{i}))
+        final_smfit(i)     = fitness_data.SMF(fitness_hash.get(strip_annotation(sgadata.orfnames{i})));
+        final_smfit_std(i) = fitness_data.STD(fitness_hash.get(strip_annotation(sgadata.orfnames{i})));
+        fitness_report_counts(2) = fitness_report_counts(2)+1;
+    else
+        fitness_report_counts(3) = fitness_report_counts(3)+1;
+    end
+end
+fitness_report_counts(4) = sum(isnan(final_smfit)) - fitness_report_counts(3);
+
+log_printf(lfid, 'Fitness file report:\n');
+for i=1:length(fitness_report_header)
+    log_printf('\t%s\t: %d\n', fitness_report_header{i}, fitness_report_counts(i));
+end
+% Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
+
 
 field = 'batchnorm_colsize';
 
@@ -674,11 +700,8 @@ log_printf(lfid, '|\n');
 
 
 % Fill in SM fitness for arrays that appear here that aren't in standard
-final_smfit = fg_smfit(:,1);
-final_smfit_std = fg_smfit(:,2);
-
-model_smfits = zeros(size(fg_smfit,1),1);
-model_smstd = zeros(size(fg_smfit,1),1);
+model_smfits = zeros(size(final_smfit,1),1);
+model_smstd = zeros(size(final_smfit,1),1);
 
 model_smfits(all_arrays)=model_fits(:,1);
 model_smstd(all_arrays)=model_fit_std(:,1);
@@ -772,11 +795,9 @@ if ~exist('skip_wt_remove', 'var')
     skip_wt_remove = false;
 end
 
+% remove anything "undefined"
 if(~skip_wt_remove)
-    % add 'exact' here to match undefinied+YDL227C
-    ind = strmatch('undefined_sn4757',sgadata.orfnames, 'exact');
-    %ind = strmatch('undefined',sgadata.orfnames);
-    %ind = strmatch('undefined',sgadata.orfnames, 'exact');
+    ind = strmatch('undefined', sgadata.orfnames);
     complete_mat(ind,:)=NaN;
     complete_mat(:,ind)=NaN;
 end
