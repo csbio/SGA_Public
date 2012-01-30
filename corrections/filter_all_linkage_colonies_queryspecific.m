@@ -162,7 +162,7 @@ function[left_win, right_win, match_code] = lnkg_window_from_coord(strain_string
     if(~isempty(ix))
         match_code = 3;
     else
-        ix = strmatch(strip_annotation(strain_string), coord.strains, 'exact');
+        ix = strmatch(strip_annotation(strain_string, 'first'), coord.strains, 'exact');
         if(~isempty(ix))
             match_code = 4;
         else
