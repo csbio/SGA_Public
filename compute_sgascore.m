@@ -413,15 +413,19 @@ log_printf(lfid, '|\n');
 sgadata.batchnorm_colsize = sgadata.(field);
 outfield = 'batchnorm_colsize';
 
-%% Normalize out batch effect. Method: LDA (supervised)
-%% MRECK BATCH COLLAPSE, remove when done, burn after reading
-% MRECK_BATCH = max(sgadata.batch)+1;
-% MRECK_QUERIES = find(~cellfun(@isempty, strfind(sgadata.orfnames, '_collab')));
-% for i=1:length(MRECK_QUERIES)
+% Normalize out batch effect. Method: LDA (supervised)
+% MRECK BATCH COLLAPSE, remove when done, burn after reading
+ MRECK_BATCH = max(sgadata.batch)+1;
+ %MRECK_QUERIES = find(~cellfun(@isempty, strfind(sgadata.orfnames, '_collab')));
+ %for i=1:length(MRECK_QUERIES)
 %	 sgadata.batch(query_map{all_querys(MRECK_QUERIES(i))}) = MRECK_BATCH;
 % end
-% log_printf(lfid, 'Re-batching MRECK queryeies (anything marked collab):\n');
-% log_printf(lfid, '%d _collab queries\n\n', length(MRECK_QUERIES));
+ MRECK_QUERIES = [];
+ for i=1:length(MRECK_FLAGS)
+    MRECK_QUERIES = [MRECK_QUERIES find(~cellfun(@isempty, strfind(sgadata.orfnames, MRECK_FLAGS{i})))];
+ end
+ log_printf(lfid, 'Re-batching MRECK queryeies (anything marked in FLAGS):\n');
+ log_printf(lfid, '%d MRECK queries\n\n', length(MRECK_QUERIES));
 
 perc_var = 0.1;
 

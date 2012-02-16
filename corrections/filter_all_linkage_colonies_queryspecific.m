@@ -16,7 +16,7 @@
 %
 %%
 
-function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecific_new(sgadata, linkagefile, all_querys, all_arrays, query_map, array_map, lfid)
+function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, all_querys, all_arrays, query_map, array_map, lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
