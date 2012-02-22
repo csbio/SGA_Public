@@ -296,8 +296,9 @@ log_printf(lfid, 'Finished applying filters...\n');
 % mostly known slow-growers in uracil selection step
 
 %URA1 URA2 URA4 URA5 URA7 URA8 URA10 EST1 MDM12 GRR1
-triple_remove_list = {'YKL216W', 'YJL130C',  'YLR420W',  'YML106W',  'YBL039C',  ...
-                     'YJR103W',  'YMR271C',  'YLR233C',  'YOL009C',  'YJR090C'};
+triple_remove_list = {'YKL216W_dma2907', 'YJL130C_dma2510', 'YLR420W_dma3476', ...
+                      'YML106W_dma3610', 'YBL039C_dma130',  'YJR103W_dma2710', ...
+                      'YMR271C_dma3865', 'YLR233C_dma3278', 'YOL009C_dma4290', 'YJR090C_dma2675'};
 	for i=1:length(triple_remove_list)
     	triple_remove_list{i} = strmatch(triple_remove_list{i}, sgadata.orfnames, 'exact');
 	end
