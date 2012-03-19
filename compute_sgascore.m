@@ -421,6 +421,9 @@ outfield = 'batchnorm_colsize';
  %for i=1:length(MRECK_QUERIES)
 %	 sgadata.batch(query_map{all_querys(MRECK_QUERIES(i))}) = MRECK_BATCH;
 % end
+  if(~exist('MRECK_FLAGS', 'var'))
+    MRECK_FLAGS = {};
+  end
  MRECK_QUERIES = [];
  for i=1:length(MRECK_FLAGS)
     MRECK_QUERIES = [MRECK_QUERIES find(~cellfun(@isempty, strfind(sgadata.orfnames, MRECK_FLAGS{i})))];
