@@ -98,6 +98,13 @@ for i=1:length(sgadata.short_orf_names)
 	end
 end
 
+% Check for needed WT data early
+wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames);
+if(isempty(wild_type_id))
+    log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
+    return
+end
+
 % report the number of strains of different types from the orfmap file
 % note, not all of these are mutually exclusive with all others
 query_strains = sgadata.orfnames(unique(sgadata.querys));
@@ -463,14 +470,6 @@ field = 'batchnorm_colsize';
 
 %% Calculate array WT variance
 all_arrays = unique(sgadata.arrays);
-wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames);
-
-if(isempty(wild_type_id))
-    log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
-    save('-v7.3',[outputfile,'.mat']);
-    return
-end
-
 ind2 = query_map{wild_type_id};
 
 array_vars = zeros(length(all_arrays),2);
