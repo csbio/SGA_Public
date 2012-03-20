@@ -613,7 +613,7 @@ fitness_report_counts(4) = sum(isnan(final_smfit)) - fitness_report_counts(3);
 
 log_printf(lfid, 'Fitness file report:\n');
 for i=1:length(fitness_report_header)
-    log_printf('\t%s\t: %d\n', fitness_report_header{i}, fitness_report_counts(i));
+    log_printf(lfid, '\t%s\t: %d\n', fitness_report_header{i}, fitness_report_counts(i));
 end
 % Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
 
