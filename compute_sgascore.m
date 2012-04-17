@@ -193,9 +193,9 @@ end
 
 %% Speed optimization #4: Create index of each group of 4 spots
 
-all_arrayplateids = unique(sgadata.arrayplateids);
-all_arrayplateids_map = zeros(max(all_arrayplateids),1);
-all_arrayplateids_map(all_arrayplateids) = 1:length(all_arrayplateids);
+sgadata.all_arrayplateids = unique(sgadata.arrayplateids);
+all_arrayplateids_map = zeros(max(sgadata.all_arrayplateids),1);
+all_arrayplateids_map(sgadata.all_arrayplateids) = 1:length(sgadata.all_arrayplateids);
 
 % Map colony coordinates back to 384 format
 row384 = ceil(sgadata.rows/2);
@@ -203,7 +203,7 @@ col384 = ceil(sgadata.cols/2);
 ind384 = sub2ind([16 24], row384, col384);
 
 % Generate a replicate ID unique across multiple arrayplates
-sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)-1)*384 + double(ind384);
+sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)0)*384 + double(ind384);
 sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 
 % Get colonies corresponding to linkage
@@ -276,8 +276,6 @@ ind = find(sgadata.rows < 3 | sgadata.rows > 30 | sgadata.cols < 3 | sgadata.col
 sgadata.(field)(ind) = NaN;
 
 % Delete any array strain that is missing more than 15% of its supposed occurrences
-all_arrays = unique(sgadata.arrays);
-
 tot_cols = zeros(length(all_arrays),1);
 good_cols = zeros(length(all_arrays),1);
 
@@ -416,7 +414,6 @@ for i=1:length(all_arrplates)
     
 end
 log_printf(lfid, '|\n');
-
     
 sgadata.batchnorm_colsize = sgadata.(field);
 outfield = 'batchnorm_colsize';
@@ -469,7 +466,6 @@ field = 'batchnorm_colsize';
 
 
 %% Calculate array WT variance
-all_arrays = unique(sgadata.arrays);
 ind2 = query_map{wild_type_id};
 
 array_vars = zeros(length(all_arrays),2);
@@ -541,18 +537,17 @@ end
 log_printf(lfid, '|\n');
 
 % Pool across arrayplates for each query
-all_arrayplateids = unique(sgadata.arrayplateids);
 query_arrplate_vars = [];   %zeros(length(all_querys),length(all_arrplates))+NaN;
-query_arrplate_relerr = []; %zeros(length(all_querys),length(all_arrplates))+NaN;
+%query_arrplate_relerr = []; %zeros(length(all_querys),length(all_arrplates))+NaN; % unused
 
 log_printf(lfid, ['Pooling across arrayplates for each query...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_querys)
     
     ind = query_map{all_querys(i)};
     
-    for j = 1:length(all_arrayplateids)
+    for j = 1:length(sgadata.all_arrayplateids)
         
-        tmp_ind = find(sgadata.arrayplateids(ind) == all_arrayplateids(j));
+        tmp_ind = find(sgadata.arrayplateids(ind) == sgadata.all_arrayplateids(j));
         currsets = unique(sgadata.setids(tmp_ind));
         
         for k = 1:length(currsets)
@@ -560,7 +555,8 @@ for i = 1:length(all_querys)
             tmp_ind2 = find(sgadata.setids(tmp_ind) == currsets(k));
             curr_ind = tmp_ind(tmp_ind2);
             
-            query_arrplate_relerr = [query_arrplate_relerr; i,j,k,sqrt(exp((1./(length(curr_ind)-length(unique(sgadata.arrays(curr_ind)))))*nansum(sgadata.dm_normvar(curr_ind).*((sgadata.dm_num(curr_ind)-1)./sgadata.dm_num(curr_ind))))-1)];
+				% this is unused.?.
+            %query_arrplate_relerr = [query_arrplate_relerr; i,j,k,sqrt(exp((1./(length(curr_ind)-length(unique(sgadata.arrays(curr_ind)))))*nansum(sgadata.dm_normvar(curr_ind).*((sgadata.dm_num(curr_ind)-1)./sgadata.dm_num(curr_ind))))-1)];
             query_arrplate_vars = [query_arrplate_vars; i,j,k,(1./(length(curr_ind)-length(unique(sgadata.arrays(curr_ind)))))*nansum(sgadata.dm_normvar(curr_ind).*((sgadata.dm_num(curr_ind)-1)./sgadata.dm_num(curr_ind)))];
             
         end
@@ -570,23 +566,6 @@ for i = 1:length(all_querys)
     print_progress(lfid, length(all_querys), i);
 end
 log_printf(lfid, '|\n');
-
-
-% Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
-%{
-[data.f1, data.f2, data.f3] = textread(smfitnessfile,'%s %f %f');
-sm_fitness_orfs = data.f1;
-sm_fitness = [data.f2 data.f3];
-clear data;
-
-[int, a, b] = intersect(sgadata.orfnames, sm_fitness_orfs);
-fg_smfit = zeros(length(sgadata.orfnames),2) + NaN;
-fg_smfit(a,:) = sm_fitness(b,:);
-final_smfit = fg_smfit(:,1);
-final_smfit_std = fg_smfit(:,2);
-log_printf(lfid, 'Strains not in fitness file: %d\n\n', length(sgadata.orfnames) - length(int));
-log_printf(lfid, 'Strains NaN in fitness file: %d\n\n', sum(isnan(fg_smfit(a,1)))); % of those we want (intersection)
-%}
 
 % Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
 [fitness_data.ORF, fitness_data.SMF, fitness_data.STD] = textread(smfitnessfile,'%s %f %f');
@@ -626,14 +605,13 @@ if(skip_linkage_mask)
 	log_printf(lfid, '* REPLACING linkage colonies.\n');
 end
 
-all_arrays = unique(sgadata.arrays);
-
 model_fits = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 model_fit_std = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 
 all_nans = find(isnan(sgadata.(field)));
 ind_his3 = strmatch(border_strain_orf, sgadata.orfnames,'exact');
 
+sgadata.arraymean_corrected = nan(size(sgadata.arraymedian));
 log_printf(lfid, ['Model fitting...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
     
@@ -699,10 +677,6 @@ for i = 1:length(all_arrays)
     print_progress(lfid, length(all_arrays),i);
    
 end
-
-%FIXME why are we short here
-sgadata.arraymean_corrected = sgadata.arraymean_corrected';
-sgadata.arraymean_corrected(end:length(sgadata.arraymedian)) = nan;
 log_printf(lfid, '|\n');
 
 
@@ -743,9 +717,6 @@ amean(all_arrays) = array_vars(:,1);
 amat = repmat(avar,size(complete_mat,1),1);
 amat_mean = repmat(amean,size(complete_mat,1),1);
 
-all_arrayplateids = unique(sgadata.arrayplateids);
-all_arrayplateids_map = zeros(max(all_arrayplateids),1);
-all_arrayplateids_map(all_arrayplateids) = 1:length(all_arrayplateids);
 
 % Create array to arrayplate map
 array_arrplate = cell(max(sgadata.arrays),1);

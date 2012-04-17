@@ -1,7 +1,8 @@
 %%
 % MULTI_CLASS_LDA
 %
-% Authors: Chad Myers (cmyers@cs.umn.edu), Anastasia Baryshnikova (a.baryshnikova@utoronto.ca)
+% Authors: Chad Myers (cmyers@cs.umn.edu) 
+%          Anastasia Baryshnikova (a.baryshnikova@utoronto.ca)
 %
 % Last revision: 2010-07-19
 %
@@ -14,7 +15,7 @@ a=sum(abs(X),1);
 b=sum(abs(X),2);
 
 X = X(b>0,a>0);
-X(X==0)=normrnd(nanmean(X(:)),nanstd(X(:)),length(find(X==0)),1);
+X(X==0)=normrnd(nanmean(X(:)),nanstd(X(:)),sum(sum(X==0)),1);
 
 classes = classes(b>0);
 
@@ -36,7 +37,8 @@ for i=1:length(class_labels)
   
   Sw = Sw + cov(X(ind,:),1);
 
-  Sb = Sb + numel(ind)*(classMean-dataMean)'*(classMean-dataMean);
+  Sb = Sb + numel(ind)*(classMean-dataMean)' ...
+                      *(classMean-dataMean)  ;
    
 end
 
