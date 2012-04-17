@@ -203,7 +203,7 @@ col384 = ceil(sgadata.cols/2);
 ind384 = sub2ind([16 24], row384, col384);
 
 % Generate a replicate ID unique across multiple arrayplates
-sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)0)*384 + double(ind384);
+sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)-1)*384 + double(ind384);
 sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 
 % Get colonies corresponding to linkage
