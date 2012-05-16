@@ -435,44 +435,27 @@ outfield = 'batchnorm_colsize';
  log_printf(lfid, 'Re-batching MRECK queryeies (anything marked in FLAGS):\n');
  log_printf(lfid, '%d MRECK queries\n\n', length(MRECK_QUERIES));
 
+perc_var = 0.1;
 
 log_printf(lfid, ['Batch normalization...\n|', blanks(50), '|\n|']);
 
-for i = 1:length(all_arrplates)
+for j = 1:length(all_arrplates)
     
-    t = save_mats(i).mat;
+    t = save_mats(j).mat;
     t(isnan(t)) = 0;
-    % batches_by_plate (curr_batch) is a list of batch labels for all unique plate in this array position
-    batches_by_plate = save_mats(i).batch; 
+    curr_batch = save_mats(j).batch; 
   
     % Check if some of the batches are too small -- make a larger orphan batch
-    % start assembling new batches by combining small batches until they reach certain size
-    % TOO SMALL < 3
-    % BIG ENOUGH >= 8
-
-    unique_batches_this_plate = unique(batches_by_plate);
-    batch_count = histc(batches_by_plate, unique_batches_this_plate);
-
-    merge_with_batch = find(batch_count < 3, 1, 'first'); % a pointer
-    for j=1:length(unique_batches_this_plate)
-        if(batch_count(j) < 3 && merge_with_batch ~= j) % don't merge batches with themselves, we'll fold the next ones here
-            % merge this batch
-            batches_by_plate(batches_by_plate == unique_batches_this_plate(j)) = unique_batches_this_plate(merge_with_batch);
-            % update our counts and move our merge pointer if this orphan batch is big enough
-            batch_count(merge_with_batch) = batch_count(merge_with_batch) + batch_count(j);
-            batch_count(j) = NaN;
-            if(batch_count(merge_with_batch) >=8 ) % move the pointer
-                merge_with_batch = merge_with_batch + find(batch_count(merge_with_batch+1:end) < 3, 1, 'first');
-            end 
-        end
-    end
-
-    perc_var = 0.1;
-    tnorm = multi_class_lda(t,batches_by_plate,perc_var);
-    sgadata.(outfield)(save_mats(i).mat_ind(:)) = sgadata.(outfield)(save_mats(i).mat_ind(:)) + (tnorm(:)-t(:));
+    all_batches = unique(curr_batch);
+    num_batch = histc(curr_batch, all_batches);
+    orphan_batch = max(curr_batch)+1;
+    curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch;
+  
+    tnorm = multi_class_lda(t,curr_batch,perc_var);
+    sgadata.(outfield)(save_mats(j).mat_ind(:)) = sgadata.(outfield)(save_mats(j).mat_ind(:)) + (tnorm(:)-t(:));
     
     % Print progress
-    print_progress(lfid, length(all_arrplates),i);
+    print_progress(lfid, length(all_arrplates),j);
     
 end
 clear save_mats;
