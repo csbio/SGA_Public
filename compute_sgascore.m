@@ -449,7 +449,9 @@ for j = 1:length(all_arrplates)
     all_batches = unique(curr_batch);
     num_batch = histc(curr_batch, all_batches);
     orphan_batch = max(curr_batch)+1;
-    curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch;
+    log_printf(lfid, '**WARNING** Test code in place\n');
+    % REMOVED to test no orphan contribution scheme
+    %curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch;
   
     tnorm = multi_class_lda(t,curr_batch,perc_var);
     sgadata.(outfield)(save_mats(j).mat_ind(:)) = sgadata.(outfield)(save_mats(j).mat_ind(:)) + (tnorm(:)-t(:));

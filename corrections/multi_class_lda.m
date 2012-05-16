@@ -29,7 +29,8 @@ for i=1:length(class_labels)
   
   ind = find(classes == class_labels(i));
   
-  if numel(ind) == 0  % empty class: ignore
+  %if numel(ind) == 0  % empty class: ignore
+  if numel(ind) < 3  % orphan class: ignore
     continue;
   end
   
