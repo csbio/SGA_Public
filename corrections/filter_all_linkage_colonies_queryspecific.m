@@ -16,7 +16,7 @@
 %
 %%
 
-function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, all_querys, all_arrays, query_map, array_map, lfid)
+function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, all_querys, all_arrays, query_map, array_map, wild_type, lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
@@ -79,7 +79,7 @@ function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecif
     lyp_can_linkage = unique([lyp1_linkage_arrays; can1_linkage_arrays]);
 
     all_linkage_cols_bool = boolean(zeros(size(sgadata.arrays))); % holds result, pre-allocated
-    wild_type_id =  strmatch('undefined_sn4757', sgadata.orfnames);
+    wild_type_id =  strmatch(wild_type, sgadata.orfnames);
 
     for i=1:length(ura3_linkage_arrays)
      for j=1:length(wild_type_id)

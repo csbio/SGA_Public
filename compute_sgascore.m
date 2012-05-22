@@ -2,22 +2,12 @@
 % COMPUTE_SGASCORE - performs a series of normalizations on raw colony size data and
 %   measures quantitative genetic interactions
 %
-% Requirements: Statistics Toolbox
-%
 % Inputs:
 %   inputfile - path to the raw colony size data
 %   outputfile - path to the output file
 %   removearraylist - path to the file containing the list of arrays to be removed
 %   linkagefile - path to the file containing the query-specific linkage window sizes
 %   smfitnessfile - path to the file containing single mutant fitness
-%
-% Assumptions:
-% 1) WT control screens queries: "undefined" and/or "undefined+YDL227C"
-% 2) any query can have an annotation after the underscore sign ("YAL002C_test")
-% 3) queries and arrays are yeast ORFs (they will get mapped to specific chromosomes and chromosomal coordinates)
-% 4) the border of the plates are composed of a control WT strain (HIS3 = YOR202W) BJV See line ~80
-% 5) all plates are in 1536 format (32 rows x 48 columns)
-% 6) queries containing a + are assumed to be double mutants
 %
 % Authors: Chad Myers (cmyers@cs.umn.edu), 
 %          Anastasia Baryshnikova (a.baryshnikova@utoronto.ca),
@@ -40,13 +30,6 @@ for i = 1 : length(vars_to_check)
     end
 end
 
-if(~exist('skip_linkage_mask', 'var'))
-    skip_linkage_mask = false;
-end
-if ~exist('skip_perl_step', 'var')
-    skip_perl_step = false;
-end
-
 % Check output
 if ~exist('outputfile','var')
     error('Define outputfile.');
@@ -64,10 +47,33 @@ else
     end
 end
 
+% Set some default flags if not defined
+if(~exist('skip_linkage_mask', 'var'))
+    log_printf(lfid, 'Using DEFAULT: skip_linkage_mask = false\n');
+    skip_linkage_mask = false;
+end
+if ~exist('skip_perl_step', 'var')
+    log_printf(lfid, 'Using DEFAULT: skip_perl_step = false\n');
+    skip_perl_step = false;
+end
+if ~exist('wild_type', 'var')
+    log_printf(lfid, 'Using DEFAULT: wild_type = URA3control_sn4757\n');
+    wild_type = 'URA3control_sn4757';
+end
+if ~exist('border_strain_orf', 'var')
+    log_printf(lfid, 'Using DEFAULT: border_strain_orf = YOR202W_dma1\n');
+    border_strain_orf = 'YOR202W_dma1';
+end
+if ~exist('skip_wt_remove', 'var')
+    log_printf(lfid, 'Using DEFAULT: skip_wt_remove = false\n');
+    skip_wt_remove = false;
+end
+
+
 % Save the path and version for the records
 pth = path;
 matlab_version = version();
-version_blacklist = {'2010b'};
+version_blacklist = {'2010b'}; % 2010b has a bug in svd() that screws up batch correction
 if(~isempty(strfind(matlab_version, version_blacklist{1}))) % loop this if blacklist grows
     error('You are attempting to use an unsupported version of matlab %s', version_blacklist{1})
 end
@@ -80,10 +86,6 @@ sgadata = load_raw_sga_data_withbatch(inputfile, skip_perl_step, lfid);
 log_printf(lfid, 'Data loaded.\n');
 
 % Border strain - SGA = YOR202W (HIS3) TSA = YMR271C (URA10)
-if ~exist('border_strain_orf', 'var')
-    border_strain_orf = 'YOR202W_dma1';
-end
-
 ind_border = strmatch(border_strain_orf, sgadata.orfnames,'exact');
 num_border = sum(sgadata.arrays == ind_border);
 log_printf(lfid, 'using border strain %s\n', border_strain_orf);
@@ -99,9 +101,9 @@ for i=1:length(sgadata.short_orf_names)
 end
 
 % Check for needed WT data early
-wild_type_id = strmatch('undefined_sn4757', sgadata.orfnames);
+wild_type_id = strmatch(wild_type, sgadata.orfnames);
 if(isempty(wild_type_id))
-    log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', 'undefined_sn4757');
+    log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', wild_type);
     return
 end
 
@@ -208,7 +210,7 @@ sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 
 % Get colonies corresponding to linkage
 linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, ...
-     all_querys, all_arrays, query_map, array_map, lfid);
+     all_querys, all_arrays, query_map, array_map, wild_type, lfid);
 log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols));
 
 ignore_cols = unique([bad_array_cols; linkage_cols]);
@@ -450,8 +452,8 @@ for j = 1:length(all_arrplates)
     num_batch = histc(curr_batch, all_batches);
     orphan_batch = max(curr_batch)+1;
     log_printf(lfid, '**WARNING** Test code in place\n');
-    % REMOVED to test no orphan contribution scheme
-    %curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch;
+    % +-REMOVED to test no orphan contribution scheme
+    curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch;
   
     tnorm = multi_class_lda(t,curr_batch,perc_var);
     sgadata.(outfield)(save_mats(j).mat_ind(:)) = sgadata.(outfield)(save_mats(j).mat_ind(:)) + (tnorm(:)-t(:));
@@ -513,7 +515,7 @@ log_printf(lfid, ['Computing average for double mutants...\n|' blanks(50) '|\n|'
 for i = 1:length(all_querys)
     
     % BJV this matches Triple WT also
-    if all_querys(i) == strmatch('undefined',sgadata.orfnames)
+    if all_querys(i) == strmatch(strip_annotation(wild_type, 'first'),sgadata.orfnames)
         continue;
     end
     
@@ -770,14 +772,9 @@ dm_actual = dm_expected + eps;
 dm_actual_std = eps_std;
 clear eps eps_std afit;
 
-% Remove "undefined"
-if ~exist('skip_wt_remove', 'var')
-    skip_wt_remove = false;
-end
-
-% remove anything "undefined"
+% remove wild-type data
 if(~skip_wt_remove)
-    ind = strmatch('undefined', sgadata.orfnames);
+    ind = strmatch(strip_annotation(wild_type, 'first'), sgadata.orfnames);
     complete_mat(ind,:)=NaN;
     complete_mat(:,ind)=NaN;
 end
