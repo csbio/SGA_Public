@@ -451,9 +451,9 @@ for j = 1:length(all_arrplates)
     all_batches = unique(curr_batch);
     num_batch = histc(curr_batch, all_batches);
     orphan_batch = max(curr_batch)+1;
-    log_printf(lfid, '**WARNING** Test code in place\n');
-    % +-REMOVED to test no orphan contribution scheme
-    curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch;
+    %log_printf(lfid, '**WARNING** Test code in place\n');
+    % REMOVE BELOW to test no orphan contribution scheme
+    curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch; % NORMAL
   
     tnorm = multi_class_lda(t,curr_batch,perc_var);
     sgadata.(outfield)(save_mats(j).mat_ind(:)) = sgadata.(outfield)(save_mats(j).mat_ind(:)) + (tnorm(:)-t(:));
@@ -470,12 +470,13 @@ field = 'batchnorm_colsize';
 
 
 %% Calculate array WT variance
-ind2 = query_map{wild_type_id};
+% We need vertcat in case wild_type_id has more than one element (i.e. replicate)
+wild_type_colonies = vertcat(query_map{wild_type_id});
 
 array_vars = zeros(length(all_arrays),2);
 log_printf(lfid, ['Calculating array WT variance...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
-    ind = intersect(ind2, array_map{all_arrays(i)});
+    ind = intersect(wild_type_colonies, array_map{all_arrays(i)});
     t = max(sgadata.(field)(ind),1);
     t(isnan(sgadata.(field)(ind))) = NaN;
     array_vars(i,:)=[nanmean(log(t)),nanvar(log(t))];
