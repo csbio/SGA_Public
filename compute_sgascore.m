@@ -373,7 +373,6 @@ log_printf(lfid, '|\n');
     
 
 % Do batch normalization using LDA
-
 save_mats=struct;
 
 log_printf(lfid, ['Preparing for batch normalization...\n|' blanks(50) '|\n|']);
@@ -417,70 +416,42 @@ for i=1:length(all_arrplates)
 end
 log_printf(lfid, '|\n');
     
-sgadata.batchnorm_colsize = sgadata.(field);
-outfield = 'batchnorm_colsize';
 
-% Normalize out batch effect. Method: LDA (supervised)
-% MRECK BATCH COLLAPSE, remove when done, burn after reading
- MRECK_BATCH = max(sgadata.batch)+1;
- %MRECK_QUERIES = find(~cellfun(@isempty, strfind(sgadata.orfnames, '_collab')));
- %for i=1:length(MRECK_QUERIES)
-%	 sgadata.batch(query_map{all_querys(MRECK_QUERIES(i))}) = MRECK_BATCH;
-% end
-  if(~exist('MRECK_FLAGS', 'var'))
-    MRECK_FLAGS = {};
-  end
- MRECK_QUERIES = [];
- for i=1:length(MRECK_FLAGS)
-    MRECK_QUERIES = [MRECK_QUERIES find(~cellfun(@isempty, strfind(sgadata.orfnames, MRECK_FLAGS{i})))];
- end
- log_printf(lfid, 'Re-batching MRECK queryeies (anything marked in FLAGS):\n');
- log_printf(lfid, '%d MRECK queries\n\n', length(MRECK_QUERIES));
-
-perc_var = 0.1;
-
+% Normalize out batch effect. Method: LDA (supervised) (field is filt_colsize)
+sgadata.batchnorm_colsize = sgadata.filt_colsize;
 log_printf(lfid, ['Batch normalization...\n|', blanks(50), '|\n|']);
+sv_thresh = 0.4;
 
 for j = 1:length(all_arrplates)
     
     t = save_mats(j).mat;
-    t(isnan(t)) = 0;
     curr_batch = save_mats(j).batch; 
   
-    % Check if some of the batches are too small -- make a larger orphan batch
-    all_batches = unique(curr_batch);
-    num_batch = histc(curr_batch, all_batches);
-    orphan_batch = max(curr_batch)+1;
-    %log_printf(lfid, '**WARNING** Test code in place\n');
-    % REMOVE BELOW to test no orphan contribution scheme
-    curr_batch(ismember(curr_batch,all_batches(num_batch < 3))) = orphan_batch; % NORMAL
-  
-    tnorm = multi_class_lda(t,curr_batch,perc_var);
-    sgadata.(outfield)(save_mats(j).mat_ind(:)) = sgadata.(outfield)(save_mats(j).mat_ind(:)) + (tnorm(:)-t(:));
+    batch_effect= multi_class_lda(t,curr_batch,sv_thresh);
+
+    sgadata.batchnorm_colsize(save_mats(j).mat_ind(:)) = ...
+       sgadata.batchnorm_colsize(save_mats(j).mat_ind(:)) - batch_effect(:);
     
     % Print progress
     print_progress(lfid, length(all_arrplates),j);
     
 end
 clear save_mats;
-
 log_printf(lfid, '|\n');
-
-field = 'batchnorm_colsize';
 
 
 %% Calculate array WT variance
 % We need vertcat in case wild_type_id has more than one element (i.e. replicate)
 wild_type_colonies = vertcat(query_map{wild_type_id});
-
 array_vars = zeros(length(all_arrays),2);
 log_printf(lfid, ['Calculating array WT variance...\n|' blanks(50) '|\n|']);
+field = 'batchnorm_colsize';
+
 for i = 1:length(all_arrays)
     ind = intersect(wild_type_colonies, array_map{all_arrays(i)});
     t = max(sgadata.(field)(ind),1);
     t(isnan(sgadata.(field)(ind))) = NaN;
     array_vars(i,:)=[nanmean(log(t)),nanvar(log(t))];
-    
     print_progress(lfid, length(all_arrays),i);
 end
 log_printf(lfid, '|\n');
@@ -639,6 +610,7 @@ for i = 1:length(all_arrays)
     curr_data = sgadata.(field)(all_ind);
     
     % Added back (11-03-31)
+    % subtract the trend between interactions and fitness
     curr_data(ind2) = curr_data(ind2) + (nanmean(sgadata.(field)(all_ind(ind2))) - (p(1)*final_smfit(sgadata.querys(all_ind(ind2)))+p(2)));
 
     curr_querys = sgadata.querys(all_ind);
@@ -663,6 +635,7 @@ for i = 1:length(all_arrays)
     query_effects_std = [arrstd; query_effects_std];
     
     % Added back (11-04-20)
+    % shift to minimize the total number interactions
     res = adjust_model_fit(query_effects, query_effects_std);
     query_effects(1) = query_effects(1) + res;
     query_effects(2:end) = query_effects(2:end) - res;

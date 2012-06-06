@@ -3,24 +3,28 @@
 %
 % Authors: Chad Myers (cmyers@cs.umn.edu) 
 %          Anastasia Baryshnikova (a.baryshnikova@utoronto.ca)
+%          Benjamin VanderSluis (bvander@cs.umn.edu)
 %
-% Last revision: 2010-07-19
+% Last revision: 2012-06-06
 %
 %%
 
-function [Xnorm,D,V,V2] =  multi_class_lda(X,classes,perc)
+function [batch_effect] =  multi_class_lda(X,classes,sv_thresh)
 
-saveX=X;
-a=sum(abs(X),1);
-b=sum(abs(X),2);
+% X is plates by array positions (i.e. N x 1536)
+batch_effect=X;
+batch_effect(isnan(batch_effect))=0;
 
-X = X(b>0,a>0);
-X(X==0)=normrnd(nanmean(X(:)),nanstd(X(:)),sum(sum(X==0)),1);
+% ignore any plate or array position with no data
+% and replace remaining nans with random data
+valid_arrays = ~all(isnan(X),1);
+valid_plates = ~all(isnan(X),2);
+X = X(valid_plates, valid_arrays); 
+X(isnan(X))=normrnd(nanmean(X(:)),nanstd(X(:)),sum(isnan(X(:))),1);
 
-classes = classes(b>0);
-
+classes = classes(valid_plates);
 class_labels = unique(classes);
-dataMean = nanmean(X,1);
+dataMean = mean(X,1);
 Sw=zeros(size(X,2));
 Sb=zeros(size(X,2));
 
@@ -29,48 +33,33 @@ for i=1:length(class_labels)
   
   ind = find(classes == class_labels(i));
   
-  if numel(ind) == 0  % empty class: ignore
-  %if numel(ind) < 3  % orphan class: ignore
+  if numel(ind) < 3  % orphan class: ignore
     continue;
   end
   
-  classMean = nanmean(X(ind,:));
+  classMean = mean(X(ind,:));
   
   Sw = Sw + cov(X(ind,:),1);
-
   Sb = Sb + numel(ind)*(classMean-dataMean)' ...
                       *(classMean-dataMean)  ;
-   
 end
 
 eig_mat = pinv(Sw)*Sb;
 
+% If the first pass doesn't give us enough singular
+% values, go back and get more
+stopind = 0;
+scaled_E = [];
+count = 1;
+while(stopind == length(scaled_E))
+    [U,E,V] = svds(eig_mat,ceil((5/sv_thresh)*count));
 
-if(5/perc < 20)
-    [U,D,V] = svds(eig_mat,5/perc);
-
-    a = diag(D)/max(diag(D));
-    stopind = max(find(a >= perc));
-
-    count=2;
-    while(length(stopind) == 0)
-        [U,D,V] = svds(eig_mat,(5/perc)*count);
-
-        a = diag(D)/max(diag(D));
-        stopind = max(find(a >= perc));    
-        count = count+1;
-    end
-else
-    [U,D,V] = svd(eig_mat);
-    a = diag(D)/max(diag(D));
-    stopind = max(find(a >= perc));    
+    scaled_E = diag(E)/max(diag(E));
+    stopind = max(find(scaled_E >= sv_thresh));    
+    count = count+1;
 end
 
+% project onto batch subspace 
 N = V(:,1:stopind);
-
-Xnorm = saveX;
-a=sum(abs(Xnorm),1);
-b=sum(abs(Xnorm),2);
-
-%option 1: subtract projection of each vector
-Xnorm(b>0,a>0)= Xnorm(b>0,a>0) - Xnorm(b>0,a>0)*N*N';
+batch_effect(valid_plates, valid_arrays)= ...
+  batch_effect(valid_plates, valid_arrays)*N*N';
