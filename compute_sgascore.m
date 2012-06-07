@@ -265,17 +265,16 @@ sgadata.filt_colsize = sgadata.filt_jackknife;
 
 %% Filters section
 
-field = 'filt_colsize';
 
 % Set values == 0 to NaN
-sgadata.(field)(sgadata.(field) < 1) = NaN;
+sgadata.filt_colsize(sgadata.filt_colsize < 1) = NaN;
 
 % Set values > 1000 to 1000
-sgadata.(field)(sgadata.(field) > 1000) = 1000;
+sgadata.filt_colsize(sgadata.filt_colsize > 1000) = 1000;
 
 % Remove border (contains HIS3 control strains)
 ind = find(sgadata.rows < 3 | sgadata.rows > 30 | sgadata.cols < 3 | sgadata.cols > 46);
-sgadata.(field)(ind) = NaN;
+sgadata.filt_colsize(ind) = NaN;
 
 % Delete any array strain that is missing more than 15% of its supposed occurrences
 tot_cols = zeros(length(all_arrays),1);
@@ -283,19 +282,19 @@ good_cols = zeros(length(all_arrays),1);
 
 for i = 1:length(all_arrays)
    tot_cols(i,1) = length(array_map{all_arrays(i)});
-   good_cols(i,1) = length(find(~isnan(sgadata.(field)(array_map{all_arrays(i)}))));
+   good_cols(i,1) = length(find(~isnan(sgadata.filt_colsize(array_map{all_arrays(i)}))));
 end
 
 ind = find(good_cols < 0.85 * tot_cols);
 ind = setdiff(ind,strmatch(border_strain_orf,sgadata.orfnames(all_arrays),'exact'));
 
 remove_ind = find(ismember(sgadata.arrays, all_arrays(ind)));
-sgadata.(field)(remove_ind) = NaN;
+sgadata.filt_colsize(remove_ind) = NaN;
 
 
 % Remove "ignore_cols" (bad arrays and linkage if applicable)
 % linkage cols will be replaced later
-sgadata.(field)(ignore_cols) = NaN;
+sgadata.filt_colsize(ignore_cols) = NaN;
 
 log_printf(lfid, 'Finished applying filters...\n');
 
@@ -327,7 +326,7 @@ triple_remove_list = {'YKL216W_dma2907', 'YJL130C_dma2510', 'YLR420W_dma3476', .
     	triple_remove_bool = triple_remove_bool | sgadata.arrays == triple_remove_list(i);
 	end
 	
-	sgadata.(field)(triple_queries_bool & triple_remove_bool) = NaN;
+	sgadata.filt_colsize(triple_queries_bool & triple_remove_bool) = NaN;
 	clear plus_cell triple_queries triple_remove_list triple_queries_bool triple_remove_bool
      
 
@@ -357,7 +356,7 @@ for i = 1:length(all_arrplates)
         d = zeros(32,48);
         d(:,[1 2 47 48]) = NaN;
         d([1 2 31 32],:) = NaN;
-        d(iii) = sgadata.(field)(ind);
+        d(iii) = sgadata.filt_colsize(ind);
         
         t = [t,d(:)];
         
@@ -395,7 +394,7 @@ for i=1:length(all_arrplates)
         d_map = zeros(32,48) + 1; % default reference to the 1st index
         
         d_map(iii) = ind;
-        d(iii) = sgadata.(field)(ind);
+        d(iii) = sgadata.filt_colsize(ind);
         
         curr_mat(j,:)=d(:);
         curr_ind_mat(j,:)=d_map(:);
@@ -417,7 +416,7 @@ end
 log_printf(lfid, '|\n');
     
 
-% Normalize out batch effect. Method: LDA (supervised) (field is filt_colsize)
+% Normalize out batch effect. Method: LDA (supervised) 
 sgadata.batchnorm_colsize = sgadata.filt_colsize;
 log_printf(lfid, ['Batch normalization...\n|', blanks(50), '|\n|']);
 sv_thresh = 0.4;
@@ -445,12 +444,11 @@ log_printf(lfid, '|\n');
 wild_type_colonies = vertcat(query_map{wild_type_id});
 array_vars = zeros(length(all_arrays),2);
 log_printf(lfid, ['Calculating array WT variance...\n|' blanks(50) '|\n|']);
-field = 'batchnorm_colsize';
 
 for i = 1:length(all_arrays)
     ind = intersect(wild_type_colonies, array_map{all_arrays(i)});
-    t = max(sgadata.(field)(ind),1);
-    t(isnan(sgadata.(field)(ind))) = NaN;
+    t = max(sgadata.batchnorm_colsize(ind),1);
+    t(isnan(sgadata.batchnorm_colsize(ind))) = NaN;
     array_vars(i,:)=[nanmean(log(t)),nanvar(log(t))];
     print_progress(lfid, length(all_arrays),i);
 end
@@ -463,8 +461,8 @@ nanind = find(isnan(array_vars(:,1)));
 
 for i = nanind'
     ind = array_map{all_arrays(i)};
-    t = max(sgadata.(field)(ind),1);
-    t(isnan(sgadata.(field)(ind))) = NaN;
+    t = max(sgadata.batchnorm_colsize(ind),1);
+    t(isnan(sgadata.batchnorm_colsize(ind))) = NaN;
     array_vars(i,1)=nanmean(log(t));
 end
 array_vars(nanind,2) = nanmedian(array_vars(:,2)); % Compute vars from the median across all others
@@ -480,7 +478,6 @@ sgadata.dm_num = zeros(length(sgadata.colsize),1)+NaN;
 
 sgadata.batchnorm_colsize_nonegs = max(sgadata.batchnorm_colsize, 1);
 sgadata.batchnorm_colsize_nonegs(isnan(sgadata.batchnorm_colsize)) = NaN;
-field = 'batchnorm_colsize_nonegs';
 
 log_printf(lfid, ['Computing average for double mutants...\n|' blanks(50) '|\n|']);
 
@@ -492,15 +489,15 @@ for i = 1:length(all_querys)
     end
     
     ind = query_map{all_querys(i)};
-    ind = setdiff(ind, find(isnan(sgadata.(field))));
+    ind = setdiff(ind, find(isnan(sgadata.batchnorm_colsize_nonegs)));
     
     spots = sgadata.replicateid(ind) + double(sgadata.plateids(ind))*1000;
     [all_spots, m, n] = unique(spots);
     
     % Compute average, variance and number of colonies for each group of spots
-    mn = grpstats(log(sgadata.(field)(ind)), spots, 'mean');
-    vr = grpstats(log(sgadata.(field)(ind)), spots, 'std').^2;
-    nm = grpstats(sgadata.(field)(ind), spots, 'numel');
+    mn = grpstats(log(sgadata.batchnorm_colsize_nonegs(ind)), spots, 'mean');
+    vr = grpstats(log(sgadata.batchnorm_colsize_nonegs(ind)), spots, 'std').^2;
+    nm = grpstats(sgadata.batchnorm_colsize_nonegs(ind), spots, 'numel');
     
     sgadata.dm_normmean(ind) = mn(n);
     sgadata.dm_normvar(ind) = vr(n);
@@ -573,18 +570,16 @@ end
 % Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
 
 
-field = 'batchnorm_colsize';
-
 % replace linkage colony values that got removed before batch correction
 if(skip_linkage_mask)
-	sgadata.(field)(linkage_cols) = sgadata.filt_jackknife(linkage_cols);
+	sgadata.batchnorm_colsize(linkage_cols) = sgadata.filt_jackknife(linkage_cols);
 	log_printf(lfid, '* REPLACING linkage colonies.\n');
 end
 
 model_fits = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 model_fit_std = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 
-all_nans = find(isnan(sgadata.(field)));
+all_nans = find(isnan(sgadata.batchnorm_colsize));
 ind_his3 = strmatch(border_strain_orf, sgadata.orfnames,'exact');
 
 sgadata.arraymean_corrected = nan(size(sgadata.arraymedian));
@@ -605,13 +600,13 @@ for i = 1:length(all_arrays)
     querys = unique(sgadata.querys(all_ind));
      
     ind2 = find(~isnan(final_smfit(sgadata.querys(all_ind))));
-    p = polyfit(final_smfit(sgadata.querys(all_ind(ind2))),sgadata.(field)(all_ind(ind2)),1);
+    p = polyfit(final_smfit(sgadata.querys(all_ind(ind2))),sgadata.batchnorm_colsize(all_ind(ind2)),1);
     
-    curr_data = sgadata.(field)(all_ind);
+    curr_data = sgadata.batchnorm_colsize(all_ind);
     
     % Added back (11-03-31)
     % subtract the trend between interactions and fitness
-    curr_data(ind2) = curr_data(ind2) + (nanmean(sgadata.(field)(all_ind(ind2))) - (p(1)*final_smfit(sgadata.querys(all_ind(ind2)))+p(2)));
+    curr_data(ind2) = curr_data(ind2) + (nanmean(sgadata.batchnorm_colsize(all_ind(ind2))) - (p(1)*final_smfit(sgadata.querys(all_ind(ind2)))+p(2)));
 
     curr_querys = sgadata.querys(all_ind);
     uniq_querys = unique(curr_querys);
