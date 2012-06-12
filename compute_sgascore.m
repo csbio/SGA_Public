@@ -419,20 +419,45 @@ log_printf(lfid, '|\n');
 % Normalize out batch effect. Method: LDA (supervised) 
 sgadata.batchnorm_colsize = sgadata.filt_colsize;
 log_printf(lfid, ['Batch normalization...\n|', blanks(50), '|\n|']);
-sv_thresh = 0.4;
+sv_thresh = 0.1;
 
-for j = 1:length(all_arrplates)
+for i = 1:length(all_arrplates)
     
-    t = save_mats(j).mat;
-    curr_batch = save_mats(j).batch; 
+    t = save_mats(i).mat;
+    t(isnan(t)) = 0;
+    % batches_by_plate (formerly curr_batch) is a list of 
+    % batch labels for all unique plateids in this array position
+    batches_by_plate = save_mats(i).batch; 
   
-    batch_effect= multi_class_lda(t,curr_batch,sv_thresh);
+    % Check if some of the batches are too small -- make a larger orphan batch
+    % start assembling new batches by combining small batches until they reach certain siz
+    % TOO SMALL < 3
+    % BIG ENOUGH >= 8 (as defined by median size in FG30)
 
-    sgadata.batchnorm_colsize(save_mats(j).mat_ind(:)) = ...
-       sgadata.batchnorm_colsize(save_mats(j).mat_ind(:)) - batch_effect(:);
+    unique_batches_this_plate = unique(batches_by_plate);
+    batch_count = histc(batches_by_plate, unique_batches_this_plate);
+
+    merge_with_batch = find(batch_count < 3, 1, 'first'); % a pointer
+    for j=1:length(unique_batches_this_plate)
+        if(batch_count(j) < 3 && merge_with_batch ~= j) % don't merge batches with themselves, we'll fold the next ones here
+            % merge this batch
+            batches_by_plate(batches_by_plate == unique_batches_this_plate(j)) = unique_batches_this_plate(merge_with_batch);
+            % update our counts and move our merge pointer if this orphan batch is big enough
+            batch_count(merge_with_batch) = batch_count(merge_with_batch) + batch_count(j);
+            batch_count(j) = NaN;
+            if(batch_count(merge_with_batch) >=8 ) % move the pointer
+                merge_with_batch = merge_with_batch + find(batch_count(merge_with_batch+1:end) < 3, 1, 'first');
+            end
+        end
+    end 
+  
+    batch_effect = multi_class_lda(t,batches_by_plate,sv_thresh);
+
+    sgadata.batchnorm_colsize(save_mats(i).mat_ind(:)) = ...
+       sgadata.batchnorm_colsize(save_mats(i).mat_ind(:)) - batch_effect(:);
     
     % Print progress
-    print_progress(lfid, length(all_arrplates),j);
+    print_progress(lfid, length(all_arrplates),i);
     
 end
 clear save_mats;
