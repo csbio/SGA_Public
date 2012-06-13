@@ -16,14 +16,14 @@
 %
 %%
 
-function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, all_querys, all_arrays, query_map, array_map, wild_type, lfid)
+function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, coord_file, all_querys, all_arrays, query_map, array_map, wild_type, lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
     log_printf(lfid, '\nLinkage filter script:\n\t%s\n\n',p);
     
     % Load chromosomal coordinates and predefined linkage
-    coord_fid = fopen('chrom_coordinates_111220.txt', 'r');
+    coord_fid = fopen(coord_file, 'r');
     coord_data = textscan(coord_fid, '%s%d%d%d', 'Delimiter', '\t', 'ReturnOnError', false);
     fclose(coord_fid);
     coord = struct();

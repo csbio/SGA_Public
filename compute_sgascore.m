@@ -18,8 +18,38 @@
 %% Checks before starting
 
 compute_sgascore_tic = tic;
+
+% Set some default flags if not defined
+if(~exist('skip_linkage_detection', 'var'))
+    log_printf(lfid, 'Using DEFAULT: skip_linkage_detection = false\n');
+    skip_linkage_detection = false;
+end
+if(~exist('skip_linkage_mask', 'var'))
+    log_printf(lfid, 'Using DEFAULT: skip_linkage_mask = false\n');
+    skip_linkage_mask = false;
+end
+if ~exist('skip_perl_step', 'var')
+    log_printf(lfid, 'Using DEFAULT: skip_perl_step = false\n');
+    skip_perl_step = false;
+end
+if ~exist('wild_type', 'var')
+    log_printf(lfid, 'Using DEFAULT: wild_type = URA3control_sn4757\n');
+    wild_type = 'URA3control_sn4757';
+end
+if ~exist('border_strain_orf', 'var')
+    log_printf(lfid, 'Using DEFAULT: border_strain_orf = YOR202W_dma1\n');
+    border_strain_orf = 'YOR202W_dma1';
+end
+if ~exist('skip_wt_remove', 'var')
+    log_printf(lfid, 'Using DEFAULT: skip_wt_remove = false\n');
+    skip_wt_remove = false;
+end
+
 % Check inputs
-vars_to_check = {'inputfile','removearraylist','linkagefile','smfitnessfile'};
+vars_to_check = {'inputfile','removearraylist','linkagefile', 'coord_file', 'smfitnessfile'};
+if(skip_linkage_detection)
+    vars_to_check = setdiff(vars_to_check, {'linkagefile', 'coord_file'});
+end
 for i = 1 : length(vars_to_check) 
     if ~exist(vars_to_check{i},'var')
         error(['Define' vars_to_check{i} '.']);
@@ -45,28 +75,6 @@ else
             fprintf('cannot open log file: %s\n', [outputfile '.log']);
         end
     end
-end
-
-% Set some default flags if not defined
-if(~exist('skip_linkage_mask', 'var'))
-    log_printf(lfid, 'Using DEFAULT: skip_linkage_mask = false\n');
-    skip_linkage_mask = false;
-end
-if ~exist('skip_perl_step', 'var')
-    log_printf(lfid, 'Using DEFAULT: skip_perl_step = false\n');
-    skip_perl_step = false;
-end
-if ~exist('wild_type', 'var')
-    log_printf(lfid, 'Using DEFAULT: wild_type = URA3control_sn4757\n');
-    wild_type = 'URA3control_sn4757';
-end
-if ~exist('border_strain_orf', 'var')
-    log_printf(lfid, 'Using DEFAULT: border_strain_orf = YOR202W_dma1\n');
-    border_strain_orf = 'YOR202W_dma1';
-end
-if ~exist('skip_wt_remove', 'var')
-    log_printf(lfid, 'Using DEFAULT: skip_wt_remove = false\n');
-    skip_wt_remove = false;
 end
 
 
@@ -209,10 +217,12 @@ sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)-1)*384 + dou
 sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 
 % Get colonies corresponding to linkage
-linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, ...
-     all_querys, all_arrays, query_map, array_map, wild_type, lfid);
-log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols));
-
+linkage_cols = [];
+if(~skip_linkage_detection)
+	linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, coord_file,...
+		  all_querys, all_arrays, query_map, array_map, wild_type, lfid);
+	log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols));
+end
 ignore_cols = unique([bad_array_cols; linkage_cols]);
 
 %% Normalizations
