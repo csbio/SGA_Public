@@ -19,6 +19,23 @@
 
 compute_sgascore_tic = tic;
 
+% Check output
+if ~exist('outputfile','var')
+    error('Define outputfile.');
+else
+    tmp = split_by_delimiter('/', outputfile);
+    outputdir = join_by_delimiter(tmp(1:end-1), '/');
+    if ~exist(outputdir,'dir')
+        error(['Output directory ' outputdir ' does not exist.']);
+    else
+        try
+            lfid = fopen([outputfile '.log'], 'w');
+        catch
+            fprintf('cannot open log file: %s\n', [outputfile '.log']);
+        end
+    end
+end
+
 % Set some default flags if not defined
 if(~exist('skip_linkage_detection', 'var'))
     log_printf(lfid, 'Using DEFAULT: skip_linkage_detection = false\n');
@@ -59,24 +76,6 @@ for i = 1 : length(vars_to_check)
         end
     end
 end
-
-% Check output
-if ~exist('outputfile','var')
-    error('Define outputfile.');
-else
-    tmp = split_by_delimiter('/', outputfile);
-    outputdir = join_by_delimiter(tmp(1:end-1), '/');
-    if ~exist(outputdir,'dir')
-        error(['Output directory ' outputdir ' does not exist.']);
-    else
-        try
-            lfid = fopen([outputfile '.log'], 'w');
-        catch
-            fprintf('cannot open log file: %s\n', [outputfile '.log']);
-        end
-    end
-end
-
 
 % Save the path and version for the records
 pth = path;
