@@ -19,6 +19,10 @@
 
 compute_sgascore_tic = tic;
 
+%% Default project head and path settings.
+cd /project/csbio/lab_share/SGA/Main
+addpath(genpath(pwd))
+
 % Check output
 if ~exist('outputfile','var')
     error('Define outputfile.');
