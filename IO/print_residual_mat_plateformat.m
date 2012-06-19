@@ -154,8 +154,6 @@ for j=1:length(all_arrplates),
 end
 
 
-toc
-tic
 print_pcl_file(curr_mat,ystrs,ystrs,xstrs,filename),
 toc
 

@@ -452,9 +452,10 @@ for i = 1:length(all_arrplates)
 
     merge_with_batch = find(batch_count < 3, 1, 'first'); % a pointer
     for j=1:length(unique_batches_this_plate)
-        if(batch_count(j) < 3 && merge_with_batch ~= j) % don't merge batches with themselves, we'll fold the next ones here
+        if(batch_count(j) < 3 && merge_with_batch ~= j) % don't merge batches with themselves 
             % merge this batch
-            batches_by_plate(batches_by_plate == unique_batches_this_plate(j)) = unique_batches_this_plate(merge_with_batch);
+            batches_by_plate(batches_by_plate == unique_batches_this_plate(j)) = ...
+										unique_batches_this_plate(merge_with_batch);
             % update our counts and move our merge pointer if this orphan batch is big enough
             batch_count(merge_with_batch) = batch_count(merge_with_batch) + batch_count(j);
             batch_count(j) = NaN;
