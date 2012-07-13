@@ -24,7 +24,7 @@ end
 
 function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, layout_file, wild_type, border_strain)
 
-	 inds_q = 1:length(dataset.queries);
+   inds_q = 1:length(dataset.queries);
 
 	l_fid = fopen(linkage_file, 'r');
 	A = textscan(l_fid, '%s%d%d', 'Delimiter', '\t');
@@ -48,10 +48,19 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
 	[fgmap.plate, fgmap.row, fgmap.col, fgmap.orf] = textread(layout_file,'%f %f %f %s');
 
 	block_filter_count = 0;
+	ARRAY = split_by_delim('_', layout_file);
+	ARRAY = ARRAY{3};
+	if(~ismember(ARRAY, {'fg', 'ts'}))
+		error('unrecognized array format!');
+	end
+	if(strcmp(ARRAY, 'fg'))
+		FG_ARRAY = true;
+	else
+		FG_ARRAY = false;
+	end
 
 	for q = 1 : length(inds_q)
 		 
-		% YAL068C_dma70
 		orfs_this_query = split_by_delimiter('+', dataset.queries{inds_q(q)});
 		for i=1:length(orfs_this_query)
 			if(strcmp(orfs_this_query{i}, wild_type))
@@ -62,21 +71,23 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
 			  		((chrcoord.start >= strt & chrcoord.start <= endd) | ...
 			  		(chrcoord.end >= strt & chrcoord.end <= endd))));
 
-				[t,ind1,ind2] = intersect(linked_orfs, fgmap.orf);
+				% only Do this part if working with the FG array
+				
+				if(FG_ARRAY)				
+					[t,ind1,ind2] = intersect(linked_orfs, fgmap.orf);
+					for a = 1 : length(ind2)
+						affected_orfs = fgmap.orf(find(fgmap.plate == fgmap.plate(ind2(a)) & fgmap.row >= ...
+								fgmap.row(ind2(a))-1 & fgmap.row <= fgmap.row(ind2(a))+1 & ...
+								fgmap.col >= fgmap.col(ind2(a))-1 & fgmap.col <= fgmap.col(ind2(a))+1));
+						[t,ind3,ind4] = intersect(dataset.arrays, affected_orfs);
+						ii = find(dataset.scores(inds_q(q),ind3) > 0);
+						dataset.scores(inds_q(q),ind3(ii)) = 0;
+						block_filter_count = block_filter_count + length(ii);
 
-		 		for a = 1 : length(ind2)
+					end
+				end
 
-			  		affected_orfs = fgmap.orf(find(fgmap.plate == fgmap.plate(ind2(a)) & fgmap.row >= ...
- 							fgmap.row(ind2(a))-1 & fgmap.row <= fgmap.row(ind2(a))+1 & ...
-							fgmap.col >= fgmap.col(ind2(a))-1 & fgmap.col <= fgmap.col(ind2(a))+1));
-			  		[t,ind3,ind4] = intersect(dataset.arrays, affected_orfs);
-			  		ii = find(dataset.scores(inds_q(q),ind3) > 0);
-			  		dataset.scores(inds_q(q),ind3(ii)) = 0;
-					block_filter_count = block_filter_count + length(ii);
-
-		 		end
-
-				%% Removing HIS3 green blocks
+				%% Removing CONTROL green blocks; do this for ALL arrays
 				% when the border is linked, scan the next row and col
 				if ismember(border_strain, linked_orfs)
 					affected_orfs = fgmap.orf(find(fgmap.row == 2 | fgmap.row == 15 | fgmap.col == 2 | fgmap.col == 23));
