@@ -2,7 +2,7 @@ function[] = generate_fg_clustergram(sga, name)
 %function[] = generate_fg_clustergram(sga, name)
 
 
-	fid = fopen('/project/csbio/lab_share/SGA/Main/postprocess/StrainID-Allele_map.csv', 'r');
+	fid = fopen('/project/csbio/lab_share/SGA/refdata/StrainID-Allele_map.csv', 'r');
 	A = textscan(fid, '%s%s');
 	fclose(fid);
 
@@ -32,15 +32,16 @@ function[] = generate_fg_clustergram(sga, name)
 
 	%sga = remove_arrays(sga, 'bad_arrays_union.txt');
 	EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
+	PVL = sga.pvl(sga.Cannon.isQuery, sga.Cannon.isArray);
 
 
+	%{
 	% CLUSTER GRAM
 	% TECHS and ARRAY POSI
-	%{
 	a_labels = Orf_to_array_position(sga.Cannon.Orf(sga.Cannon.isArray),...
 						sga.Cannon.allele(sga.Cannon.isArray));
-	q_labels = Add_Techs(sga.Cannon.Orf(sga.Cannon.isQuery),...
-						sga.Cannon.allele(sga.Cannon.isQuery));
+	%q_labels = Add_Techs(sga.Cannon.Orf(sga.Cannon.isQuery),...
+						%sga.Cannon.allele(sga.Cannon.isQuery));
 
 	MyCluster(EPS,...
 				 sga.Cannon.Orf(sga.Cannon.isQuery), ...
@@ -48,6 +49,10 @@ function[] = generate_fg_clustergram(sga, name)
 				 a_labels,...
 				 [name '_CLUST']);
 	%}
+
+	% Zero insignif - data
+	EPS(EPS > -0.08 & EPS < 0.08) = 0;
+	EPS(PVL > 0.05) = 0;
 	
 	MyCluster(EPS,...
 				 sga.Cannon.Orf(sga.Cannon.isQuery), ...

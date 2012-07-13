@@ -1,7 +1,7 @@
-function[] = export_product(sga_inputfile, sga_outputfile, fitness_file, ...
-              linkage_file, coord_file, layout_file, outputdir)
-%function[] = export_product(sga_inputfile, sga_outputfile, fitness_file, ...
-%                  linkage_file, coord_file, layout_file, outputdir)
+function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
+              linkagefile, coord_file, layout_file, equiv_file, wild_type, border_strain)
+%function[] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
+%                  linkagefile, coord_file, layout_file, wild_type, border_strain)
 % post processing pipeline...
 % Loads the datafile (it is stupid to write the file, then load it, but at least it keeps things modular)
 % green-block
@@ -12,12 +12,13 @@ function[] = export_product(sga_inputfile, sga_outputfile, fitness_file, ...
 
 % sga_output file = outputfile from compute_sgascore
 % ie, it is extensionless
-
+	
 	sga = load_sga_epsilon_from_scorefile([sga_outputfile '.txt'], [sga_outputfile '.orf']);
 
-	sga = filter_green_blocks_around_linkage(sga, linkage_file, coord_file, layout_file);
+	% layout file expects format (plate row col orf) [384] 16x24
+	sga = filter_green_blocks_around_linkage(sga, linkagefile, coord_file, layout_file, wild_type, border_strain);
 
-	[sga, fitness_struct]  = filter_interactions(sga, fitness_file, sga_inputfile);
+	[sga, fitness_struct]  = filter_interactions(sga, smfitnessfile, sga_inputfile, equiv_file);
 
 	% ------------------------ clustergrams 
 	dirname = split_by_delimiter('/', sga_outputfile);
@@ -27,8 +28,8 @@ function[] = export_product(sga_inputfile, sga_outputfile, fitness_file, ...
 	clus_basename = basename;
 	clus_basename{1} = 'clustergram';
 	clus_basename = join_by_delimiter(clus_basename, '_');
-	system(['mkdir -p ' dirname]);
-	generate_fg_clustergrams(sga, [clus_dirname basename]);
+	system(['mkdir -p ' clus_dirname]);
+	generate_fg_clustergram(sga, [clus_dirname clus_basename]);
 
 
 
@@ -38,20 +39,20 @@ function[] = export_product(sga_inputfile, sga_outputfile, fitness_file, ...
 	int_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/interactions/'];
 	int_basename = basename;
 	int_basename{1} = 'interaction';
+	system(['mkdir -p ' int_dirname]);
 	int_basename = join_by_delimiter(int_basename, '_');
-	print_interaction_data(sga, fitness_struct, [int_dirname '/' int_basename]);
+	print_interaction_data(sga, fitness_struct, [int_dirname '/' int_basename '.txt']);
 
 
 	prof_basename = basename;
 	prof_basename{1} = 'profile';
 	prof_basename = join_by_delimiter(prof_basename, '_');
-	print_profile_data(sga, fitness_struct, [prof_dirname '/' prof_basename]);
+	print_profile_data(sga, fitness_struct, [int_dirname '/' prof_basename '.txt']);
 
 	
 
 
 	% ------------------------ processed matfiles
-	system(['mkdir -p ' int_dirname]);
 		fields = split_by_delimiter('_', basename);
 		project = fields{2};
 		array   = fields{3};
@@ -64,7 +65,7 @@ function[] = export_product(sga_inputfile, sga_outputfile, fitness_file, ...
 end
 
 
-function[] print_interaction_data(sga, fitness_struct, outputfile);
+function[] = print_interaction_data(sga, fitness_struct, outputfile);
 	%{
 	for now we'll match the old format...
 	------
@@ -91,7 +92,7 @@ function[] print_interaction_data(sga, fitness_struct, outputfile);
 	% re-arrange fitness data according to cannon
 	fitness = nan(sga.Cannon.GENES, 2);
 	for i=1:sga.Cannon.GENES
-		ix = strmatch(sga.Cannon.orf{i}, fitness_struct(:,1), 'exact');
+		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1), 'exact');
 		if(~isempty(ix))
 			fitness(i,:) = cell2mat(fitness_struct(ix,[2,3]));
 		end
@@ -123,13 +124,13 @@ function[] print_interaction_data(sga, fitness_struct, outputfile);
 	fclose(fid);
 end
 
-function[] print_interaction_data(sga, fitness_struct, outputfile);
+function[] = print_profile_data(sga, fitness_struct, outputfile);
 	% same as above but insignificant interactions are printed also
 
 	% re-arrange fitness data according to cannon
 	fitness = nan(sga.Cannon.GENES, 2);
 	for i=1:sga.Cannon.GENES
-		ix = strmatch(sga.Cannon.orf{i}, fitness_struct(:,1), 'exact');
+		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1), 'exact');
 		if(~isempty(ix))
 			fitness(i,:) = cell2mat(fitness_struct(ix,[2,3]));
 		end

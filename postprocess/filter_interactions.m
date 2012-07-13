@@ -1,19 +1,31 @@
-function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile)
-%function[filt, fitness_struct] = filter_interactions(sga, fitness_file, cobatch_scores)
+function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_eqiv_file)
+%function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_equiv_file)
 
 	% load the fitness data
 	smf_fid = fopen(fitness_file, 'r');
-	A = textscan(smf_fid, '%s%s%s', 'Delimiter', '\t', 'ReturnOnError', 'False');
+	A = textscan(smf_fid, '%s%f%f', 'Delimiter', '\t', 'ReturnOnError', false);
 	fitness_struct = [A{1} num2cell(A{2}) num2cell(A{3})];
 	fclose(smf_fid);
 
-	% load / calculate the cobatch_scores
-	cobatch_scores = calculate_cobatch_by_query(sga, sga_inputfile)
+	% load the equivalence file
+	equiv_fid = fopen(array_query_eqiv_file, 'r');
+	equiv = textscan(equiv_fid, '%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
+	fclose(equiv_fid);
+	equiv = [equiv{1} equiv{2}];
 
+	% load / calculate the cobatch_scores
+	cobatch_scores = calculate_cobatch_by_query(sga, sga_inputfile);
+
+
+	% remove _collab screens
+	% and trigenic screens
+	sga.Cannon.isQuery(substrmatch('_collab', sga.Cannon.Orf))=false;
+	sga.Cannon.isQuery(substrmatch('+',       sga.Cannon.Orf))=false;
+	
 
 	% filter 
 	filt = help_filter_by_cobatch(sga, cobatch_scores);
-	filt = help_filter_by_ABBA(filt, fitness_struct);
+	filt = help_filter_by_ABBA(filt, fitness_struct, equiv);
 
 end
 
@@ -39,7 +51,7 @@ function[filt] = help_filter_by_cobatch(sga, cobatch_scores)
 
 end
 
-function[filt] = help_filter_by_ABBA(sga, fitness_struct)
+function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
 	% abs(eps) > 0.12 & pvl || AB & BA
 	% sets ALL non interactions to ZERO
 
@@ -49,6 +61,8 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct)
 	filt = sga;
 	filt.tossed = sparse(zeros(size(sga.eps)));
 	fitness_target = filt.Cannon.isQuery;
+	ABBA_rescue = 0;
+	ABBA_unavail= 0;
 	for i=find(fitness_target')
 		ix = strmatch(filt.Cannon.Orf{i}, fitness_struct(:,1));
 		if(~isempty(ix) && fitness_struct{ix,2}>0.97) % target aquired
@@ -56,6 +70,12 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct)
 		else
 			fitness_target(i) = false;
 		end
+	end
+
+	Cannon_strains = sga.Cannon.Orf;
+	for i=1:length(Cannon_strains)
+		ix = strfind(Cannon_strains{i}, '_');
+		Cannon_strains{i} = Cannon_strains{i}(ix+1:end);
 	end
 
 	% for the sick queries, we need to isolate the interactions
@@ -71,9 +91,9 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct)
                           filt.pvl(i,:) < 0.05 );
 		for j=interactions
 			% is this array also a (BA) query?
-			ixBAq = help_equiv_set(filt.Cannon.Orf{j}, filt.Cannon);
+			ixBAq = help_equiv_set(filt.Cannon.Orf{j}, Cannon_strains, equiv);
 			% is this (AB) query on the (BA) array?
-			ixBAa = help_equiv_set(filt.Cannon.Orf{i}, filt.Cannon);
+			ixBAa = help_equiv_set(filt.Cannon.Orf{i}, Cannon_strains, equiv);
 
 			% for now we pick one random allele; affects maybe 25% of the data
 			if(length(ixBAq) > 1)
@@ -88,6 +108,7 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct)
 				filt.eps(i,j) = 0;
 				filt.pvl(i,j) = 0;
 				filt.tossed(i,j) = 1;
+				ABBA_unavail = ABBA_unavail+1;
 
 			elseif(filt.eps(i,j) < 0 && ...
                 ~(filt.eps(ixBAq,ixBAa)<-0.08 && ...
@@ -97,6 +118,8 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct)
 				filt.pvl(i,j) = 0;
 				filt.tossed(i,j) = 1;
 
+			else
+				ABBA_rescue = ABBA_rescue+1;
 			end
 		end
 
@@ -109,47 +132,82 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct)
 		% remove anything > 0
 		filt.pvl(i,filt.eps(i,:)>0) = 0;
 		filt.eps(i,filt.eps(i,:)>0) = 0;
-
-
-
 	end
+	fprintf('ABBA_unavail: %d\nABBA_rescue:  %d\n\n', ABBA_unavail,ABBA_rescue);
 end
 
-function[array_set] = help_equiv_set(query, cannon)
+function[array_ix] = help_equiv_set(query, Cannon_strains, equiv)
 % match tsa with tsq and sn with dma
 % and vice versa!
 % damp with ?? (tsa)
 
-	if(~isempty(strfind(query, '_tsq')))
-		array_set = strmatch([StripOrfs(query) '_tsa'], cannon.Orf); 
-	elseif(~isempty(strfind(query, '_tsa')))
-		array_set = strmatch([StripOrfs(query) '_tsq'], cannon.Orf); 
-	elseif(~isempty(strfind(query, '_sn')))
-		array_set = strmatch([StripOrfs(query) '_dma'], cannon.Orf); 
-	elseif(~isempty(strfind(query, '_dma')))
-		array_set = strmatch([StripOrfs(query) '_sn' ], cannon.Orf); 
-	elseif(~isempty(strfind(query, '_damp')))
-		array_set = strmatch([StripOrfs(query) '_tsa' ], cannon.Orf); 
+	ix = strfind(query, '_');
+	strain_id = query(ix+1:end);
+	array_ix = [];
+	
+	ix = strmatch(strain_id, equiv(:,1), 'exact');
+	if(~isempty(ix))
+		array = equiv{ix,2};
+		array_ix = strmatch(array, Cannon_strains, 'exact');
+		
+		return
 	else
-		error('Unexpected StrainID suffix');
+
+		ix = strmatch(strain_id, equiv(:,2), 'exact');
+		if(~isempty(ix))
+			array = equiv{ix,1};
+			array_ix = strmatch(array, Cannon_strains, 'exact');
+			return
+		end
 	end
 end
 
 function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 	% rip through the input file and get bach assignments
 	% in python
-	batch_file = [inputfile '.bch'];
-	exec_string = ['GenerateCoBatchStandard.py ' intputfile '.txt > ' batch_file];
+	cobatch_file = [inputfile(1:end-4) '.bch'];
+	exec_string = ['GenerateCoBatchStandard.py ' inputfile ' > ' cobatch_file];
 	[status] = system(exec_string);
 	if(status > 0)
 		fprintf('Warning Python CoBatch process returned nonzero exit status');
 	end
 
+	c_fid = fopen(cobatch_file, 'r');
+	cobatch = textscan(c_fid, '%s%s'); % orf_strain orf_strain
+	fclose(c_fid);
+	cobatch = [cobatch{1} cobatch{2}];
 
+	Queries = sga.Cannon.Orf(sga.Cannon.isQuery);
+	results = zeros(length(Queries),1); % co_batch IP
 
-	% load and return the cobatch scores
-	fid = fopen(batch_file, 'r');
-	A = textscan(fid, '%s%f');
-	fclose(fid);
-	cobatch_scores = [A{1} num2cell(A{2})];
+	the_map = Hash(java.util.HashMap(length(Queries)), Queries);
+	CoBatch = boolean(sparse(length(cobatch), length(cobatch)));
+	for i=1:length(cobatch)
+		ida = the_map.get(cobatch{i,1});
+		idb = the_map.get(cobatch{i,2});
+		if(~isempty(ida) && ~isempty(idb))
+			CoBatch(ida,idb) = true;
+		end 
+	end
+	CoBatch = CoBatch | CoBatch';
+	CoBatch(boolean(eye(size(CoBatch,1)))) = false;
+
+	EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
+	EPS(isnan(EPS)) = 0;
+	%IP = EPS * EPS';
+	IP = corrcoef(EPS', 'rows', 'pairwise'); % PEARSON is BETTER
+	for i=1:length(Queries)
+		results(i,1) = median(IP(CoBatch(:,i),i));
+	end
+		
+	cobatch_scores = [Queries num2cell(results)];
 end
+function[vec] = substrmatch(str, cellary)
+	%function[vec] = substrmatch(str, cellary)
+	% see also: Code/cellgrep
+
+	vec = find(~cellfun(@isempty, strfind(cellary, str)));
+
+end
+
+

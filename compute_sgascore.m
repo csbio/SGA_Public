@@ -56,14 +56,21 @@ end
 if ~exist('wild_type', 'var')
     log_printf(lfid, 'Using DEFAULT: wild_type = URA3control_sn4757\n');
     wild_type = 'URA3control_sn4757';
+    keyboard_confirm = true;
 end
 if ~exist('border_strain_orf', 'var')
     log_printf(lfid, 'Using DEFAULT: border_strain_orf = YOR202W_dma1\n');
     border_strain_orf = 'YOR202W_dma1';
+    keyboard_confirm = true;
 end
 if ~exist('skip_wt_remove', 'var')
     log_printf(lfid, 'Using DEFAULT: skip_wt_remove = false\n');
     skip_wt_remove = false;
+end
+if(keyboard_confirm)
+    lob_printf(lfid, 'Automatic selections made. Please confirm.\n');
+    lob_printf(lfid, 'Type "dbcont" to continue or "dbquit" to abort.');
+    keyboard;
 end
 
 % Check inputs

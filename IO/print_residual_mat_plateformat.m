@@ -1,159 +1,132 @@
-function print_residual_mat_plateformat(sgadata,field,filename, plate_id_map)
-%function print_residual_mat_plateformat(sgadata,field,filename, plate_id_map)
-% Changed signature BJV 
-tic
-
-
-avg_mats=struct;
-avgt=[];
+function [big_map, labels_y, labels_x] = print_residual_mat_plateformat_rewrite(sgadata,field,filename, plate_id_map, center_arrays)
+%function [big_map, labels_y, labels_x] = print_residual_mat_plateformat_rewrite(...
+%     sgadata, field, filename, plate_id_map, center_arrays[T/F])
+% Benjamin VanderSluis (bvander@cs.umn.edu)
+% April 10, 2012
+total_time = tic();
 all_arrplates = unique(sgadata.arrayplateids);
 width = 48;
 height = 32;
+extra_border = 0; % add this much around each plate  (1 = 1 col between plates)
+border_mask = 2;  % mask out this much for each plate (1 = 1 col from each plate, 2 between)
 
+if(~exist('center_arrays', 'var'))
+	center_arrays = false;
+end
+
+
+% build a list of queryx set pairs, number of plate rows
+plate_rows = unique([sgadata.querys sgadata.setids], 'rows');
+plate_centers = cell(1,length(all_arrplates));
+	plate_centers(:) = {zeros(height, width)};
+plate_counts  = cell(1, length(all_arrplates));
+	plate_counts(:) = {zeros(height, width)};
+
+% a place to hold our result
+big_size_y = length(plate_rows)*(height+extra_border)+extra_border;
+big_size_x = length(all_arrplates)*(width+extra_border)+extra_border;
+
+big_map = nan(big_size_y, big_size_x);
+	labels_y = cell(big_size_y,1);
+	labels_x = cell(big_size_x,1);
+	labels_y(:) = {'brdr'};
+	labels_x(:) = {'brdr'};
+
+% precalculate array plate (col) matches
+plate_columns = boolean(zeros(length(sgadata.arrayplateids), length(all_arrplates)));
 for i=1:length(all_arrplates)
-    
-    curr_plates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
-    
-    curr_mat = zeros(length(curr_plates),width*height)+NaN;
-    curr_ind_mat = zeros(length(curr_plates),width*height)+NaN;
-    curr_batch = [];
-    t=[];
-
-    
-    for j=1:length(curr_plates)        
-        
-        % Get a matrix of colony sizes (d) and colony indices (d_map) for the plate
-        ind = plate_id_map{curr_plates(j)};
-        d = zeros(32,48);
-        d(:,[1,2,47,48]) = NaN;
-        d([1,2,31,32],:) = NaN;
-        
-        d_map = zeros(32,48)+1; % Default reference to 1st index
-        
-        iii = sub2ind([32,48], sgadata.rows(ind), sgadata.cols(ind));
-        d_map(iii) = ind;
-        d(iii) = sgadata.(field)(ind);
-        
-        curr_mat(j,:)=d(:);
-        curr_ind_mat(j,:)=d_map(:);
-        
-        t=d;
-        %if(mod(j,10)==0)  fprintf('Finished %d of %d...\n',j,length(curr_plates)); end        
-        %t=[t;zeros(2,size(t,2))];
-        avg_mats(i,j).mat=t;
-    end
-    
-    %fprintf('Finished plate %d...\n', i);
-    
-end
-    
-
-for i=1:size(avg_mats,1)
-    
-   sum=zeros(size(avg_mats(1,1).mat));
-   num=zeros(size(avg_mats(1,1).mat));
-   
-    for j=1:size(avg_mats,2),
-        ind = find(~isnan(avg_mats(i,j).mat));
-        sum(ind) = sum(ind) + avg_mats(i,j).mat(ind);
-        num(ind) = num(ind)+1;
-    end
-   
-    comb_avg(i).mat = sum./num;
+	plate_columns(:,i) = sgadata.arrayplateids == all_arrplates(i);
 end
 
-for i=1:length(all_arrplates),
-    curr_plates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
-    
-    curr_mat = zeros(length(curr_plates),width*height)+NaN;
-    curr_ind_mat = zeros(length(curr_plates),width*height)+NaN;
-    curr_batch = [];
-    t=[];
-    save_mats(i).querys=[];
-    save_mats(i).rows=[];
-    save_mats(i).setids=[];
-    
-    for j=1:length(curr_plates),          
-        
-        % Get a matrix of colony sizes (d) and colony indices (d_map) for the plate
-        ind = plate_id_map{curr_plates(j)};
-        d = zeros(32,48);
-        d(:,[1,2,47,48]) = NaN;
-        d([1,2,31,32],:) = NaN;
-        
-        d_map = zeros(32,48)+1; % Default reference to 1st index
-        
-        iii = sub2ind([32,48], sgadata.rows(ind), sgadata.cols(ind));
-        d_map(iii) = ind;
-        d(iii) = sgadata.(field)(ind);
-        
-        curr_mat(j,:)=d(:);
-        curr_ind_mat(j,:)=d_map(:);
+% main loop
+for r=1:length(plate_rows)
+	this_row_bool = (sgadata.querys == plate_rows(r,1)) & (sgadata.setids == plate_rows(r,2));
+	for c = 1:length(all_arrplates)
+		
+		[big_r, big_c] = calculate_global_index(r, c, extra_border, height, width);
 
-        d = d - comb_avg(i).mat;
+		% update the labels % before errors
+		for i=1:height
+			labels_y{big_r+i-1} = ['Query: ',sgadata.orfnames{plate_rows(r,1)},' Set: ', num2str(plate_rows(r,2)), ' Row: ',num2str(i)];
+		end
 
-        t(end+1:end+32,:)=d;
-        
-        if(mod(j,10)==0)  fprintf('Finished %d of %d...\n',j,length(curr_plates)); end
-        save_mats(i).querys(end+1:end+32) = unique(sgadata.querys(sgadata.plateids == curr_plates(j)));
-        save_mats(i).rows(end+1:end+32) = [1:32];      
-        save_mats(i).setids(end+1:end+32) = unique(sgadata.setids(sgadata.plateids == curr_plates(j)));
-        t=[t;zeros(2,size(t,2))];
-        save_mats(i).querys(end+1:end+2)=-1;
-        save_mats(i).rows(end+1:end+2)=-1;
-        save_mats(i).setids(end+1:end+2)=-1;
-    end
-    
-    save_mats(i).mat =t;
-    
-    
-end
-    
+		% find THIS plate
+		plate_ix = find(this_row_bool & plate_columns(:,c));
+		if(length(plate_ix) > 0) % skip empty plates
+			if(length(plate_ix) > height*width)
+				fprintf('collision Query: %s\tPlate: %d\tSet %d\n', sgadata.orfnames{plate_rows(r,1)}, c, plate_rows(r,2));
+				continue;
+			end
 
+			plate_data = nan(height, width);
 
-xstrs = [];
-ystrs=[];
+			plate_row = sgadata.rows(plate_ix);
+			plate_col = sgadata.cols(plate_ix);
+			plate_val = sgadata.(field)(plate_ix);
 
+			plate_ind = sub2ind([height, width], plate_row, plate_col);
+			plate_data(plate_ind) = plate_val(:);
 
+			plate_counts{c} = plate_counts{c}+~isnan(plate_data);
+			plate_centers{c}(~isnan(plate_data)) = plate_centers{c}(~isnan(plate_data)) + plate_data(~isnan(plate_data));
+			
+			if(border_mask > 0)
+				plate_data(1:border_mask,:) = NaN;
+				plate_data(end-border_mask+1:end,:) = NaN;
+				plate_data(:,1:border_mask) = NaN;
+				plate_data(:,end-border_mask+1:end) = NaN;
+			end
 
-curr_mat=[];
-all_querys = unique(sgadata.querys);
-count=1;
-ystrs={};
-for i=1:length(all_querys),
-    %check if there are multiple sets
-    curr_sets = unique(sgadata.setids(sgadata.querys == all_querys(i)));
-    
-    for k=1:length(curr_sets),
-        for j=1:length(all_arrplates),
-           if(length(find(save_mats(j).querys == all_querys(i) & save_mats(j).setids == curr_sets(k))) > 0 & length(find(save_mats(j).querys == all_querys(i) & save_mats(j).setids==curr_sets(k))) <= 32)
-               curr_mat(((count-1)*32+1):((count-1)*32+32),((j-1)*48+1):((j-1)*48+48)) = save_mats(j).mat(save_mats(j).querys == all_querys(i) & save_mats(j).setids==curr_sets(k),:);
-           else
-               curr_mat(((count-1)*32+1):((count-1)*32+32),((j-1)*48+1):((j-1)*48+48)) = zeros(height,width)+NaN;
-           end
-        end
-        
-        count = count+1;
-        for j=1:32,
-            ystrs = [ystrs; {['Query: ',sgadata.orfnames{all_querys(i)},' Set: ', num2str(curr_sets(k)), ' Row: ',num2str(j)]}];
-        end
+			% put this plate in its place on the whole map
+			big_map(big_r:big_r+height-1, big_c:big_c+width-1) = plate_data;
+		end
 
-    end
-    
-
+	end
 end
 
-count=1;
-xstrs = [];
+if(center_arrays)
+	% Lets add a fake query representing the centers
+	big_map = [big_map; nan(height+extra_border, (width+extra_border)*length(all_arrplates)+extra_border)];
+	labels_y(end+1: size(big_map,1)) = {'center'};
 
+	for c=1:length(all_arrplates)
+		plate_centers{c} = plate_centers{c} ./ plate_counts{c};
+		for r=1:length(plate_rows)
+			[big_r, big_c] = calculate_global_index(r, c, extra_border, height, width);
+			big_map(big_r:big_r+height-1, big_c:big_c+width-1) = big_map(big_r:big_r+height-1, big_c:big_c+width-1) - plate_centers{c};
+		end
+	end
+
+	for c=1:length(all_arrplates)
+		[big_r, big_c] = calculate_global_index(r+1, c, extra_border, height, width);
+		big_map(big_r:big_r+height-1, big_c:big_c+width-1) = plate_centers{c};
+	end
+	
+end
+
+		
+% y axis labels
+ptr = 1;
 for j=1:length(all_arrplates),
-    for i=1:48,
-        xstrs{count} = ['Array plate ',num2str(j),'; Column ',num2str(i)];
-        count=count+1;
+	ptr = ptr+extra_border;
+    for i=1:width,
+        labels_x{ptr} = ['Array plate ',num2str(j),'; Column ',num2str(i)];
+        ptr=ptr+1;
     end
 end
 
+fprintf('data tiling complete, begin writing outputfile\n');
+print_pcl_file(big_map, labels_y, labels_y, labels_x, filename);
+tt = toc(total_time);
 
-print_pcl_file(curr_mat,ystrs,ystrs,xstrs,filename),
-toc
+fprintf('total time elapsed: %.2fs\n', tt);
 
+end % MAIN
+
+function[global_r, global_c] = calculate_global_index(query, arrayplate, extra_border, height, width)
+	% returns the global origin for a single plate (upper left corner)
+	% ROWS = num_queries*(height + extra_border) + extra_border (on the bottom)
+	% COLS = num_array_plates *(width + extra_border + extra_border (on the end)
+	global_r = (query-1)     *(height + extra_border) + extra_border + 1;
+	global_c = (arrayplate-1)*(width  + extra_border) + extra_border + 1;
+end
