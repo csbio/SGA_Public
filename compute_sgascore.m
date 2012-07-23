@@ -67,6 +67,11 @@ if ~exist('skip_wt_remove', 'var')
     log_printf(lfid, 'Using DEFAULT: skip_wt_remove = false\n');
     skip_wt_remove = false;
 end
+if ~exist('eps_scale_factor', 'var')
+    log_printf(lfid, 'Using DEFAULT: eps_scale_factor = 1.0\n');
+    eps_scale_factor = 1.0;
+    keyboard_confirm = true;
+end
 if(keyboard_confirm)
     lob_printf(lfid, 'Automatic selections made. Please confirm.\n');
     lob_printf(lfid, 'Type "dbcont" to continue or "dbquit" to abort.');
@@ -782,6 +787,9 @@ c = p(1);
 
 eps = complete_mat .* (qfit/c);
 eps_std = complete_mat_std.*(qfit/c);
+
+% Mainly for TS data to calibrate to FG
+eps = eps .* eps_scale_factor;
 
 dm_actual = dm_expected + eps;
 dm_actual_std = eps_std;

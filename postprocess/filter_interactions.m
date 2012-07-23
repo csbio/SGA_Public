@@ -25,6 +25,7 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 
 	% filter 
 	filt = help_filter_by_cobatch(sga, cobatch_scores);
+	filt = help_filter_by_Agreement(filt, equiv);
 	filt = help_filter_by_ABBA(filt, fitness_struct, equiv);
 
 end
@@ -51,6 +52,39 @@ function[filt] = help_filter_by_cobatch(sga, cobatch_scores)
 
 end
 
+function[sga] = help_filter_by_Agreement(sga, equiv)
+% remove any ABBA that is significant in 2 directions:
+
+	ABBA_disagree = 0;
+
+	Cannon_strains = sga.Cannon.Orf;
+	for i=1:length(Cannon_strains)
+		ix = strfind(Cannon_strains{i}, '_');
+		Cannon_strains{i} = Cannon_strains{i}(ix+1:end);
+	end
+
+	for i=find(sga.Cannon.isQuery')
+		equiv_array = help_equiv_set(sga.Cannon.Orf{i}, Cannon_strains, equiv);
+		if(~isempty(equiv_array))
+			% NEG -- they're opposite so if there's a positive here we can skip it , we'll catch the negative on the flip side
+			for j=find(sga.eps(i,:) < -0.08 & sga.pvl(i,:)<0.05)
+				equiv_query = help_equiv_set(sga.Cannon.Orf{j}, Cannon_strains, equiv);
+				if(~isempty(equiv_query))
+					subnet = sga.eps(equiv_query, equiv_array) > 0.08 & sga.pvl(equiv_query, equiv_array)<0.05; 
+					if(sum(sum(subnet)) > 0)
+						sga.eps(i,j) = 0;
+						sga.pvl(i,j) = 1;
+						sga.pvl(equiv_query, equiv_array) = 1;
+						ABBA_disagree = ABBA_disagree +1;
+					end
+				end
+			end
+		end
+	end
+
+	fprintf('ABBA_disagree (x2): %d\n', ABBA_disagree);
+end
+
 function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
 	% abs(eps) > 0.12 & pvl || AB & BA
 	% sets ALL non interactions to ZERO
@@ -58,13 +92,15 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
 	% isolate all intermediate interactions in query
 	% fitness range. Target for removal, check in a loop...
 	
+	% always read from sga and write to filt
 	filt = sga;
 	filt.tossed = sparse(zeros(size(sga.eps)));
-	fitness_target = filt.Cannon.isQuery;
+	fitness_target = sga.Cannon.isQuery;
 	ABBA_rescue = 0;
+	ABBA_refuse = 0;
 	ABBA_unavail= 0;
 	for i=find(fitness_target')
-		ix = strmatch(filt.Cannon.Orf{i}, fitness_struct(:,1));
+		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1));
 		if(~isempty(ix) && fitness_struct{ix,2}>0.97) % target aquired
 			fitness_target(i) = true;
 		else
@@ -84,39 +120,38 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
 	filt.fitness_target = fitness_target;
 	for i=find(fitness_target')
 
-
-
 		% intermediate negatives
-		interactions = find(filt.eps(i,:) > -0.12 & filt.eps(i,:) < -0.08 & ...
-                          filt.pvl(i,:) < 0.05 );
+		interactions = find(sga.eps(i,:) > -0.12 & sga.eps(i,:) < -0.08 & ...
+                          sga.pvl(i,:) < 0.05 );
 		for j=interactions
 			% is this array also a (BA) query?
 			ixBAq = help_equiv_set(filt.Cannon.Orf{j}, Cannon_strains, equiv);
 			% is this (AB) query on the (BA) array?
 			ixBAa = help_equiv_set(filt.Cannon.Orf{i}, Cannon_strains, equiv);
 
-			% for now we pick one random allele; affects maybe 25% of the data
+			% the mapping isn't quite 1 - 1; This affects maybe 20 queries and/or arrays
 			if(length(ixBAq) > 1)
-				ixBAq = RandomSubset(ixBAq, 1);
+				ixBAq = RandomSubset(ixBAq,1);
 			end
 			if(length(ixBAa) > 1)
-				ixBAa = RandomSubset(ixBAa, 1);
+				ixBAa = RandomSubset(ixBAa,1);
 			end
 
 			if(isempty(ixBAq) || isempty(ixBAa)) % unavailable BA -> TOSS
 
 				filt.eps(i,j) = 0;
-				filt.pvl(i,j) = 0;
+				filt.pvl(i,j) = 1;
 				filt.tossed(i,j) = 1;
 				ABBA_unavail = ABBA_unavail+1;
 
-			elseif(filt.eps(i,j) < 0 && ...
-                ~(filt.eps(ixBAq,ixBAa)<-0.08 && ...
-					   filt.pvl(ixBAq,ixBAa)<0.05)) % BA negative failed test -> TOSS
+			elseif(sga.eps(i,j) < 0 && ...
+                ~(sga.eps(ixBAq,ixBAa)<-0.08 && ...
+					   sga.pvl(ixBAq,ixBAa)<0.05)) % BA negative failed test -> TOSS
 
 				filt.eps(i,j) = 0;
-				filt.pvl(i,j) = 0;
+				filt.pvl(i,j) = 1;
 				filt.tossed(i,j) = 1;
+				ABBA_refuse = ABBA_refuse+1;
 
 			else
 				ABBA_rescue = ABBA_rescue+1;
@@ -126,14 +161,14 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
 		% ALL positives
 
 		% record the "significant" positives
-		sig_pos = filt.eps(i,:) > 0.08 & filt.pvl(i,:)<0.05;
+		sig_pos = sga.eps(i,:) > 0.08 & sga.pvl(i,:)<0.05;
 		filt.tossed(i,sig_pos) = 1;
 
 		% remove anything > 0
-		filt.pvl(i,filt.eps(i,:)>0) = 0;
+		filt.pvl(i,filt.eps(i,:)>0) = 1;
 		filt.eps(i,filt.eps(i,:)>0) = 0;
 	end
-	fprintf('ABBA_unavail: %d\nABBA_rescue:  %d\n\n', ABBA_unavail,ABBA_rescue);
+	fprintf('ABBA_unavail: %d\nABBA_rescue:  %d\nABBA_refuse: %d\n\n', ABBA_unavail,ABBA_rescue,ABBA_refuse);
 end
 
 function[array_ix] = help_equiv_set(query, Cannon_strains, equiv)
@@ -202,6 +237,7 @@ function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 		
 	cobatch_scores = [Queries num2cell(results)];
 end
+
 function[vec] = substrmatch(str, cellary)
 	%function[vec] = substrmatch(str, cellary)
 	% see also: Code/cellgrep

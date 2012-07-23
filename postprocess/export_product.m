@@ -13,10 +13,10 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 % sga_output file = outputfile from compute_sgascore
 % ie, it is extensionless
 	
-	sga = load_sga_epsilon_from_scorefile([sga_outputfile '.txt'], [sga_outputfile '.orf']);
+	sga_raw = load_sga_epsilon_from_scorefile([sga_outputfile '.txt'], [sga_outputfile '.orf']);
 
 	% layout file expects format (plate row col orf) [384] 16x24
-	sga = filter_green_blocks_around_linkage(sga, linkagefile, coord_file, layout_file, wild_type, border_strain);
+	sga = filter_green_blocks_around_linkage(sga_raw, linkagefile, coord_file, layout_file, wild_type, border_strain);
 
 	[sga, fitness_struct]  = filter_interactions(sga, smfitnessfile, sga_inputfile, equiv_file);
 
@@ -61,6 +61,9 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 
 	eval(sprintf('%s = sga;', construct)); % rename struct
 	eval(sprintf('save %s%s.mat %s', int_dirname, construct, construct)); % save to mat
+
+	eval(sprintf('%s_raw = sga_raw;', construct)); % save a pre-filter version as well
+	eval(sprintf('save %s%s_raw.mat %s_raw', int_dirname, construct, construct)); % save to mat
 
 end
 

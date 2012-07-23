@@ -48,7 +48,7 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
 	[fgmap.plate, fgmap.row, fgmap.col, fgmap.orf] = textread(layout_file,'%f %f %f %s');
 
 	block_filter_count = 0;
-	ARRAY = split_by_delim('_', layout_file);
+	ARRAY = split_by_delimiter('_', layout_file);
 	ARRAY = ARRAY{3};
 	if(~ismember(ARRAY, {'fg', 'ts'}))
 		error('unrecognized array format!');
