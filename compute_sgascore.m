@@ -41,6 +41,7 @@ else
 end
 
 % Set some default flags if not defined
+keyboard_confirm = false;
 if(~exist('skip_linkage_detection', 'var'))
     log_printf(lfid, 'Using DEFAULT: skip_linkage_detection = false\n');
     skip_linkage_detection = false;
@@ -73,8 +74,8 @@ if ~exist('eps_scale_factor', 'var')
     keyboard_confirm = true;
 end
 if(keyboard_confirm)
-    lob_printf(lfid, 'Automatic selections made. Please confirm.\n');
-    lob_printf(lfid, 'Type "dbcont" to continue or "dbquit" to abort.');
+    log_printf(lfid, 'Automatic selections made. Please confirm.\n');
+    log_printf(lfid, 'Type "dbcont" to continue or "dbquit" to abort.');
     keyboard;
 end
 
@@ -723,6 +724,7 @@ final_smfit_std(ind) = model_smstd(ind)*p(1);
 
 
 % SGA score
+% SAFE ENTRY
 sga_score = model_fits(:,2:end);
 sga_score_std = model_fit_std(:,2:end);
 
