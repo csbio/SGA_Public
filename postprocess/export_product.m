@@ -37,12 +37,8 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 	% ------------------------ interactions / profiles
 
 	int_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/interactions/'];
-	int_basename = basename;
-	int_basename{1} = 'interaction';
+	int_basename{1} = 'release';
 	system(['mkdir -p ' int_dirname]);
-	int_basename = join_by_delimiter(int_basename, '_');
-	print_interaction_data(sga, fitness_struct, [int_dirname '/' int_basename '.txt']);
-
 
 	prof_basename = basename;
 	prof_basename{1} = 'profile';
@@ -68,13 +64,13 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 end
 
 
-function[] = print_interaction_data(sga, fitness_struct, outputfile);
+
+function[] = print_profile_data(sga, fitness_struct, outputfile);
 	%{
-	for now we'll match the old format...
-	------
-	TYPE 2
-	OUTPUT; published SGAdata
-	13 col: example sgadata_costanzo2009_rawdata_101120.txt.gz
+	----------------------------------------------------------
+	TYPE X?
+	OUTPUT; RELEASE SGAdata
+	9 col
 	----------------------------------------------------------
 	1  Query ORF 
 	2  Query gene name
@@ -83,15 +79,48 @@ function[] = print_interaction_data(sga, fitness_struct, outputfile);
 	5  Genetic interaction score (eps)
 	6  Standard deviation
 	7  p-value
-	8  Query single mutant fitness (SMF)
-	9  Query SMF standard deviation
-	10 Array SMF 
-	11 Array SMF standard deviation
-	12 Double mutant fitness
-	13 Double mutant fitness standard deviation 
+	8  Double mutant fitness
+	9  boolean intermediate cutoff
 	%}
 
+	% re-arrange fitness data according to cannon
+	fitness = nan(sga.Cannon.GENES, 2);
+	for i=1:sga.Cannon.GENES
+		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1), 'exact');
+		if(~isempty(ix))
+			fitness(i,:) = cell2mat(fitness_struct(ix,[2,3]));
+		end
+	end
 
+	fid = fopen(outputfile, 'w');
+
+	epsilon = sga.eps;
+	epsilon(isnan(epsilon)) = 0;
+%	epsilon(epsilon > -0.08 & epsilon < 0.08) = 0;
+
+	[r, c] = find(epsilon);
+	for i=1:length(r)
+		if(abs(sga.eps(r(i),c(i))) > 0.08 && sga.pvl(r(i),c(i)) < 0.05)
+			int_status = 'TRUE';
+		else
+			int_status = 'FALSE';
+		end
+
+		fprintf(fid, '%s\t%s\t%s\t%s\t%f\t%f\t%e\t%f\t%s\n',...
+				sga.Cannon.Orf{r(i)},...
+				sga.Cannon.Common{r(i)},...
+				sga.Cannon.Orf{c(i)},...
+				sga.Cannon.Common{c(i)},...
+				sga.eps(r(i),c(i)),...
+				sga.dbl_std(r(i),c(i)),...
+				sga.pvl(r(i),c(i)),...
+				sga.dbl(r(i),c(i)),...
+				int_status);
+	end
+	fclose(fid);
+end
+%{
+function[] = print_interaction_data(sga, fitness_struct, outputfile);
 	% re-arrange fitness data according to cannon
 	fitness = nan(sga.Cannon.GENES, 2);
 	for i=1:sga.Cannon.GENES
@@ -126,41 +155,4 @@ function[] = print_interaction_data(sga, fitness_struct, outputfile);
 	end
 	fclose(fid);
 end
-
-function[] = print_profile_data(sga, fitness_struct, outputfile);
-	% same as above but insignificant interactions are printed also
-
-	% re-arrange fitness data according to cannon
-	fitness = nan(sga.Cannon.GENES, 2);
-	for i=1:sga.Cannon.GENES
-		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1), 'exact');
-		if(~isempty(ix))
-			fitness(i,:) = cell2mat(fitness_struct(ix,[2,3]));
-		end
-	end
-
-	fid = fopen(outputfile, 'w');
-
-	epsilon = sga.eps;
-	epsilon(isnan(epsilon)) = 0;
-%	epsilon(epsilon > -0.08 & epsilon < 0.08) = 0;
-
-	[r, c] = find(epsilon);
-	for i=1:length(r)
-		fprintf(fid, '%s\t%s\t%s\t%s\t%f\t%f\t%e\t%f\t%f\t%f\t%f\t%f\t%f\n',...
-				sga.Cannon.Orf{r(i)},...
-				sga.Cannon.Common{r(i)},...
-				sga.Cannon.Orf{c(i)},...
-				sga.Cannon.Common{c(i)},...
-				sga.eps(r(i),c(i)),...
-				sga.dbl_std(r(i),c(i)),...
-				sga.pvl(r(i),c(i)),...
-				fitness(r(i),1),...
-				fitness(r(i),2),...
-				fitness(c(i),1),...
-				fitness(c(i),2),...
-				sga.dbl(r(i),c(i)),...
-				sga.dbl_std(r(i),c(i)));
-	end
-	fclose(fid);
-end
+%}

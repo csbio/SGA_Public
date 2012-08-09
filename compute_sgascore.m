@@ -286,6 +286,7 @@ sgadata.filt_jackknife = apply_jackknife_correction(sgadata, 'finalplatecorr_col
                        border_strain_orf, query_map, plate_id_map, lfid);
 
 % keep a copy (in jackknife) to replace linkage after batch
+% SAFE ENTRY POINT, this is the first time we use filt colsize
 sgadata.filt_colsize = sgadata.filt_jackknife;
 
 
