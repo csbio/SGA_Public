@@ -1,25 +1,27 @@
-function[list] = StripOrfs(list, N)
-%[list] = StripOrfs(list, ['first' || 'last'])
+function[list, suffix] = StripOrfs(list, N)
+%[list, suffix] = StripOrfs(list, ['first' || 'last'])
 % removes _xxx from orf names
-% first			 : AA_bb_cc -> AA
-% last (default): AA_bb_cc -> AA_bb
+% returns the suffix if you ask
+% first (default): AA_bb_cc -> AA
+% last           : AA_bb_cc -> AA_bb
 
 
    if ~exist('N', 'var')
-       N = 'last';
+       N = 'first';
 	end
 
 	if ~iscell(list)
-		list = strip_annotation(list, N);
+		[list, suffix] = strip_annotation(list, N);
 	else
+		suffix = cell(size(list));
 		for i=1:length(list)
-			list{i} = strip_annotation(list{i}, N);
+			[list{i}, suffix{i}] = strip_annotation(list{i}, N);
 		end
 	end
 
 end
 
-function[short_orf] = strip_annotation(orf_string, N)
+function[short_orf, suffix] = strip_annotation(orf_string, N)
 % from SGA/Main/extra
 % Strips off the LAST annotation by default (eg. Orf_sn_rep -> Orf_sn)
 % you may also provide explicit instructions 'first', 'last', or N
@@ -29,6 +31,7 @@ function[short_orf] = strip_annotation(orf_string, N)
     ix = strfind(orf_string, '_');
     if isempty(ix)
         short_orf = orf_string;
+        suffix = '';
         return
     else
 
@@ -46,6 +49,7 @@ function[short_orf] = strip_annotation(orf_string, N)
             N = length(ix);
         end
         short_orf = orf_string(1:ix(N)-1);
+        suffix = orf_string(ix(N)+1:end);
     end
 end
 

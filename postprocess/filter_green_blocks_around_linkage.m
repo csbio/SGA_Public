@@ -106,6 +106,10 @@ end
 
 function[chr, strt, endd] = GetLnkCoord(orf, qsl, chrcoord)
 
+	chr = 1; % default in case we get a not-orf (ie ORF+snxxx)
+	strt = 1;
+   endd = 1;
+
 	% check for exact linkage match
 	ind = strmatch(orf, qsl.orf, 'exact');
 	if(~isempty(ind))

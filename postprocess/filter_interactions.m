@@ -36,7 +36,7 @@ function[filt] = help_filter_by_cobatch(sga, cobatch_scores)
 	filt = sga;
 	cobatch_target = filt.Cannon.isQuery;
 	for i=find(cobatch_target')
-		ix = strmatch(filt.Cannon.Orf{i}, cobatch_scores(:,1));
+		ix = strmatch(filt.Cannon.Orf{i}, cobatch_scores(:,1), 'exact');
 		if(cobatch_scores{ix,2} > 0.2)
 			cobatch_target(i) = true;
 			filt.eps(i,:) = NaN;
@@ -100,7 +100,11 @@ function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
 	ABBA_refuse = 0;
 	ABBA_unavail= 0;
 	for i=find(fitness_target')
-		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1));
+		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1), 'exact');
+		if(length(ix)>1)
+			fprintf('warning: multiple fitness values for %s. Taking first\n', sga.Cannon.Orf{i});
+			ix = ix(1);
+		end
 		if(~isempty(ix) && fitness_struct{ix,2}>0.97) % target aquired
 			fitness_target(i) = true;
 		else

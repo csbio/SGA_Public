@@ -26,17 +26,26 @@ end
 
 function[NVec] = MyChoose(Vector, n)
 
-NVec = zeros(n,1);
-%Vsize = size(Vector,1);
-Vsize = length(Vector);
+	if(iscell(Vector))
+		NVec = cell(n,1);
+	else
+		NVec = zeros(n,1);
+	end
 
-A = 1;
-for i=1:n
-   ind = ceil(rand()*Vsize);
-   NVec(i) = Vector(ind);
-   Vector(ind) = Vector(Vsize);
-   Vsize = Vsize-1;
-end
+	Vsize = length(Vector);
+
+	A = 1;
+	for i=1:n
+		ind = ceil(rand()*Vsize);
+		if(iscell(Vector))
+			NVec{i} = Vector{ind};
+			Vector{ind} = Vector{Vsize};
+		else
+			NVec(i) = Vector(ind);
+			Vector(ind) = Vector(Vsize);
+		end
+		Vsize = Vsize-1;
+	end
 
 end
 

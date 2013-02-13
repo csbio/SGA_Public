@@ -43,7 +43,7 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 	prof_basename = basename;
 	prof_basename{1} = 'profile';
 	prof_basename = join_by_delimiter(prof_basename, '_');
-	print_profile_data(sga, fitness_struct, [int_dirname '/' prof_basename '.txt']);
+	print_profile_data(sga, [int_dirname '/' prof_basename '.txt']);
 
 	
 
@@ -65,7 +65,7 @@ end
 
 
 
-function[] = print_profile_data(sga, fitness_struct, outputfile);
+function[] = print_profile_data(sga, outputfile);
 	%{
 	----------------------------------------------------------
 	TYPE X?
@@ -83,20 +83,10 @@ function[] = print_profile_data(sga, fitness_struct, outputfile);
 	9  boolean intermediate cutoff
 	%}
 
-	% re-arrange fitness data according to cannon
-	fitness = nan(sga.Cannon.GENES, 2);
-	for i=1:sga.Cannon.GENES
-		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1), 'exact');
-		if(~isempty(ix))
-			fitness(i,:) = cell2mat(fitness_struct(ix,[2,3]));
-		end
-	end
-
 	fid = fopen(outputfile, 'w');
 
 	epsilon = sga.eps;
 	epsilon(isnan(epsilon)) = 0;
-%	epsilon(epsilon > -0.08 & epsilon < 0.08) = 0;
 
 	[r, c] = find(epsilon);
 	for i=1:length(r)

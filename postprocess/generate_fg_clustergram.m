@@ -30,7 +30,6 @@ function[] = generate_fg_clustergram(sga, name)
 	end
 	sga.Cannon.allele = allele;
 
-	%sga = remove_arrays(sga, 'bad_arrays_union.txt');
 	EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
 	PVL = sga.pvl(sga.Cannon.isQuery, sga.Cannon.isArray);
 
@@ -51,13 +50,15 @@ function[] = generate_fg_clustergram(sga, name)
 	%}
 
 	% Zero insignif - data
+	EPS(isnan(EPS)) = 0;
 	EPS(EPS > -0.08 & EPS < 0.08) = 0;
 	EPS(PVL > 0.05) = 0;
 	
 	MyCluster(EPS,...
 				 sga.Cannon.Orf(sga.Cannon.isQuery), ...
 				 sga.Cannon.allele(sga.Cannon.isQuery), ...
-				 sga.Cannon.allele(sga.Cannon.isArray), [name '_CLUST']);
+				 sga.Cannon.Orf(sga.Cannon.isArray), [name '_CLUST']);
+				 %sga.Cannon.allele(sga.Cannon.isArray), [name '_CLUST']);
 			 
 
 	delete([name '_CLUST.pcl']);
@@ -78,6 +79,7 @@ function[] = generate_fg_clustergram(sga, name)
 end
 
 
+% Functions to add varying labels to a clustergram
 %{
 function[labels] = Orf_to_array_position(Orfs, Commons)
 

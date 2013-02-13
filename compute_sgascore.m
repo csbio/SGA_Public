@@ -3,12 +3,32 @@
 %   measures quantitative genetic interactions
 %
 % Inputs:
-%   inputfile - path to the raw colony size data
-%   outputfile - path to the output file
-%   removearraylist - path to the file containing the list of arrays to be removed
-%   linkagefile - path to the file containing the query-specific linkage window sizes
-%   smfitnessfile - path to the file containing single mutant fitness
+%	inputfile        path of raw colony size data
+%	outputfile       path of output file
+%	removearraylist  path of file containing the list of arrays to be removed
+%	linkagefile      path of file containing the query-specific linkage window sizes
+%	smfitnessfile    path of file containing single mutant fitness
+%	wild_type        strain-id of wild type cols [Default = 'URA3control_sn4757']
+%	border_strin_orf strain-id of border cols.   [Default = 'YOR202W_dma1']
+%	eps_scale_factor final epsilon scale factor, [Defalut = 1.0]
 %
+% Boolean Flags [default]:
+%	skip_linkge_detection [F]: don't bother detecting linkage.
+%			If this is set skip_linkage_mask has no effect either way
+%
+%	skip_linkage_mask [F]: if set to true, detect linkage and hold it 
+%			out for corrections, but PUT IT BACK before the end.
+%			Effectively, detect linkage, but don't mask it out.	
+%
+%	skip_perl_step [F]: The preprocessing step can be quite slow.
+%			Set this to true to skip it (if you've scored the input once before)
+%
+%	skip_wt_remove [F]: Usually, WT-queries are NaN'ed out at the end
+%			Set this to true to skip that and print out a WT query profile
+%
+%
+%
+%	
 % Authors: Chad Myers (cmyers@cs.umn.edu), 
 %          Anastasia Baryshnikova (a.baryshnikova@utoronto.ca),
 %          Benjamin VanderSluis (bvander@cs.umn.edu)
