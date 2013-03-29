@@ -49,6 +49,9 @@ if ~exist('outputfile','var')
 else
     tmp = split_by_delimiter('/', outputfile);
     outputdir = join_by_delimiter(tmp(1:end-1), '/');
+    if(outputfile(1) == '/')
+		outputdir = ['/' outputdir];
+    end
     if ~exist(outputdir,'dir')
         error(['Output directory ' outputdir ' does not exist.']);
     else
