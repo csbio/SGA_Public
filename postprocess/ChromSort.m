@@ -4,6 +4,17 @@ function[genome_ix] = ChromSort(orf_array)
 % < L CHR1 R > < L CHR2 R > ...
 
 
+% Automatically detects DM controls (e.g. ignores YDL227C)
+% the return in indicies, so we can mangle the inputs if we need
+% true DM queries will get sorted according to position 1
+DMC = substrmatch('YDL227C+', orf_array);
+[trsh, orf_array(DMC)] = SplitOrfs(orf_array(DMC));
+
+% these will sort fine already
+% DMC = substrmatch('+YDL227C', orf_array);
+% [orf_array(DMC), trsh] = SplitOrfs(orf_array(DMC));
+
+
 
 CHR = 'ABCDEFGHIJKLMNOP';
 ptr = 1;

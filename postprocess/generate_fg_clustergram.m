@@ -57,8 +57,8 @@ function[] = generate_fg_clustergram(sga, name)
 	MyCluster(EPS,...
 				 sga.Cannon.Orf(sga.Cannon.isQuery), ...
 				 sga.Cannon.allele(sga.Cannon.isQuery), ...
-				 sga.Cannon.Orf(sga.Cannon.isArray), [name '_CLUST']);
-				 %sga.Cannon.allele(sga.Cannon.isArray), [name '_CLUST']);
+				 sga.Cannon.allele(sga.Cannon.isArray), [name '_CLUST']);
+				 %sga.Cannon.Orf(sga.Cannon.isArray), [name '_CLUST']);
 			 
 
 	delete([name '_CLUST.pcl']);
