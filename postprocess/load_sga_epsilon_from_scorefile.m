@@ -21,9 +21,10 @@ for i=1:Cannon.GENES
 	%Cannon.Map.put(Cannon.Orf{i}, i);
 	Cannon.Map.put(java.lang.String(Cannon.Orf{i}), java.lang.Integer(i));
 end
-c_map = '/project/csbio/benjamin/Data/Master_Common_Ref_SGD.txt';
-fprintf('using common name map %s\n', c_map);
-Cannon = AddCommonToCannon(Cannon, c_map);
+
+Cannon.Common = OrfToCommon(Cannon.Orf);
+Cannon.Map = Hash(Cannon.Map, Cannon.Common);
+
 % Score file columns:
 % Qorf Aorf escore std pval smfit1 std smfit2 std dm_exp dm_act std
 format = '%s%s%f32%f32%f64%f32%f32%f32%f32%f32%f32%f32'; % 2 strings, then all singles
