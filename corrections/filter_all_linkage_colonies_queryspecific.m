@@ -75,8 +75,19 @@ function [all_linkage_cols, non_spec]  = filter_all_linkage_colonies_queryspecif
     % ---------------------------------
     [ura3_linkage_arrays, ura3_match_code] = get_linked_arrays('YEL021W', predef_lnkg, coord, array_coord);
     [lyp1_linkage_arrays, lyp1_match_code] = get_linked_arrays('YNL268W', predef_lnkg, coord, array_coord);
-    [can1_linkage_arrays, lyp1_match_code] = get_linked_arrays('YEL063C', predef_lnkg, coord, array_coord);
+    [can1_linkage_arrays, can1_match_code] = get_linked_arrays('YEL063C', predef_lnkg, coord, array_coord);
+
     lyp_can_linkage = unique([lyp1_linkage_arrays; can1_linkage_arrays]);
+
+    %if every query has a +, then we're on a triple array, and we need to unlink HO globally
+    %we also need to unlink URA3 globally, not just for WTS
+    %  the lyp_can_linkage will be empty, as none of those arrays were selected for the mini1200 array
+    if(all(~cellfun(@isempty, strfind(sgadata.orfnames(all_querys), '+'))));
+        log_printf(lfid, 'All Queries are DM, removing HO/URA3 globally...\n');
+        [ho_linkage_arrays,   ho_match_code]   = get_linked_arrays('YDL227C', predef_lnkg, coord, array_coord);
+        lyp_can_linkage = unique([lyp_can_linkage; ura3_linkage_arrays; ho_linkage_arrays]);
+    end
+
 
     all_linkage_cols_bool = boolean(zeros(size(sgadata.arrays))); % holds result, pre-allocated
     wild_type_id =  strmatch(wild_type, sgadata.orfnames);

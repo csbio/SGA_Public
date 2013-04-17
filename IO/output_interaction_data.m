@@ -33,9 +33,14 @@ for i = 1:length(escores)
 end
 fclose(fid);
 
+% only output an orf if it has scores
+% bad arrays are appearing otherwise
+valid_queries = orfnames(sum(~isnan(escores),2)>0);
+valid_arrays  = orfnames(sum(~isnan(escores),1)>0);
+valid_orfs = union(valid_queries, valid_arrays);
 fid = fopen([outputfile '.orf'], 'w');
-for i=1:length(orfnames)
-	fprintf(fid, '%s\n', orfnames{i});
+for i=1:length(valid_orfs)
+	fprintf(fid, '%s\n', valid_orfs{i});
 end
 fclose(fid);
 
