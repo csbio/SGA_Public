@@ -10,7 +10,7 @@
 %	smfitnessfile    path of file containing single mutant fitness
 %	wild_type        strain-id of wild type cols [Default = 'URA3control_sn4757']
 %	border_strin_orf strain-id of border cols.   [Default = 'YOR202W_dma1']
-%	eps_scale_factor final epsilon scale factor, [Defalut = 1.0]
+%  eps_qnorm_ref    string to matfile containing eps_norm_table for quantile
 %
 % Boolean Flags [default]:
 %	skip_linkge_detection [F]: don't bother detecting linkage.
@@ -90,11 +90,6 @@ end
 if ~exist('skip_wt_remove', 'var')
     log_printf(lfid, 'Using DEFAULT: skip_wt_remove = false\n');
     skip_wt_remove = false;
-end
-if ~exist('eps_scale_factor', 'var')
-    log_printf(lfid, 'Using DEFAULT: eps_scale_factor = 1.0\n');
-    eps_scale_factor = 1.0;
-    keyboard_confirm = true;
 end
 if(keyboard_confirm)
     log_printf(lfid, 'Automatic selections made. Please confirm.\n');
@@ -815,7 +810,10 @@ eps = complete_mat .* (qfit/c);
 eps_std = complete_mat_std.*(qfit/c);
 
 % Mainly for TS data to calibrate to FG
-eps = eps .* eps_scale_factor;
+if(exist('eps_qnorm_ref', 'var'))
+   eval(['load ' eps_qnorm_ref]);
+   eps = quantile_normalize_from_table(eps, eps_norm_table);
+end
 
 dm_actual = dm_expected + eps;
 dm_actual_std = eps_std;

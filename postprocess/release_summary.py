@@ -20,6 +20,10 @@ def help():
     print HELP_TEXT
     return
 
+def header():
+     HEADER_TEXT = ['filename', 'queries', 'sn', 'damp', 'tsq', 'double', 'other', 'arrays', 'dma', 'tsa', 'other', 'Neg', 'Pos', 'Insig', 'NaN', 'FG30', 'FG26', 'TS30', 'TS26', 'SCI']
+     print '\t'.join(HEADER_TEXT) 
+
 ################ MAIN FUNCTION
 # imports and constants
 import sys
@@ -30,6 +34,10 @@ from numpy import isnan
 ## Step 0: argument parsing and existence checks and help
 if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0:
     help()
+    exit()
+
+if sys.argv.count('-header') > 0:
+    header()
     exit()
 
 if len(sys.argv) < 2:
