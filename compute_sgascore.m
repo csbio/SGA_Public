@@ -811,6 +811,7 @@ eps_std = complete_mat_std.*(qfit/c);
 
 % Mainly for TS data to calibrate to FG
 if(exist('eps_qnorm_ref', 'var'))
+   log_printf('!! eps_norm_ref set, beginning quantile normalization !!\n');
    eval(['load ' eps_qnorm_ref]);
    eps = quantile_normalize_from_table(eps, eps_norm_table);
 end

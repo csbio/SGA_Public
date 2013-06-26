@@ -10,9 +10,9 @@ function[eps] = quantile_normalize_from_table(eps, table)
 
 	for i=1:size(table,1)
 		% count how many values in col 1 are less than each data point
-		data_tableix = data_tableix + double(data > table(:,1));
+		data_tableix = data_tableix + double(data > table(i,1));
 	end
 
 	data_tableix(data_tableix == 0) = 1; 
-	eps(~isnan(eps)) = data;
+	eps(~isnan(eps)) = table(data_tableix,2);
 end
