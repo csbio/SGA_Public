@@ -1,4 +1,4 @@
-function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_eqiv_file)
+function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_eqiv_file, skip_filter)
 %function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_equiv_file)
 
 	% load the fitness data
@@ -26,7 +26,16 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 	% filter 
 	filt = help_filter_by_cobatch(sga, cobatch_scores);
 	filt = help_filter_by_Agreement(filt, equiv);
-	filt = help_filter_by_ABBA(filt, fitness_struct, equiv);
+
+	% this step is optional
+
+	if ~exist('skip_filter', 'var')
+		skip_filter = false;
+	end
+
+	if(~skip_filter)
+		filt = help_filter_by_ABBA(filt, fitness_struct, equiv);
+	end
 
 end
 
@@ -86,8 +95,10 @@ function[sga] = help_filter_by_Agreement(sga, equiv)
 end
 
 function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
+	% tosses intermediate negatives for high fitness queries
+	% unless rescued by ABBA
+
 	% abs(eps) > 0.12 & pvl || AB & BA
-	% sets ALL non interactions to ZERO
 
 	% isolate all intermediate interactions in query
 	% fitness range. Target for removal, check in a loop...
