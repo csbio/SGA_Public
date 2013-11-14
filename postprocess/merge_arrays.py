@@ -1,5 +1,8 @@
 #!/usr/bin/env python
+
+
 def help():
+
     HELP_TEXT = """
 #############################################################################
 # merge_arrays.py
@@ -9,7 +12,7 @@ def help():
 # combo is printed.
 #
 # Author: Benjamin VanderSluis (bvander@cs.umn.edu)
-# Revision: October 22, 2012
+# Revision: September 27, 2013
 #
 # USAGE:
 # merge_arrays.py fg_merged ts_merged > outputfile
@@ -40,37 +43,34 @@ score_fids = ['' for i in range(2)]
 # if we fail because of this, we want to fail before doing a lot of work
 
 for i in range(2):
-	if not os.path.exists(score_files[i]):
-		print 'check "' + check + '" does not exist'
-		exit()
+    if not os.path.exists(score_files[i]):
+        print 'check "' + score_files[i] + '" does not exist'
+        exit()
 
 for i in range(2):
-	if score_files[i][-3:] == '.gz':
-		score_fids[i] = fileinput.hook_compressed(score_files[i], 'r')
-	else:
-		score_fids[i] = open(score_files[i], 'r')
+    score_fids[i] = fileinput.hook_compressed(score_files[i], 'r')
 
 # Print any combination we haven't seen, as it appears
 seen_interactions = {}
 
 for line in score_fids[0]:
-	parsed = line.strip().split('\t')
-	query = parsed[0]
-	array = parsed[2]
-	if query not in seen_interactions:
-		seen_interactions[query] = set()
-	if array not in seen_interactions[query]:
-		seen_interactions[query].add(array)
-		print(line),
+    parsed = line.strip().split('\t')
+    query = parsed[0]
+    array = parsed[2]
+    if query not in seen_interactions:
+        seen_interactions[query] = set()
+    if array not in seen_interactions[query]:
+        seen_interactions[query].add(array)
+        print(line),
 
 for line in score_fids[1]:
-	parsed = line.strip().split('\t')
-	query = parsed[0]
-	array = parsed[2]
-	if query not in seen_interactions:
-		seen_interactions[query] = set()
-	if array not in seen_interactions[query]:
-		seen_interactions[query].add(array)
-		print(line),
+    parsed = line.strip().split('\t')
+    query = parsed[0]
+    array = parsed[2]
+    if query not in seen_interactions:
+        seen_interactions[query] = set()
+    if array not in seen_interactions[query]:
+        seen_interactions[query].add(array)
+        print(line),
 
 [score_fids[i].close() for i in range(2)]

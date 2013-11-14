@@ -1,12 +1,18 @@
 function[result] = OrfToCommon(cellarr, mappingfile)
-%function[result] = OrfToCommon(cellarr, [mappingfile])
+%function[result] = OrfToCommon(cellarr, [mappingfile | 'quiet'])
 % if the inputs have _tails, preserve for the output
 
 % parse the mapping file
 if(~exist('mappingfile', 'var'))
-	mappingfile = '/project/csbio/benjamin/Data/Master_Common_Ref_SGD.txt';
+	% use defalut, with a warning
+	mappingfile = '~/Research/Data/Master_Common_Ref_SGD.txt';
 	fprintf('using default mapping file: %s\n', mappingfile);
+elseif(strcmp(mappingfile(1:3), 'quiet'))
+	% use defalut, but no warning
+	mappingfile = '~/Research/Data/Master_Common_Ref_SGD.txt';
 end
+
+
 
 fid = fopen(mappingfile, 'r');
 A = textscan(fid, '%s%s', 'Delimiter', '\t', 'ReturnOnError', false);

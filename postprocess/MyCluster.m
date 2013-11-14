@@ -1,4 +1,4 @@
-function[] = MyCluster(mat, row_label1, row_label2, col_label, jobname)
+function[] = MyCluster(mat, row_label1, row_label2, col_label, jobname, TYPE)
 % MyCluster(mat, row_label1, row_label2, col_label, jobname)
 %
 %	Defaults:
@@ -7,18 +7,33 @@ function[] = MyCluster(mat, row_label1, row_label2, col_label, jobname)
 %	-m a pairwise average linkage
 %
 
-	mat(isnan(mat)) = 0;
+	% default to inner_product for backward compatabiltity 
+	if ~exist('TYPE', 'var')
+		TYPE = 'inner_product';
+	end
 
+	if strcmp(TYPE, 'inner_product')
+		command = 'cluster -e 9 -g 9 -m a -f '; % inner product
+	elseif strcmp(TYPE, 'pearson')
+		command = 'cluster -e 2 -g 2 -m a -f '; % pearson 
+	else
+		% give the user a chance to reset it and continue
+		fprintf('invalid clustering method request (entering degubber)\n');
+		keyboard
+	end
+
+	mat(isnan(mat)) = 0;
 	filename = strcat(jobname, '.pcl');
 	print_pcl_file(mat, row_label1, row_label2, col_label, filename);
 
-	command = 'cluster -e 9 -g 9 -m a -f ';
+	
 	command = [command filename];
 	disp(command)
 	system(command);
 
-
 	fix_tree_files(jobname);
+
+	system(['rm -f ' filename]); % cleanup the pcl
 
 end
 
