@@ -53,16 +53,19 @@ else
     tmp = split_by_delimiter('/', outputfile);
     outputdir = join_by_delimiter(tmp(1:end-1), '/');
     if(outputfile(1) == '/')
-		outputdir = ['/' outputdir];
+        outputdir = ['/' outputdir];
     end
     if ~exist(outputdir,'dir')
-        error(['Output directory ' outputdir ' does not exist.']);
-    else
-        try
-            lfid = fopen([outputfile '.log'], 'w');
-        catch
-            fprintf('cannot open log file: %s\n', [outputfile '.log']);
-        end
+        fprintf(sprintf('\n\n!! Current dir is: %s\n', pwd()));
+        fprintf(['!! Output directory ' outputdir ' does not exist.\n']);
+        fprintf('!! Type "dbcont" to create it and continue or "dbquit" to abort.\n\n')
+        keyboard
+        mkdir(outputdir);
+    end 
+    try
+        lfid = fopen([outputfile '.log'], 'w');
+    catch
+        fprintf('cannot open log file: %s\n', [outputfile '.log']);
     end
 end
 
