@@ -43,6 +43,9 @@ compute_sgascore_tic = tic;
 cd /project/csbio/lab_share/SGA/Main
 addpath(genpath(pwd))
 
+% Disable the pager if enabled
+more off
+
 % Check output
 if ~exist('outputfile','var')
     error('Define outputfile.');
