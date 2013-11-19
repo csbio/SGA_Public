@@ -1,4 +1,5 @@
 function tokens = split_by_delimiter(delimiter, string)
+%function tokens = split_by_delimiter(delimiter, string)
 
 if ~iscell(string) string = {string}; end
 
