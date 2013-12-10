@@ -1,13 +1,16 @@
-function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type)
-%function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type)
+function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
+%function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
 % assumes the query exists, and is named exactly
-% TODO respect isArray
+% THRESH should be positive (abs())
+% type defaults to 'neg' and THRESH to '0.08'
 
 	if ~exist('int_type', 'var')
 		int_type = 'neg';
 	end
 
-	THRESH = 0.08;
+	if ~exist('THRESH', 'var')
+		THRESH = 0.08;
+	end
 
 	assert(ismember(int_type, {'neg'})); % TODO pos, both
 
@@ -19,14 +22,15 @@ function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type)
 	end
 
 	if strcmp(int_type, 'neg')
-		ixa = sga.eps(ixq,:) < -THRESH & sga.pvl(ixq,:) < 0.05;
+		ixa = sga.eps(ixq,sga.Cannon.isArray) < -THRESH & sga.pvl(ixq,sga.Cannon.isArray) < 0.05;
 	else
 		fprintf('not implemented yet\n');
 		return
 	end
 
-	orfs = sga.Cannon.Orf(ixa);
-	coms = sga.Cannon.Common(ixa);
-	eps = sga.eps(ixq,ixa);
-	pvl = sga.pvl(ixq,ixa);
+	arrays = find(sga.Cannon.isArray)
+	orfs = sga.Cannon.Orf(arrays(ixa));
+	coms = sga.Cannon.Common(arrays(ixa));
+	eps = sga.eps(ixq,arrays(ixa));
+	pvl = sga.pvl(ixq,arrays(ixa));
 end
