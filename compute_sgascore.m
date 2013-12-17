@@ -72,10 +72,15 @@ end
 % Set some default flags if not defined
 keyboard_confirm = false;
 if(~exist('skip_linkage_detection', 'var'))
+    % Skips the whole linkage procedure
+    % experimental / for side projects
     log_printf(lfid, 'Using DEFAULT: skip_linkage_detection = false\n');
     skip_linkage_detection = false;
 end
 if(~exist('skip_linkage_mask', 'var'))
+    % hold out linkage colonies for correction, then put them BACK 
+    % into the outputfile. Use this to generate "nolink" data for
+    % updating the linkage region definitions.
     log_printf(lfid, 'Using DEFAULT: skip_linkage_mask = false\n');
     skip_linkage_mask = false;
 end
