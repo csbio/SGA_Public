@@ -18,15 +18,11 @@ function[list, suffix] = StripOrfs(list, N)
 			[list{i}, suffix{i}] = strip_annotation(list{i}, N);
 		end
 	end
-
 end
 
 function[short_orf, suffix] = strip_annotation(orf_string, N)
 % from SGA/Main/extra
 % Strips off the LAST annotation by default (eg. Orf_sn_rep -> Orf_sn)
-% you may also provide explicit instructions 'first', 'last', or N
-%
-% strip_annotation() will remove the last annotation if given too small or too large an N
 
     ix = strfind(orf_string, '_');
     if isempty(ix)
@@ -34,18 +30,13 @@ function[short_orf, suffix] = strip_annotation(orf_string, N)
         suffix = '';
         return
     else
+        if strcmp('first', N)
+            N = 1;
 
-        if exist('N', 'var')
-            if strcmp('first', N)
-                N = 1;
+        elseif strcmp('last', N)
+            N = length(ix);
 
-            elseif strcmp('last', N)
-                N = length(ix);
-
-            elseif N>length(ix)
-                N = length(ix);
-            end
-        else
+        elseif N>length(ix)
             N = length(ix);
         end
         short_orf = orf_string(1:ix(N)-1);
