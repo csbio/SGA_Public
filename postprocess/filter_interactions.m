@@ -11,7 +11,7 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 	equiv_fid = fopen(array_query_eqiv_file, 'r');
 	equiv = textscan(equiv_fid, '%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
 	fclose(equiv_fid);
-	equiv = [equiv{1} equiv{2}];
+	equiv = lower([equiv{1} equiv{2}]);
 
 	% load / calculate the cobatch_scores
 	cobatch_scores = calculate_cobatch_by_query(sga, sga_inputfile);
