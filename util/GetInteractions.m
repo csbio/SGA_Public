@@ -28,7 +28,7 @@ function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
 		return
 	end
 
-	arrays = find(sga.Cannon.isArray)
+	arrays = find(sga.Cannon.isArray);
 	orfs = sga.Cannon.Orf(arrays(ixa));
 	coms = sga.Cannon.Common(arrays(ixa));
 	eps = sga.eps(ixq,arrays(ixa));
