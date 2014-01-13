@@ -13,8 +13,8 @@ Cannon.Map = java.util.HashMap(6000);
 A = textscan(fid, '%s');
 Cannon.Orf = A{1};
 Cannon.GENES = length(Cannon.Orf);
-Cannon.isArray = boolean(zeros(1,Cannon.GENES));
-Cannon.isQuery = boolean(zeros(Cannon.GENES, 1));
+Cannon.isArray = logical(zeros(1,Cannon.GENES));
+Cannon.isQuery = logical(zeros(Cannon.GENES, 1));
 fclose(fid);
 
 for i=1:Cannon.GENES
