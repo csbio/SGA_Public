@@ -13,15 +13,17 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 % sga_output file = outputfile from compute_sgascore
 % ie, it is extensionless
 	
+
 	sga_raw = load_sga_epsilon_from_scorefile([sga_outputfile '.txt'], [sga_outputfile '.orf']);
 
 	% layout file expects format (plate row col orf) [384] 16x24
+
+	keyboard
 	sga = filter_green_blocks_around_linkage(sga_raw, linkagefile, coord_file, layout_file, wild_type, border_strain);
 
 	% this will do cobatch filter and AB BA disagreement filtereing in either case
 	% but will not do any fitness depedant filtering unless 'false'
-	[sga_unfiltered, fitness_struct]  = filter_interactions(sga, smfitnessfile, sga_inputfile, equiv_file, true);
-	[sga, fitness_struct]  = filter_interactions(sga, smfitnessfile, sga_inputfile, equiv_file, false);
+	[sga, fitness_struct]  = filter_interactions(sga, smfitnessfile, sga_inputfile, equiv_file);
 
 
 	% ------------------------ clustergrams 
@@ -29,7 +31,7 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 	dirname = split_by_delimiter('/', sga_outputfile);
 	basename= split_by_delimiter('_', dirname{end});
 	
-	clus_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/clustergrams_final/'];
+	clus_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/clustergrams/'];
 	clus_basename = basename;
 	clus_basename{1} = 'clustergram';
 	clus_basename = join_by_delimiter(clus_basename, '_');
@@ -37,18 +39,15 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 	generate_fg_clustergram(sga, [clus_dirname clus_basename]);
 
 
-
 	% ------------------------ interactions / profiles
 
-	int_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/interactions_final/'];
+	int_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/interactions/'];
 	int_basename{1} = 'release';
 	system(['mkdir -p ' int_dirname]);
-
 	prof_basename = basename;
 	prof_basename{1} = 'profile';
 	prof_basename = join_by_delimiter(prof_basename, '_');
-	print_profile_data(sga_unfiltered, [int_dirname '/' prof_basename '_unfiltered.txt']);
-	print_profile_data(sga, [int_dirname '/' prof_basename '_filtered.txt']);
+	print_profile_data(sga, [int_dirname '/' prof_basename '.txt']);
 
 
 	% ------------------------ processed matfiles
@@ -59,8 +58,7 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 		construct = join_by_delimiter({project, array, temp}, '_');
 
 	eval(sprintf('%s = sga;', construct)); % rename struct
-	eval(sprintf('%s_unfiltered = sga_unfiltered;', construct)); % rename struct
-	eval(sprintf('save %s%s.mat %s %s_unfiltered', int_dirname, construct, construct)); % save to mat
+	eval(sprintf('save %s%s.mat %s ', int_dirname, construct, construct)); % save to mat
 
 	eval(sprintf('%s_raw = sga_raw;', construct)); % save a pre-filter version as well
 	eval(sprintf('save %s%s_raw.mat %s_raw', int_dirname, construct, construct)); % save to mat

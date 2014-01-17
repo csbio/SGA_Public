@@ -1,4 +1,4 @@
-function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_eqiv_file, skip_filter)
+function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_eqiv_file)
 %function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inputfile, array_query_equiv_file)
 
 	% load the fitness data
@@ -11,7 +11,7 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 	equiv_fid = fopen(array_query_eqiv_file, 'r');
 	equiv = textscan(equiv_fid, '%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
 	fclose(equiv_fid);
-	equiv = [equiv{1} equiv{2}];
+	equiv = lower([equiv{1} equiv{2}]);
 
 	% load / calculate the cobatch_scores
 	cobatch_scores = calculate_cobatch_by_query(sga, sga_inputfile);
@@ -26,16 +26,6 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 	% filter 
 	filt = help_filter_by_cobatch(sga, cobatch_scores);
 	filt = help_filter_by_Agreement(filt, equiv);
-
-	% this step is optional
-
-	if ~exist('skip_filter', 'var')
-		skip_filter = false;
-	end
-
-	if(~skip_filter)
-		filt = help_filter_by_ABBA(filt, fitness_struct, equiv);
-	end
 
 end
 
@@ -94,97 +84,6 @@ function[sga] = help_filter_by_Agreement(sga, equiv)
 	fprintf('ABBA_disagree (x2): %d\n', ABBA_disagree);
 end
 
-function[filt] = help_filter_by_ABBA(sga, fitness_struct, equiv)
-	% tosses intermediate negatives for high fitness queries
-	% unless rescued by ABBA
-
-	% abs(eps) > 0.12 & pvl || AB & BA
-
-	% isolate all intermediate interactions in query
-	% fitness range. Target for removal, check in a loop...
-	
-	% always read from sga and write to filt
-	filt = sga;
-	filt.tossed = sparse(zeros(size(sga.eps)));
-	fitness_target = sga.Cannon.isQuery;
-	ABBA_rescue = 0;
-	ABBA_refuse = 0;
-	ABBA_unavail= 0;
-	for i=find(fitness_target')
-		ix = strmatch(sga.Cannon.Orf{i}, fitness_struct(:,1), 'exact');
-		if(length(ix)>1)
-			fprintf('warning: multiple fitness values for %s. Taking first\n', sga.Cannon.Orf{i});
-			ix = ix(1);
-		end
-		if(~isempty(ix) && fitness_struct{ix,2}>0.97) % target aquired
-			fitness_target(i) = true;
-		else
-			fitness_target(i) = false;
-		end
-	end
-
-	Cannon_strains = sga.Cannon.Orf;
-	for i=1:length(Cannon_strains)
-		ix = strfind(Cannon_strains{i}, '_');
-		Cannon_strains{i} = Cannon_strains{i}(ix+1:end);
-	end
-
-	% for the sick queries, we need to isolate the interactions
-	
-	fprintf('%d queries targeted for ABBA filtering\n', sum(fitness_target));
-	filt.fitness_target = fitness_target;
-	for i=find(fitness_target')
-
-		% intermediate negatives
-		interactions = find(sga.eps(i,:) > -0.12 & sga.eps(i,:) < -0.08 & ...
-                          sga.pvl(i,:) < 0.05 );
-		for j=interactions
-			% is this array also a (BA) query?
-			ixBAq = help_equiv_set(filt.Cannon.Orf{j}, Cannon_strains, equiv);
-			% is this (AB) query on the (BA) array?
-			ixBAa = help_equiv_set(filt.Cannon.Orf{i}, Cannon_strains, equiv);
-
-			% the mapping isn't quite 1 - 1; This affects maybe 20 queries and/or arrays
-			if(length(ixBAq) > 1)
-				ixBAq = RandomSubset(ixBAq,1);
-			end
-			if(length(ixBAa) > 1)
-				ixBAa = RandomSubset(ixBAa,1);
-			end
-
-			if(isempty(ixBAq) || isempty(ixBAa)) % unavailable BA -> TOSS
-
-				filt.eps(i,j) = 0;
-				filt.pvl(i,j) = 1;
-				filt.tossed(i,j) = 1;
-				ABBA_unavail = ABBA_unavail+1;
-
-			elseif(sga.eps(i,j) < 0 && ...
-                ~(sga.eps(ixBAq,ixBAa)<-0.08 && ...
-					   sga.pvl(ixBAq,ixBAa)<0.05)) % BA negative failed test -> TOSS
-
-				filt.eps(i,j) = 0;
-				filt.pvl(i,j) = 1;
-				filt.tossed(i,j) = 1;
-				ABBA_refuse = ABBA_refuse+1;
-
-			else
-				ABBA_rescue = ABBA_rescue+1;
-			end
-		end
-
-		% ALL positives
-
-		% record the "significant" positives
-		sig_pos = sga.eps(i,:) > 0.08 & sga.pvl(i,:)<0.05;
-		filt.tossed(i,sig_pos) = 1;
-
-		% remove anything > 0
-		filt.pvl(i,filt.eps(i,:)>0) = 1;
-		filt.eps(i,filt.eps(i,:)>0) = 0;
-	end
-	fprintf('ABBA_unavail: %d\nABBA_rescue:  %d\nABBA_refuse: %d\n\n', ABBA_unavail,ABBA_rescue,ABBA_refuse);
-end
 
 function[array_ix] = help_equiv_set(query, Cannon_strains, equiv)
 % match tsa with tsq and sn with dma
@@ -216,7 +115,7 @@ function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 	% rip through the input file and get bach assignments
 	% in python
 	cobatch_file = [inputfile(1:end-4) '.bch'];
-	exec_string = ['GenerateCoBatchStandard.py ' inputfile ' > ' cobatch_file];
+	exec_string = ['Python/GenerateCoBatchStandard.py ' inputfile ' > ' cobatch_file];
 	[status] = system(exec_string);
 	if(status > 0)
 		fprintf('Warning Python CoBatch process returned nonzero exit status');
@@ -260,5 +159,3 @@ function[vec] = substrmatch(str, cellary)
 	vec = find(~cellfun(@isempty, strfind(cellary, str)));
 
 end
-
-

@@ -2,7 +2,7 @@
 def help():
     HELP_TEXT = """
 #############################################################################
-# merge_data.py
+# merge_data2.py
 #
 # This script takes in two SGA dataset files and produces a single
 # merged output for release. It expects a *.orf to be alongside *.txt scores
@@ -117,8 +117,8 @@ for line in score_fids[0]:
    newline = '\t'.join(line[0:4]) 
    newline = newline + '\t' + line[7] + '\t'
    newline = newline + '\t'.join(line[4:7])
-   newline = newline + '\t'+'TS26'+'\n'
-   #newline = newline + '\t'+'FG30'+'\n'
+   #newline = newline + '\t'+'TS26'+'\n'
+   newline = newline + '\t'+'FG30'+'\n'
    out_fid.write(newline)
 
 for line in score_fids[1]:
@@ -127,8 +127,8 @@ for line in score_fids[1]:
       newline = '\t'.join(line[0:4]) 
       newline = newline + '\t' + line[7] + '\t'
       newline = newline + '\t'.join(line[4:7])
-      newline = newline + '\t'+'TS30'+'\n'
-      #newline = newline + '\t'+'FG26'+'\n'
+      #newline = newline + '\t'+'TS30'+'\n'
+      newline = newline + '\t'+'FG26'+'\n'
       out_fid.write(newline)
 
 [score_fids[i].close() for i in range(2)]

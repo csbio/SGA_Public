@@ -1,5 +1,5 @@
 function[sga] = load_sga_epsilon_from_release(score_file_string, orf_file)
-%function[sga] = load_sga_epsilon_from_release(score_file_string)
+%function[sga] = load_sga_epsilon_from_release(score_file_string, orf_file)
 tic
 
 % make a Cannon
@@ -10,8 +10,8 @@ fid = fopen(orf_file, 'r');
 A = textscan(fid, '%s');
 Cannon.Orf = A{1};
 Cannon.GENES = length(Cannon.Orf);
-Cannon.isArray = boolean(zeros(1,Cannon.GENES));
-Cannon.isQuery = boolean(zeros(Cannon.GENES, 1));
+Cannon.isArray = logical(zeros(1,Cannon.GENES));
+Cannon.isQuery = logical(zeros(Cannon.GENES, 1));
 fclose(fid);
 
 for i=1:Cannon.GENES
@@ -64,7 +64,7 @@ while ~feof(fid)
 
 		% experiment...
 
-		% boolean vectors
+		% logical vectors
 		Cannon.isArray(ixA) = true;
 		Cannon.isQuery(ixQ) = true;
 
