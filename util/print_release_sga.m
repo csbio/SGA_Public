@@ -1,6 +1,7 @@
 function[] = print_release_sga(sga, outputfile, Experiment);
 %function[] = print_release_sga(sga, outputfile, Experiment);
 % prints a release file from a struct. Include an EXP string (e.g. TS26)
+% Can print EXP from struct if available
 	%{
 	----------------------------------------------------------
 	TYPE RELEASE
@@ -16,6 +17,11 @@ function[] = print_release_sga(sga, outputfile, Experiment);
 	8  P-value
 	9  Experiment
 	%}
+
+	if ~isfield(sga, 'src')
+		sga.src = ones(sga.Cannon.GENES);
+		sga.srces = {Experiment};
+	end
 
 	fid = fopen(outputfile, 'w');
 
@@ -38,7 +44,7 @@ function[] = print_release_sga(sga, outputfile, Experiment);
 				sga.eps(r(i),c(i)),...
 				sga.dbl_std(r(i),c(i)),...
 				sga.pvl(r(i),c(i)),...
-				Experiment);
+				sga.srces{sga.src(r(i),c(i))});
 	end
 	fclose(fid);
 end

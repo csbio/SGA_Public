@@ -26,9 +26,6 @@ Cannon.Map = Hash(Cannon.Map, Cannon.Common);
 format = '%s%s%s%s%f32%f32%f32%f64%s'; % 4 strings, then all singles (64 bit pval)
 block_size = 1000;
 fid = fopen(score_file_string, 'r');
-TOTAL_LINES = 14171105;
-pct = 0;
-iter_cnt = 0;
 
 
 % allocate matriciesk
@@ -36,6 +33,11 @@ sga_eps = zeros(Cannon.GENES) + nan;
 sga_dbl = zeros(Cannon.GENES) + nan;
 sga_dbl_std = zeros(Cannon.GENES) + nan;
 sga_pvl = zeros(Cannon.GENES) + nan;
+sga_src = zeros(Cannon.GENES);
+
+valid_srces = {'FG26', 'FG30', 'TS26', 'TS30', 'FG_MERGE', 'TS_MERGE'};
+src_map = Hash([], valid_srces);
+
 
 
 % Read block loop
@@ -62,12 +64,12 @@ while ~feof(fid)
 		% Pvalue pval
 		sga_pvl(ixQ, ixA) = segarray{8}(i);
 
-		% experiment...
-
 		% logical vectors
 		Cannon.isArray(ixA) = true;
 		Cannon.isQuery(ixQ) = true;
 
+		% experiment
+		sga_src(ixQ, ixA) = src_map.get(segarray{9}{i});
 
 	end
 end
@@ -86,6 +88,6 @@ for i=1:length(querys)
 end
 
 sga = struct('eps', sga_eps, 'dbl', sga_dbl, 'pvl', sga_pvl, ...
-   'Cannon', Cannon, 'dbl_std', sga_dbl_std);
+   'Cannon', Cannon, 'dbl_std', sga_dbl_std, 'src', sga_src, 'sources', valid_srces);
 
 toc
