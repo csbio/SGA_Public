@@ -59,9 +59,9 @@ function[sga] = mask_essentials(sga, select)
 	end
 		
 	if select(2) == 'E'
-		sga.Cannon.isArray(~Aess) = false;
 		Aess = logical(zeros(sga.Cannon.GENES,1));
 		Aess(substrmatch('_tsa', sga.Cannon.Orf)) = true;
+		sga.Cannon.isArray(~Aess) = false;
 	elseif select(2) == 'N'
 		Anss = logical(zeros(sga.Cannon.GENES,1));
 		Anss(substrmatch('_dma', sga.Cannon.Orf)) = true;
