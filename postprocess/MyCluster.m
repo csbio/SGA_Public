@@ -39,6 +39,7 @@ end
 
 
 function[] = fix_tree_files(jobname)
+% this scales inner products to look like pearsons...
 
 %-% Array Tree
 	filename = [jobname '.atr'];
