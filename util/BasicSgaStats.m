@@ -50,16 +50,17 @@ fprintf('--\n\n');
 
 query_strains = sga.Cannon.Orf(sga.Cannon.isQuery);
 array_strains = sga.Cannon.Orf(sga.Cannon.isArray);
-strain_types = {'sn' 'dma' 'tsq' 'damp' 'tsa' 'trip' 'unann' 'total'};
-strain_type_counts = nan(2,8); % query,array ; type
+strain_types = {'sn' 'dma' 'tsq' 'damp' 'tsa' 'trip' '_y' 'unann' 'total'};
+strain_type_counts = nan(2,9); % query,array ; type
     strain_type_counts(1,1) = sum(~cellfun(@isempty, strfind(query_strains, '_sn')));
     strain_type_counts(1,2) = sum(~cellfun(@isempty, strfind(query_strains, '_dma')));
     strain_type_counts(1,3) = sum(~cellfun(@isempty, strfind(query_strains, '_tsq')));
     strain_type_counts(1,4) = sum(~cellfun(@isempty, strfind(query_strains, '_damp')));
     strain_type_counts(1,5) = sum(~cellfun(@isempty, strfind(query_strains, '_tsa')));
     strain_type_counts(1,6) = sum(~cellfun(@isempty, strfind(query_strains, '+')));
-    strain_type_counts(1,7) = sum(cellfun(@isempty, strfind(query_strains, '_')));
-    strain_type_counts(1,8) = length(query_strains);
+    strain_type_counts(1,7) = sum(~cellfun(@isempty, strfind(query_strains, '_y')));
+    strain_type_counts(1,8) = sum(cellfun(@isempty, strfind(query_strains, '_')));
+    strain_type_counts(1,9) = length(query_strains);
 
     strain_type_counts(2,1) = sum(~cellfun(@isempty, strfind(array_strains, '_sn')));
     strain_type_counts(2,2) = sum(~cellfun(@isempty, strfind(array_strains, '_dma')));
@@ -67,10 +68,22 @@ strain_type_counts = nan(2,8); % query,array ; type
     strain_type_counts(2,4) = sum(~cellfun(@isempty, strfind(array_strains, '_damp')));
     strain_type_counts(2,5) = sum(~cellfun(@isempty, strfind(array_strains, '_tsa')));
     strain_type_counts(2,6) = sum(~cellfun(@isempty, strfind(array_strains, '+')));
-    strain_type_counts(2,7) = sum(cellfun(@isempty, strfind(array_strains, '_')));
-    strain_type_counts(2,8) = length(array_strains);
+    strain_type_counts(2,7) = sum(~cellfun(@isempty, strfind(array_strains, '_y')));
+    strain_type_counts(2,8) = sum(cellfun(@isempty, strfind(array_strains, '_')));
+    strain_type_counts(2,9) = length(array_strains);
+
 fprintf('Strain Summary:\n');
 fprintf('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n',   'type' , strain_types{:});
 fprintf('%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n',   'query' , strain_type_counts(1,:));
 fprintf('%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n\n', 'array' , strain_type_counts(2,:));
 fprintf('-----------------------------------------------------------\n');
+
+% list collab query strains by common name
+fprintf(1, 'Collab strains (_y):\n');
+collabs = sga.Cannon.Common(substrmatch('_y', sga.Cannon.Common));
+collabs = [collabs; cell(mod(4-mod(length(collabs),4),4),1)];
+collabs = reshape(collabs, length(collabs)/4, 4);
+cell2csv(1, collabs);
+
+
+

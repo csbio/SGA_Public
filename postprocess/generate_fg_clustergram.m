@@ -3,7 +3,9 @@ function[] = generate_fg_clustergram(sga, name)
 % produces a CLUST and CHROM version
 
 
-	fid = fopen('/project/csbio/lab_share/SGA/refdata/StrainID-Allele_map.csv', 'r');
+	%fid = fopen('/project/csbio/lab_share/SGA/refdata/StrainID-Allele_map_140107.csv', 'r');
+	fid = fopen('/project/csbio/benjamin/Data/StrainID-Allele_map_140116.csv', 'r');
+
 	A = textscan(fid, '%s%s');
 	fclose(fid);
 

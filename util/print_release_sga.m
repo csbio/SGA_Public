@@ -20,7 +20,7 @@ function[] = print_release_sga(sga, outputfile, Experiment);
 
 	if ~isfield(sga, 'src')
 		sga.src = ones(sga.Cannon.GENES);
-		sga.srces = {Experiment};
+		sga.sources = {Experiment};
 	end
 
 	fid = fopen(outputfile, 'w');
@@ -44,7 +44,7 @@ function[] = print_release_sga(sga, outputfile, Experiment);
 				sga.eps(r(i),c(i)),...
 				sga.dbl_std(r(i),c(i)),...
 				sga.pvl(r(i),c(i)),...
-				sga.srces{sga.src(r(i),c(i))});
+				sga.sources{sga.src(r(i),c(i))});
 	end
 	fclose(fid);
 end

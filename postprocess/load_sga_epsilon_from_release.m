@@ -87,7 +87,12 @@ for i=1:length(querys)
 	Cannon.QueryMap.put(querys{i}, i);
 end
 
-sga = struct('eps', sga_eps, 'dbl', sga_dbl, 'pvl', sga_pvl, ...
-   'Cannon', Cannon, 'dbl_std', sga_dbl_std, 'src', sga_src, 'sources', valid_srces);
+sga.eps = sga_eps;
+sga.pvl = sga_pvl;
+sga.dbl = sga_dbl;
+sga.dbl_std = sga_dbl_std;
+sga.src = sga_src;
+sga.sources = valid_srces;
+sga.Cannon = Cannon;
 
 toc

@@ -682,6 +682,9 @@ for i = 1:length(all_arrays)
     querys = unique(sgadata.querys(all_ind));
      
     ind2 = find(~isnan(final_smfit(sgadata.querys(all_ind))));
+    % sometimes we get an error here:
+    % Warning: Polynomial is not unique; degree >= number of data points.
+    % Generally I only get this when scoring replicate data, so I haven't much explored the ramifications. (BJV)
     p = polyfit(final_smfit(sgadata.querys(all_ind(ind2))),sgadata.batchnorm_colsize(all_ind(ind2)),1);
     
     curr_data = sgadata.batchnorm_colsize(all_ind);
