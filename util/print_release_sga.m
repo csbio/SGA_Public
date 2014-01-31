@@ -23,6 +23,10 @@ function[] = print_release_sga(sga, outputfile, Experiment);
 		sga.sources = {Experiment};
 	end
 
+	% Set anything "unset" to NaN;
+	sga.eps(~sga.Cannon.isQuery,:) = NaN;
+	sga.eps(:,~sga.Cannon.isArray) = NaN;
+
 	fid = fopen(outputfile, 'w');
 
 	header = {'Query ORF', 'Query gene name', 'Array ORF', 'Array gene name', ...
