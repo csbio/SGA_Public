@@ -1,6 +1,7 @@
 function[] = print_terse_sga(sga, filename)
 %function[] = print_terse_sga(sga, filename)
 % Prints all non-nan scores from an sga struct
+% Respects isQuery and isArray
 % Orf Orf EPS PVL
 	fid = fopen(filename, 'w');
 	EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);

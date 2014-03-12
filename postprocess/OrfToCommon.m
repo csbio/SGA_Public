@@ -7,7 +7,7 @@ if(~exist('mappingfile', 'var'))
 	% use defalut, with a warning
 	mappingfile = '~/Research/Data/Master_Common_Ref_SGD.txt';
 	fprintf('using default mapping file: %s\n', mappingfile);
-elseif(strcmp(mappingfile(1:3), 'quiet'))
+elseif(strcmp(mappingfile, 'quiet'))
 	% use defalut, but no warning
 	mappingfile = '~/Research/Data/Master_Common_Ref_SGD.txt';
 end

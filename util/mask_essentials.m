@@ -46,7 +46,7 @@ function[sga] = mask_essentials(sga, select)
 	elseif select(1) == 'C'
 		Qdmc = logical(zeros(sga.Cannon.GENES,1));
 		Qdmc(substrmatch('YDL227C+', sga.Cannon.Orf)) = true;
-		Qdmc(substrmatch('+YDL227C+', sga.Cannon.Orf)) = true;
+		Qdmc(substrmatch('+YDL227C', sga.Cannon.Orf)) = true;
 		sga.Cannon.isQuery(~Qdmc) = false;
 	elseif select(1) == 'M'
 		Qmisc = logical(zeros(sga.Cannon.GENES,1));
