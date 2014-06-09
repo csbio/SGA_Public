@@ -10,6 +10,7 @@ function[sga] = mask_essentials(sga, select)
 % A All
 % T Trigenic (DM queries)
 % C Trigenic (DM controls)
+% t (toss any with a +)
 % M Misc (_y... && _u...)
 %
 % Array Options:
@@ -48,6 +49,10 @@ function[sga] = mask_essentials(sga, select)
 		Qdmc(substrmatch('YDL227C+', sga.Cannon.Orf)) = true;
 		Qdmc(substrmatch('+YDL227C', sga.Cannon.Orf)) = true;
 		sga.Cannon.isQuery(~Qdmc) = false;
+	elseif select(1) == 't'
+		Qdm =logical(zeros(sga.Cannon.GENES,1));
+		Qdm(substrmatch('+', sga.Cannon.Orf)) = true;
+		sga.Cannon.isQuery(Qdm) = false;
 	elseif select(1) == 'M'
 		Qmisc = logical(zeros(sga.Cannon.GENES,1));
 		Qmisc(substrmatch('_y', sga.Cannon.Orf)) = true;

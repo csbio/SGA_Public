@@ -1,5 +1,5 @@
 function [sga] = sga_fill_square(query_list, sga_fg, sga_ts)
-%function [sga] = sga_fill_box(query_list, sga_sources)
+%function [sga] = sga_fill_square(query_list, sga_fg, sga_ts)
 % given a list of querys, fill out a square with available epsilon and pvalue data
 % queries are matched exactly, arrays are mapped by known equivalence
 
@@ -12,7 +12,7 @@ function [sga] = sga_fill_square(query_list, sga_fg, sga_ts)
 	sga.Cannon.Common = OrfToCommon(query_list);
 	sga.Cannon.GENES = length(query_list);
 	sga.Cannon.isArray = logical(ones(1,sga.Cannon.GENES));
-	sga.Cannon.isArray = logical(ones(sga.Cannon.GENES,1));
+	sga.Cannon.isQuery = logical(ones(sga.Cannon.GENES,1));
 
 	sga.eps = NaN(length(query_list));
 	sga.pvl = NaN(length(query_list));

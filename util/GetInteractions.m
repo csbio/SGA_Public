@@ -12,7 +12,8 @@ function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
 		THRESH = 0.08;
 	end
 
-	assert(ismember(int_type, {'neg'})); % TODO pos, both
+	assert(ismember(int_type, {'neg', 'pos'})); % TODO pos, both
+
 
 	ixq = sga.Cannon.Map.get(query);
 	if(isempty(ixq) || ~strcmp(sga.Cannon.Orf{ixq}, query))
@@ -23,6 +24,8 @@ function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
 
 	if strcmp(int_type, 'neg')
 		ixa = sga.eps(ixq,sga.Cannon.isArray) < -THRESH & sga.pvl(ixq,sga.Cannon.isArray) < 0.05;
+	elseif strcmp(int_type, 'pos')
+		ixa = sga.eps(ixq,sga.Cannon.isArray) > THRESH & sga.pvl(ixq,sga.Cannon.isArray) < 0.05;
 	else
 		fprintf('not implemented yet\n');
 		return

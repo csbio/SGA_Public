@@ -43,11 +43,10 @@ function [] = compare_sga_structs(sga, labels, standard, std_label, varargin)
 		sga{i}.Cannon.isArray(~ismember(StripOrfs(sga{i}.Cannon.Orf), standard.orfs)) = false;
 
 		% perform the analysis
-      PR_neg = help_curve_the_pr(sga{i}, standard, true);
-      PR_pos = help_curve_the_pr(sga{i}, standard, false);
+	    PR_neg = help_curve_the_pr(sga{i}, standard, true);
+	    PR_pos = help_curve_the_pr(sga{i}, standard, false);
 
 		% draw the results
-
 		if(PLOTS)
 			% background, draw this for each SGA in case they are different.
 			% background is the same for pos and negative.
@@ -141,7 +140,6 @@ function [PR] = help_curve_the_pr(sga, standard, negativesTF)
 
    [PR, ix] = help_eval_ppi_pairs(standard, [Qname(r) Aname(c)]);
    PR = [v(ix) PR];
-
 end
 function [PR, ix] = help_eval_ppi_pairs(standard, pair_list)
 

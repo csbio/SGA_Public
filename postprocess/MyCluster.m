@@ -1,10 +1,11 @@
 function[] = MyCluster(mat, row_label1, row_label2, col_label, jobname, TYPE)
-% MyCluster(mat, row_label1, row_label2, col_label, jobname)
+%function[] = MyCluster(mat, row_label1, row_label2, col_label, jobname, TYPE)
 %
 %	Defaults:
 %	-e 9 0- inner product on arrays
 %	-g 9 0- inner product on genes
 %	-m a pairwise average linkage
+% TYPE == 'inner_product' (default), or 'pearson'
 %
 
 	% default to inner_product for backward compatabiltity 

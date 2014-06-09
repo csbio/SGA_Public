@@ -14,8 +14,6 @@ function[] = generate_fg_clustergram(sga, name)
 		m.put(java.lang.String(A{1}{i}), java.lang.String(A{2}{i}));
 	end
 
-
-
 	allele = sga.Cannon.Orf;
 	for i=1:length(allele)
 		ix = strfind(allele{i}, '_ts');
