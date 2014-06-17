@@ -5,11 +5,11 @@ function[result] = OrfToCommon(cellarr, mappingfile)
 % parse the mapping file
 if(~exist('mappingfile', 'var'))
 	% use defalut, with a warning
-	mappingfile = '~/Research/Data/Master_Common_Ref_SGD.txt';
+	mappingfile = '~/Research/Data/YeastGeneMap/Orf_Common_Map_140617.txt';
 	fprintf('using default mapping file: %s\n', mappingfile);
 elseif(strcmp(mappingfile, 'quiet'))
 	% use defalut, but no warning
-	mappingfile = '~/Research/Data/Master_Common_Ref_SGD.txt';
+	mappingfile = '~/Research/Data/YeastGeneMap/Orf_Common_Map_140617.txt';
 end
 
 
