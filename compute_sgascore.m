@@ -189,7 +189,7 @@ log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n',   'query' , strain_type
 log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n\n', 'array' , strain_type_counts(2,:));
 unique_array_plate_count = length(unique(sgadata.arrayplateids));
 log_printf(lfid, 'number of unique array plates found: %d\n', unique_array_plate_count);
-if ~ismember(unique_array_plate_count, [4, 14])
+if ~ismember(unique_array_plate_count, [1, 4, 14])
     log_printf(lfid, 'TERMINAL unknown array configuration (%d) or incorrect array plate mapping');
     return
 end
