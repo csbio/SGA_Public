@@ -11,7 +11,7 @@ def help():
 # Tested on: Python 2.6.5
 #
 # USAGE: [-h | -help | --help]
-# CountCompleteReplicates.py array_size input_file[.gz] output_file
+# CountCompleteReplicates.py array_size input_file[.gz] > output_file
 #
 # INPUTS:
 # array_size - number of plate to count as "complete"
@@ -19,7 +19,8 @@ def help():
 #            - may be gzipped
 #
 # OUTPUTS:
-#  output_file - list [query_orf, small_sets partial_sets complete_sets]]
+#  STDOUT - list [query_orf, small_sets partial_sets complete_sets]]
+#  
 #
 #############################################################################
 """
@@ -43,27 +44,19 @@ if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0
     help()
     exit()
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 3:
     print 'too few arguments (try "-h" for help)'
     exit()
 
 ARRAY_PLATE_SET_SIZE = int(sys.argv[1])
 ARRAY_PLATE_SET_PART = int(floor(ARRAY_PLATE_SET_SIZE / 2))
 input_file = sys.argv[2]
-output_file = sys.argv[3]
 
 # Now ensure that these all exist and we're allowed to write the output
 # if we fail because of this, we want to fail before doing a lot of work
 if not os.path.exists(input_file):
     print 'input_file"' + input_file + '" does not exist'
     exit()
-
-try:
-    output_fid = open(output_file, 'w')
-except:
-    print 'Error opening output file ' + output_file
-    exit() 
-
 
 if input_file[-3:] == '.gz':
     input_fid = fileinput.hook_compressed(input_file, 'r')
@@ -96,7 +89,7 @@ for line in input_fid:
     
 # Step 2: for every query iterate over every set. each set needs xxx to be complete
 
-output_fid.write('Orf' + '\t' + 'partial (>0)' + '\t' + 'partial (>' + str(ARRAY_PLATE_SET_PART) + ')' + '\t' + 'full ('+ str(ARRAY_PLATE_SET_SIZE) + ')' + '\n')
+print('Orf' + '\t' + 'partial (>0)' + '\t' + 'partial (>' + str(ARRAY_PLATE_SET_PART) + ')' + '\t' + 'full ('+ str(ARRAY_PLATE_SET_SIZE) + ')')
 for query in queries:
     complete = 0
     partial = 0
@@ -115,8 +108,7 @@ for query in queries:
         else:
             incomplete += 1
 
-    output_fid.write(query + '\t' + str(incomplete) + '\t' + str(partial) + '\t' + str(complete) + '\n')
+    print(query + '\t' + str(incomplete) + '\t' + str(partial) + '\t' + str(complete))
 
-output_fid.close()
       
 
