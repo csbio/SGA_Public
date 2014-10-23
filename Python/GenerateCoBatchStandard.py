@@ -24,7 +24,7 @@ def help():
 #
 #############################################################################
 """
-    print HELP_TEXT
+    print(HELP_TEXT)
     return
 
 ################ MAIN FUNCTION
@@ -39,7 +39,7 @@ if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0
     exit()
 
 if len(sys.argv) < 2:
-    print 'too few arguments (try "-h" for help)'
+    print('too few arguments (try "-h" for help)')
     exit()
 
 input_file = sys.argv[1]
