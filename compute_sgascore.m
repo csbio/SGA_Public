@@ -189,7 +189,7 @@ log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n',   'query' , strain_type
 log_printf(lfid, '%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n\n', 'array' , strain_type_counts(2,:));
 unique_array_plate_count = length(unique(sgadata.arrayplateids));
 log_printf(lfid, 'number of unique array plates found: %d\n', unique_array_plate_count);
-if ~ismember(unique_array_plate_count, [4, 14])
+if ~ismember(unique_array_plate_count, [1, 4, 14])
     log_printf(lfid, 'TERMINAL unknown array configuration (%d) or incorrect array plate mapping');
     return
 end
@@ -685,6 +685,9 @@ for i = 1:length(all_arrays)
     % sometimes we get an error here:
     % Warning: Polynomial is not unique; degree >= number of data points.
     % Generally I only get this when scoring replicate data, so I haven't much explored the ramifications. (BJV)
+	% it comes from not having any non-NaN query fitness estimates, so 0 data points to
+	% fit the trend for each array with a degree 1 polynomial
+	% p becomes [0, 0]
     p = polyfit(final_smfit(sgadata.querys(all_ind(ind2))),sgadata.batchnorm_colsize(all_ind(ind2)),1);
     
     curr_data = sgadata.batchnorm_colsize(all_ind);
