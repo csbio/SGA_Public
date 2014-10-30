@@ -5,19 +5,15 @@ function [] = compute_sgascore_function(parameter_struct)
     % unpack the parameters
     parameters = fieldnames(parameter_struct);
     for i = 1:length(parameters)
-        eval(sprintf('%s = parameter_struct.%s', parameters{i}));
+        eval(sprintf('%s = parameter_struct.%s;', parameters{i}, parameters{i}));
     end
 
     % clear up the unpack (just in case)
     clear parameters parameter_struct i
-
-    keyboard % check state
 
     % turn on the debugger to gain all the advantages of a script!
     dbstop if error
 
     % run the script
     compute_sgascore
-
 end
-
