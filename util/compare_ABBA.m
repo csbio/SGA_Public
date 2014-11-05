@@ -48,19 +48,21 @@ function [labels, abba_eps, abba_pvl] = compare_ABBA(sga)
     BA = BA(upper_mask);
     [r, p] = corrcoef([AB BA], 'rows', 'pairwise');
     fprintf('r = %0.2f\np = %0.2e\n', r(1,2), p(1,2));
+    keybaord
 
 
     figure
-    subplot(1,2,1);
+    subplot(1,3,1);
     scatter(AB, BA, 'k.')
     SquareLine();
     xlabel('AB epsilon')
     ylabel('BA epsilon');
-    subplot(1,2,2);
+    subplot(1,3,2);
     hist2d(AB, BA);
     xlabel('AB epsilon')
     ylabel('BA epsilon');
-    subplot(1,2,1);
+    subplot(1,3,3);
+    colorbar()
 
 
 
