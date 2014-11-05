@@ -32,6 +32,9 @@ import fileinput
 SGA_QUERY_COL = 0
 SGA_SET_COL   = 3
 
+# Option: override with Batch column instead of SET
+# SGA_SET_COL   = 5
+
 ## Step 0: argument parsing and existence checks and help
 if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0:
     help()
