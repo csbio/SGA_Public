@@ -7,13 +7,13 @@ function[] = print_terse_sga(sga, filename)
 	EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
 	PVL = sga.pvl(sga.Cannon.isQuery, sga.Cannon.isArray);
 
-	fprintf('using STRAIN names\n');
-	Qrf = sga.Cannon.Orf(sga.Cannon.isQuery);
-	Arf = sga.Cannon.Orf(sga.Cannon.isArray);
+	% fprintf('using STRAIN names\n');
+	% Qrf = sga.Cannon.Orf(sga.Cannon.isQuery);
+	% Arf = sga.Cannon.Orf(sga.Cannon.isArray);
 
-	%fprintf('using ORF names\n');
-	%Qrf = StripOrfs(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
-	%Arf = StripOrfs(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
+	fprintf('using ORF names\n');
+	Qrf = StripOrfs(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
+	Arf = StripOrfs(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
 
 
 
