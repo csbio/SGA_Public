@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 def help():
     HELP_TEXT = """
 #############################################################################
@@ -9,174 +9,169 @@ def help():
 # double-mutant queries.                                                    
 #                                                                            
 # Author: Benjamin VanderSluis (bvander@cs.umn.edu)                          
-# Revision: December 03, 2012                                                    
+# Revision: November 04, 2014                                                    
 #                                                                            
 # USAGE:                                                                     
-# AddDoubleQueryFitnessToSMfile.py SM_input SM_output SGA_file [DM_query_file]
+# AddDoubleQueryFitnessToSMfile.py DM_query_file DMF_component_file DMF_file SMF_file SGA1 SGA2 ...
 #                                                                            
 # INPUTS:                                                                    
-#  SM_input  This is the current SM standard, will be duplicated in output   
-#  SM_output New standard with old data plus DM values for double queries    
-#  SGA_file  File with DM scores and deviations (in columns xx and yy) (output of compute_sgascore.m)
-#  DM_query_file File with list of DM queries in first column, if this       
-#                 argument is ommitted, the SGA_file is scanned for queries  
-#                 with a '+' in the name. (slower)                           
-#                                                                            
-# SGA_file and/or DM_query_file can be gzipped (recommended)                                     
+#  DM_query_file File with list of DM queries to add to the standard
+#  DMF_file  Current DMF fitness standard. These values taken first
+#  SM_input  This is the current SM standard, will be duplicated in output for a complete standard
+#  SGA1 File with DM scores and deviations(output of compute_sgascore.m) (taken second)
+#  SGA2, checked for dms if not found previously, list any number of such files...
 #
+# SGA_file can be gzipped (recommended)                                     
+#
+# OUTPUT: final query-fitness standard is written to stdout
+#                                                                            
 # NOTE: if ORF+YDL227C or YDL227C+ORF cannot be found in sga, we'll try to
 #       replicate the ORF smf entry as the dmf entry
 #
-# TODO: iff ORF1 and ORF2 are in the fitness file, but they haven't been
-# screened against each other, output their product?
-#                                                                            
 #############################################################################
 """
-    print HELP_TEXT
+    print(HELP_TEXT)
     return
-
-
 
 ################ MAIN FUNCTION
 # imports and constants
 import sys
 import os
-import fileinput
+import pandas as pd
+import numpy as np
+import pdb
 
 SGA_QUERY_COL = 0
 SGA_ARRAY_COL = 1
 SGA_DM_FIT_COL = 10
 SGA_DM_STD_COL = 11
+SGA_COLS = [SGA_QUERY_COL, SGA_ARRAY_COL, SGA_DM_FIT_COL]
+SGA_HEADER = ['query', 'array', 'dmf']
 
 ## Step 0: argument parsing and existence checks and help
-if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0:
-    help()
-    exit()
+# if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0:
+#     help()
+#     sys.exit()
 
-if len(sys.argv) < 5:
-    print 'too few arguments (try "-h" for help)'
-    exit()
+# if len(sys.argv) < 6:
+#     print('too few arguments (try "-h" for help)')
+#     sys.exit()
 
-SM_input = sys.argv[1]
-SM_output = sys.argv[2]
-SGA_file = sys.argv[3]
-if len(sys.argv) > 4:
-    DM_query_file = sys.argv[4]
-    QUERIES_IN_SGA = False
-else:
-    # use the SGA file to locate queries
-    DM_query_file = sys.argv[3]
-    QUERIES_IN_SGA = True
+# DM_query_file = sys.argv[1]
+# DMF_component_file = sys.argv[2]
+# DMF_std_file = sys.argv[3]
+# SM_input = sys.argv[4]
+# SGA_files = sys.argv[5:]
+DM_query_file = '/project/csbio/lab_share/SGA/rawdata/triple/141021/dm_queries'
+DMF_component_file = '/project/csbio/lab_share/SGA/Main/refdata/double_mutant_allele_composition_141104.csv'
+DMF_std_file = '/project/csbio/lab_share/SGA/rawdata/triple/dmf/dmf_standard_141103.csv'
+SM_input = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417.txt'
+SGA_files = ['/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t26_131130_scored_140103.txt',
+'/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t26_131130_scored_140103.txt',
+'/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t30_131130_scored_140103.txt',
+'/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t30_131130_scored_140103.txt']
 
 # Now ensure that these all exist and we're allowed to write the output
-if not os.path.exists(SM_input):
-    print 'SM_input file "' + SM_input + '" does not exist'
-    exit()
-if not os.path.exists(SGA_file):
-    print 'SGA_file "' + SGA_file + '" does not exist'
-    exit()
-if not os.path.exists(DM_query_file):
-    print 'DM_query_file "' + DM_query_file + '" does not exist'
-    exit()
-try:
-    SM_output_fid = open(SM_output, 'w')
-except:
-    print 'Error opening SM_output file: ' + SM_output
-    exit() 
+for check_file in sys.argv[1:]:
+    if not os.path.exists(check_file):
+        print(check_file + ' does not exist', file=sys.stderr)
+        sys.exit()
+
+## Step 1: build a dataframe to hold the DMF values #########################################################
+# beginning with the list we need values for
+DMF = pd.read_table(DM_query_file, header=None, names=['strain'])
+DMF['orf'] = [x.split('_')[0] for x in DMF['strain']] 
+DMF['tag'] = [x.split('_')[1] for x in DMF['strain']] 
+
+## Step 2: load the DMF standard file and fill in matching values ############################################
+DMF_std = pd.read_table(DMF_std_file, header=None, names=['strain', 'dmf'])
+DMF_std = DMF_std.dropna()
+DMF = pd.merge(DMF, DMF_std, how='left', on=['strain'])
+
+## Step 3: Load the component table to prepare for SGA lookups
+CT = pd.read_table(DMF_component_file)
 
 
-## Step 1: assemble a list of DM queries for which we need fitness data
-# if no seperate query file is given we'll do this later as we scan SGA
-DM_Fitness = {}; 
-if not QUERIES_IN_SGA:
-    DM_query_fid = open(DM_query_file, 'r')
-    for line in DM_query_fid:
-        line = line.strip()
-        # Remove any strain annotation on a DM query
-        line = line.split('_')[0]
-        DM_Fitness[line] = -1
-    DM_query_fid.close()
-else:
-    DM_query_fid = fileinput.hook_compressed(DM_query_file, 'r')
+## I should use the strain equiv to steal single mutants (at 26) as well
+## Step 4:
+smf_dat = pd.read_table(SM_input, header=None, names=['strain', 'smf', 'smf_std'])
+smf_dat['tag'] = [x.split('_')[1] for x in smf_dat['strain']]
+smf_dat.index = smf_dat['tag']
 
-    for line in DM_query_fid:
-        line = line.split('\t')
-        if line[SGA_QUERY_COL].find('+') > 0:
-            DM_Fitness[line[SGA_QUERY_COL]] = -1
-    DM_query_fid.close()
+missing = sum(np.isnan(DMF['dmf']))
+print('initial missing ')
+print(missing)
+for i in np.where(np.isnan(DMF['dmf']))[0]:
+    # if this is a YDL227C strain, we should find _tm in one of the SMstrain cols
+    sm1_ix = CT['SM1strainID'].values == DMF['tag'][i]
+    t = None
+    if sm1_ix.any():
+        #t = CT['StrainID1'][sm1_ix].tolist()[0]
+        t = CT.ix['StrainID1',sm1_ix]
+    else:
+		# maybe no values (broadcasting?)
+        sm2_ix = CT['SM2strainID'].values == DMF['tag'][i]
+        if sm2_ix.any():
+            t = CT['StrainID2'][sm2_ix].tolist()[0]
+
+    if t != None:
+        smf = smf_dat['smf'][smf_dat['tag'] == t]
+        if len(smf) > 0:
+            DMF['dmf'][i] = smf.values[0]
+
+missing = sum(np.isnan(DMF['dmf']))
+print('post smf missing ')
+print(missing)
+# pdb.set_trace()
+  ipdb.set_trace()
+
+## Step 5: Iterate through the SGA_files and fill in any missing values ###################################
+for sga_file in SGA_files:
+
+    if sga_file[-2:] == '.gz':
+        comp = 'gzip'
+    else:
+        comp = None
+    sga_dat = pd.read_table(sga_file, compression=comp, usecols=SGA_COLS, names=SGA_HEADER)
+
+    # create stripped orf versions
+    # sga_dat['query_orf'] = [x.split('_')[0] for x in sga_dat['query']]
+    # sga_dat['array_orf'] = [x.split('_')[0] for x in sga_dat['array']]
+    sga_dat['q_tag'] = [x.split('_')[1] for x in sga_dat['query']]
+    sga_dat['a_tag'] = [x.split('_')[1] for x in sga_dat['array']]
+
+    # Go through missing values, convert _tm to _q _a pairs (not bothering with the reverse yet)
+    # and check for this occurance in the current SGA file
+    # there's a "pandas way" to do this, but time is a factor
+    for i,row_vals in DMF[np.isnan(DMF['dmf'])].iterrows():
+    for i in np.isnan(DMF['dmf'])[:
+        # check if its a real DM strain
+        if DMF['tag'][i] in CT['DMstrainID'].values:
+            # get the corresponding tags, and pull dmf from SGA
+            ct_ix = CT['DMstrainID'] == DMF['tag'][i]
+			# q = CT['StrainID1'][ct_ix].values[0] 
+			q = CT.ix['StrainID1',ct_ix]
+            a = CT['StrainID2'][ct_ix].values[0]
+
+            # search one at a time as a sort of short-circuit
+            sga_q = sga_dat[sga_dat['q_tag'] == q]
+            sga_qa = sga_q[sga_q['a_tag'] == a]
+
+            if len(sga_qa) > 1:
+                pdb.set_trace()
+
+            if len(sga_qa) > 0:
+                DMF['dmf'][i] = np.nanmean(sga_qa['dmf'])
 
 
-## Step 2: Scan through the SGA_file and update fitness values in the dict
-SGA_fid = fileinput.hook_compressed(SGA_file, 'r')
+## Step 6: Print out the result
+missing = sum(np.isnan(DMF['dmf']))
+print('post sga missing ')
+print(missing)
+DMF.to_csv('/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tm_141104.txt', sep='\t', index=False, cols=['strain', 'dmf'])
+print('finished')
 
-# for now, entries in the fitness file are annotated
-# but double mutant queries are not, so we must .split()
-# to find them
-for line in SGA_fid:
-    line = line.strip().split()
-    query = line[SGA_QUERY_COL].split('_')[0]
-    array = line[SGA_ARRAY_COL].split('_')[0]
-
-    AB = '+'.join([query, array])
-    BA = '+'.join([array, query])
-
-    if BA in DM_Fitness:
-       AB = BA # switch the DM query name, appy same logic
-
-    if AB in DM_Fitness: 
-        if DM_Fitness[AB] == -1:
-            # this is a DM query we haven't seen
-            DM_Fitness[AB] = (line[SGA_DM_FIT_COL], line[SGA_DM_STD_COL])
-        else:
-            # We have seen AB (meaning we've already hit this pair as BA)
-            fit = (float(DM_Fitness[AB][0]) + float(line[SGA_DM_FIT_COL])) / 2
-            std = (float(DM_Fitness[AB][1]) + float(line[SGA_DM_STD_COL])) / 2
-            DM_Fitness[AB] = (str(fit), str(std))
-SGA_fid.close()
+pdb.set_trace()
 
 
-## Step 3: Spit out the original SM_fitness file, and append our new queries
-# We may need some of these again so we'll hash them
-# watch out for '_' ie ORF_sn...
-SM_input_fid = open(SM_input, 'r')
-smf_hsh = {}
-for line in SM_input_fid:
-    gene = line.strip().split()
-    smf_hsh[gene[0].split('_')[0]] = '\t'.join(gene[1:])
-    if gene[0] in DM_Fitness:
-        # don't print lines we're going to print later
-        continue 
 
-    SM_output_fid.write(line)
-SM_input_fid.close()
-
-for key in DM_Fitness:
-    if DM_Fitness[key] == -1:
-        print key + ' notfound in SGA_file'
-        single = ''
-        if '+' not in key:
-            error('+ not found in ' + key)
-
-        [a, b] = key.split('+')
-        if '_' in a:
-            a = a[:a.find('_')]
-        if '_' in b:
-            b = b[:b.find('_')]
-
-        if a == 'YDL227C':
-            single = b
-        elif b == 'YDL227C':
-            single = a
-
-        if single != '' and single in smf_hsh:
-            print '   using '+single+' SMF for ' + key  
-            SM_output_fid.write(key + '\t' + smf_hsh[single] + '\n')
-        else:
-            print '   '+single + ' notfound in SMF_file'
-
-    else:    
-        print key + ' found in SGA_file'
-        (fit,std) = DM_Fitness[key]
-        SM_output_fid.write('\t'.join([key, fit, std])+'\n')
-
-SM_output_fid.close()
