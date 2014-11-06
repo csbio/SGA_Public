@@ -81,7 +81,7 @@ SGA_files = ['/heap/data/stage/dmf/data/scored_sga_fg_t26_131130_scored_140103.t
 '/heap/data/stage/dmf/data/scored_sga_fg_t30_131130_scored_140103.txt',
 '/heap/data/stage/dmf/data/scored_sga_ts_t30_131130_scored_140103.txt']
 
-# QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tm_141104.txt'
+# QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_141104.txt'
 QUERY_FIT_OUTPUT = '/home/slice/stage/dmf/smf_t26_130417_tr_141105.txt'
 
 # Now ensure that these all exist and we're allowed to write the output
