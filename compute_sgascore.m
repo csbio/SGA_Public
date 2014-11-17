@@ -622,8 +622,15 @@ for i = 1:length(all_querys)
 end
 log_printf(lfid, '|\n');
 
+% SAFE ENTRY
 % Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
-[fitness_data.ORF, fitness_data.SMF, fitness_data.STD] = textread(smfitnessfile,'%s %f %f');
+smf_fid = fopen(smfitnessfile, 'r');
+fitness_data = struct();
+fitness_data.raw = textscan(smf_fid, '%s%f%f', 'Delimiter', '\t', 'ReturnOnError', false);
+fclose(smf_fid);
+fitness_data.ORF = fitness_data.raw{1};
+fitness_data.SMF = fitness_data.raw{2};
+fitness_data.STD = fitness_data.raw{3};
 fitness_report_header = {'Exact match', 'Partial Match', 'Not Found', 'NaN in file'};
 fitness_report_counts = zeros(1,4);
 fitness_hash = hash_strings(fitness_data.ORF);
