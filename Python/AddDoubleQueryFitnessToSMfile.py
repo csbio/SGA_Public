@@ -48,47 +48,31 @@ SGA_DM_STD_COL = 11
 SGA_COLS = [SGA_QUERY_COL, SGA_ARRAY_COL, SGA_DM_FIT_COL, SGA_DM_STD_COL]
 SGA_HEADER = ['query', 'array', 'dmf', 'dmf_std']
 
-## Step 0: argument parsing and existence checks and help
-# if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0:
-#     help()
-#     sys.exit()
+# Step 0: argument parsing and existence checks and help
+if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0:
+    help()
+    sys.exit()
 
-# if len(sys.argv) < 6:
-#     print('too few arguments (try "-h" for help)')
-#     sys.exit()
+if len(sys.argv) > 1:
+    print('too many arguments (paths are hard-coded)')
+    sys.exit()
 
-# DM_query_file = sys.argv[1]
-# DMF_component_file = sys.argv[2]
-# DMF_std_file = sys.argv[3]
-# SM_input = sys.argv[4]
-# SGA_files = sys.argv[5:]
-
-# DM_query_file = '/project/csbio/lab_share/SGA/rawdata/triple/141021/dm_queries'
-# DMF_component_file = '/project/csbio/lab_share/SGA/Main/refdata/double_mutant_allele_composition_141104.csv'
-# DMF_std_file = '/project/csbio/lab_share/SGA/rawdata/triple/dmf/dmf_standard_141103.csv'
-# SM_input = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417.txt'
-# SGA_files = ['/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t26_131130_scored_140103.txt',
-# '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t26_131130_scored_140103.txt',
-# '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t30_131130_scored_140103.txt',
-# '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t30_131130_scored_140103.txt']
-
-DM_query_file = '/heap/data/stage/dmf/data/dm_queries'
-DMF_component_file = '/heap/data/stage/dmf/data/double_mutant_allele_composition_141104.csv'
-DMF_std_file = '/heap/data/stage/dmf/data/dmf_standard_141105.csv'
-SM_input = '/heap/data/stage/dmf/data/smf_t26_130417.txt'
-SGA_files = ['/heap/data/stage/dmf/data/scored_sga_fg_t26_131130_scored_140103.txt',
-'/heap/data/stage/dmf/data/scored_sga_ts_t26_131130_scored_140103.txt',
-'/heap/data/stage/dmf/data/scored_sga_fg_t30_131130_scored_140103.txt',
-'/heap/data/stage/dmf/data/scored_sga_ts_t30_131130_scored_140103.txt']
+DM_query_file = '/project/csbio/lab_share/SGA/rawdata/triple/141021/dm_queries'
+DMF_component_file = '/project/csbio/lab_share/SGA/Main/refdata/double_mutant_allele_composition_141104.csv'
+DMF_std_file = '/project/csbio/benjamin/Triples/dmf/dmf_standard_141105.csv'
+SM_input = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417.txt'
+SGA_files = ['/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t26_131130_scored_140103.txt',
+'/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t26_131130_scored_140103.txt',
+'/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t30_131130_scored_140103.txt',
+'/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t30_131130_scored_140103.txt']
 
 # QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_141104.txt'
-QUERY_FIT_OUTPUT = '/home/slice/stage/dmf/smf_t26_130417_tr_141105.txt'
+QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_141104.txt_fix'
 
-# Now ensure that these all exist and we're allowed to write the output
-for check_file in sys.argv[1:]:
-    if not os.path.exists(check_file):
-        print(check_file + ' does not exist', file=sys.stderr)
-        sys.exit()
+# Now ensure that we are not going to clobber the output
+if os.path.exists(QUERY_FIT_OUTPUT):
+    print('cowardly refusing to clobber outputfile\n')
+    sys.exit()
 
 ## Step 1: build a dataframe to hold the DMF values #########################################################
 # beginning with the list we need values for
@@ -105,8 +89,8 @@ DMF = pd.merge(DMF, DMF_experiment, how='left', on=['strain'])
 CT = pd.read_table(DMF_component_file)
 
 
-## I should use the strain equiv to steal single mutants (at 26) as well
 ## Step 4:
+## Use the strain equiv (CT) to steal corresponding single mutants (at 26) as well
 smf_dat = pd.read_table(SM_input, header=None, names=['strain', 'smf', 'smf_std'])
 smf_dat['tag'] = [x.split('_')[1] for x in smf_dat['strain']]
 smf_dat.index = smf_dat['tag']
@@ -148,16 +132,12 @@ for sga_file in SGA_files:
     sga_dat = pd.read_table(sga_file, compression=comp, usecols=SGA_COLS, names=SGA_HEADER)
 
     # create stripped orf versions
-    # sga_dat['query_orf'] = [x.split('_')[0] for x in sga_dat['query']]
-    # sga_dat['array_orf'] = [x.split('_')[0] for x in sga_dat['array']]
     sga_dat['q_tag'] = [x.split('_')[1] for x in sga_dat['query']]
     sga_dat['a_tag'] = [x.split('_')[1] for x in sga_dat['array']]
 
     # Go through missing values, convert _tm to _q _a pairs (not bothering with the reverse yet)
     # and check for this occurance in the current SGA file
-    # there's a "pandas way" to do this, but time is a factor
 
-    # for i,row_vals in DMF[np.isnan(DMF['dmf'])].iterrows():
     for i in np.where(np.isnan(DMF['dmf']))[0]:
         # check if its a real DM strain
         if DMF['tag'][i] in CT['DMstrainID'].values:
@@ -181,7 +161,9 @@ for sga_file in SGA_files:
 missing = sum(np.isnan(DMF['dmf']))
 print('post sga missing ')
 print(missing)
-DMF.to_csv(QUERY_FIT_OUTPUT, sep='\t', index=False, columns=['strain', 'dmf', 'dmf_std'])
+# at home I had to use "columns" and on site "cols"
+# DMF.to_csv(QUERY_FIT_OUTPUT, na_rep='NaN', sep='\t', index=False, columns=['strain', 'dmf', 'dmf_std'])
+DMF.to_csv(QUERY_FIT_OUTPUT, na_rep='NaN', sep='\t', header=False, index=False, cols=['strain', 'dmf', 'dmf_std'])
 print('finished')
 
 ## Step 7: cat the smf file to the DMF file 
