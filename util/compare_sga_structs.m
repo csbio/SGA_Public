@@ -1,9 +1,8 @@
-function [] = compare_sga_structs(sga, labels, standard, std_label, varargin)
-%function[] = compare_sga_structs(sga, labels, standard, std_label, ['intersect', 'random_allele'])
+function [] = compare_sga_structs(sga, labels, standard, std_label)
+%function[] = compare_sga_structs(sga, labels, standard, std_label)
 
 	PLOTS = true;
 	SINGLE_PLOT = false;
-	%Colors = {'r', 'b', 'g', 'm', 'k', 'c', 'y'};
 
 	if(PLOTS)
 		if(SINGLE_PLOT)
@@ -14,29 +13,9 @@ function [] = compare_sga_structs(sga, labels, standard, std_label, varargin)
 			pos_handle = figure();
 		end
 	end
-	CM = colormap();
+	CM = cbrewer('qual', 'Set1', length(sga));
 
-	% OPTIONAL intersect queries and arrays
-	if(ismember('intersect', varargin))
-		all_orfs = sga{1}.Cannon.Orf;
-		for i=2:length(sga)
-			all_orfs = intersect(all_orfs, sga{i}.Cannon.Orf);
-		end
-		all_orfs = unique(all_orfs);
-		for i=1:length(sga)
-			sga{i}.Cannon.isQuery(~ismember(sga{i}.Cannon.Orf, all_orfs)) = false;
-			sga{i}.Cannon.isArray(~ismember(sga{i}.Cannon.Orf, all_orfs)) = false;
-		end
-	fprintf('Intersection:\n\tQueries: %d\n\tArrays: %d\n', ...
-                 sum(sga{1}.Cannon.isQuery), sum(sga{1}.Cannon.isArray));
-	end
-
-	
 	for i=1:length(sga)
-		% mask out multiple alleles (Q & A) if so asked
-		if(ismember('random_allele', varargin))
-			sga{i} = reduce_alleles(sga{i});
-		end
 		%remove nans (not found in std)
 		% mask out any queries or arrays not in the standard
 		sga{i}.Cannon.isQuery(~ismember(StripOrfs(sga{i}.Cannon.Orf), standard.orfs)) = false;
@@ -50,7 +29,7 @@ function [] = compare_sga_structs(sga, labels, standard, std_label, varargin)
 		if(PLOTS)
 			% background, draw this for each SGA in case they are different.
 			% background is the same for pos and negative.
-			colors{i} = CM(floor(size(CM,1)/(length(sga)+1))*i,:);
+			colors{i} = CM(i,:);
 			backgrounds(i) = compute_background_rate(standard, sga{i});
 
 			if(SINGLE_PLOT)
