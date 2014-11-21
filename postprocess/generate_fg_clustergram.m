@@ -33,7 +33,7 @@ function[] = generate_fg_clustergram(sga, name)
 	qix = ChromSort(qorf);
 	aix = ChromSort(aorf);
 
-	% print_pcl_file(EPS(qix, aix), qallele(qix), qorf(qix), aorf(aix), [name '_CHROM.pcl']);
+	print_pcl_file(EPS(qix, aix), qallele(qix), qorf(qix), aorf(aix), [name '_CHROM.pcl']);
 	% print_pcl_file(EPS(qix, aix), qallele(qix), qorf(qix), aallele(aix), [name '_CHROM.pcl']);
 
 

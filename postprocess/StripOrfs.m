@@ -14,7 +14,7 @@ function[list, suffix] = StripOrfs(list, N)
 		[list, suffix] = strip_annotation(list, N);
 	else
 		suffix = cell(size(list));
-		for i=1:length(list)
+		for i=1:numel(list)
 			[list{i}, suffix{i}] = strip_annotation(list{i}, N);
 		end
 	end
