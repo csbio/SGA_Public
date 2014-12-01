@@ -1,24 +1,26 @@
-SGA
-===
+SGA scoring pipeline
+=====================
 
 SGA Scoring script and related utilities
 
 
 
-Additional directories (outside of GIT). These are customary, and I think not hardcoded anywhere.
-Thus, you can change them as long as you set your parameters up accordingly. 
-Sub-directories and symbolic links also work fine. 
+Additional directories (outside of GIT)
+---------------------------------------
+These are customary, and (I think) not hardcoded anywhere except in the parameters you supply.
+Thus, you can change them as long as you set those parameter-paths up accordingly. 
+Sub-directories and symbolic links etc also work fine.
 
   - `rawdata/`: for input files
   - `scored/`: for output files
-  - `refdata/: for supplemental input files
+  - `refdata/`: for supplemental input files
 
   
 Parameters:
   - Mandatory
-    -  `inputfile` database dump to score (9 columns)
-    -  `outputfile` output file pattern (no extension)
-    -  `smfitnessfile` path to query / array fitness file
+    -  `inputfile` database dump to score (9 columns) (customarily under `rawdata/`)
+    -  `outputfile` output file pattern (no extension) (`scored/`)
+    -  `smfitnessfile` path to query / array fitness file (`refdata` etc )
     -  `linkagefile` path to linkage definition file (ignored if linkage is skipped, see below)
     -  `coord_file` path to orf coordinate file (ignored if linkage is skipped)
     -  `removearraylist` path to list of known bad arrays (to be removed)
