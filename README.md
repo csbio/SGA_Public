@@ -89,6 +89,53 @@ the script mid-execution to save time when testing changes. I generally use this
   - run `resume`
 
 
+File Formats
+-----------
+
+#### INPUT to compute_sgascore.m (raw data as it arrives)
+```
+1       Query Orf
+2       Array   Orf
+3       Array plate num (e.g. 354)
+4       Set ID
+5       Unique plate ID
+6       Batch ID
+7       row    (1 : 32)
+8       column (1 : 48)
+9       colony_size (in pixels)
+```
+
+#### OUTPUT of compute_sgascore.m (scored raw data)
+```
+1       Query Orf
+2       Array Orf
+3       e_score*
+4       e_score (std)
+5       p-value
+6       Query smf
+7       Query smf (std)
+8       Array   smf
+9       Array smf (std)
+10      Expected dmf
+11      Observed dmf
+12      Observed dmf (std)
+```
+* We generally use epsilon scores (eps)
+this file does not contain eps, but e_scores
+instead. You can calculate epsilon from this
+file as follows:
+
+eps = Observed_dmf - Expected_dmf
+
+This way of reporting is a historical artifact
+and will be corrected in the future.
+
+other abbreviations
+smf = single mutant fitness
+dmf = double mutant fitness
+std = standard deviation
+
+
 
   
   
