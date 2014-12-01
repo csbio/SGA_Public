@@ -17,6 +17,7 @@ Sub-directories and symbolic links etc also work fine.
 
   
 Parameters:
+---------
   - Mandatory
     -  `inputfile` database dump to score (9 columns) (customarily under `rawdata/`)
     -  `outputfile` output file pattern (no extension) (`scored/`)
@@ -39,6 +40,7 @@ Parameters:
   
   
 Example scoring job (using the script):
+------------------------------------
 You can paste this into matlab, (% are comments)
 
 ```
