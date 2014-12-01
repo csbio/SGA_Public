@@ -18,7 +18,6 @@ Parameters:
   - Mandatory
     -  `inputfile` database dump to score (9 columns)
     -  `outputfile` output file pattern (no extension)
-
     -  `smfitnessfile` path to query / array fitness file
     -  `linkagefile` path to linkage definition file (ignored if linkage is skipped, see below)
     -  `coord_file` path to orf coordinate file (ignored if linkage is skipped)
