@@ -40,7 +40,7 @@ Parameters:
 Example scoring job (using the script):
 You can paste this into matlab, (% are comments)
 
-`
+```
 % -------------------------------------------------------------------------------------
 % October 9, 2014 
 % nolink score of fg30 for adrian verster
@@ -59,7 +59,7 @@ You can paste this into matlab, (% are comments)
     coord_file = 'refdata/chrom_coordinates_111220.txt';
     removearraylist = 'refdata/bad_array_strains_140526.csv';
     compute_sgascore
-`
+```
 
 
 
