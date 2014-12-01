@@ -72,7 +72,6 @@ The script creates 4 output files, beginning with the supplied output pattern, b
   - `.log` a record of events, pretty much a copy of what you see on the screen when you run the script
   - `.mat` a matfile containing everything in the workspace at the end of scoring, for post-mortems
   - `.orf` a list of unique strain_ids from columns 1 & 2 of `.txt` which may come in handy (e.g. for building a hashmap to load the `.txt` file
-  - 
   
 SAFE-ENTRY points
 -----------------
