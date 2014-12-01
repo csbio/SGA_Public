@@ -63,6 +63,30 @@ You can paste this into matlab, (% are comments)
 ```
 
 
+Output 
+------
+The script creates 4 output files, beginning with the supplied output pattern, but each with a unique extension:
+  - `.txt` final scores in 12-column format
+  - `.log` a record of events, pretty much a copy of what you see on the screen when you run the script
+  - `.mat` a matfile containing everything in the workspace at the end of scoring, for post-mortems
+  - `.orf` a list of unique strain_ids from columns 1 & 2 of `.txt` which may come in handy (e.g. for building a hashmap to load the `.txt` file
+  - 
+  
+SAFE-ENTRY points
+-----------------
+The script has a number of places marked:
+`% SAFE ENTRY`
+Which means "The only variables which change after this point, are created after this point."
+These have been determined by manual inspection and are by no means exhaustive. They are used to resme
+the script mid-execution to save time when testing changes. I generally use this procedure:
+  - Locate the position of the change you wish to test (line XXX)
+  - Locate the first SAFE ENTRY above XXX, (line YYY)
+  - Delete lines 1-YYY and save the results to `resume.m`
+  - To supress logging to the log-file, set this magic number at the top of `resume.m` : `lfid = -11;`
+    - Or to log: `lfid = fopen([outputfile '.log'], 'a')` (`a` to append, `w` to overwrite)
+  - load the mat-file you want to resume (if not already loaded)
+  - run `resume`
+
 
 
   
