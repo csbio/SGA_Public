@@ -1,5 +1,5 @@
-function [] = compare_sga_structs(sga, labels, standard, std_label)
-%function[] = compare_sga_structs(sga, labels, standard, std_label)
+function [pos_handle, neg_handle] = compare_sga_structs(sga, labels, standard, std_label)
+%function [pos_handle, neg_handle] = compare_sga_structs(sga, labels, standard, std_label)
 
 	PLOTS = true;
 	SINGLE_PLOT = false;
