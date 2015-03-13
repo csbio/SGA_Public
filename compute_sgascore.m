@@ -40,8 +40,12 @@
 compute_sgascore_tic = tic;
 
 %% Default project head and path settings.
-cd /project/csbio/lab_share/SGA/Main
-addpath(genpath(pwd))
+base_dir = '/project/csbio/lab_share/SGA/Main';
+cd(base_dir);
+addpath(base_dir)
+addpath([base_dir '/IO']);
+addpath([base_dir '/corrections']);
+addpath([base_dir '/util']);
 
 % Disable the pager if enabled
 more off
@@ -156,8 +160,9 @@ end
 % Check for needed WT data early
 wild_type_id = strmatch(wild_type, sgadata.orfnames);
 if(isempty(wild_type_id))
-    log_printf(lfid, '\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', wild_type);
-    return
+	err_string = sprintf('\n\nTERMINAL WARNING - Cannot calculate array strain variance, no WT screens (%s) found\nWARNING\n', wild_type);
+    log_printf(lfid, err_string);
+    error(err_string);
 end
 
 % report the number of strains of different types from the orfmap file
@@ -834,7 +839,7 @@ eps = complete_mat .* (qfit/c);
 eps_std = complete_mat_std.*(qfit/c);
 
 % Mainly for TS data to calibrate to FG
-if(exist('eps_qnorm_ref', 'var'))
+if(exist('eps_qnorm_ref', 'var') && ~isempty(eps_qnorm_ref))
    log_printf(lfid, '!! eps_norm_ref set, beginning quantile normalization !!\n');
    eval(['load ' eps_qnorm_ref]);
    eps = quantile_normalize_from_table(eps, eps_norm_table);
