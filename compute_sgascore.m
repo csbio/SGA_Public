@@ -40,8 +40,9 @@
 compute_sgascore_tic = tic;
 
 %% Default project head and path settings.
-base_dir = '/home/slice/Research/Bug/SGA';
-cd(base_dir);
+% only use functions from _this_ code tree
+restoredefaultpath  
+base_dir = pwd();
 addpath(base_dir)
 addpath([base_dir '/IO']);
 addpath([base_dir '/corrections']);
@@ -72,6 +73,9 @@ else
         fprintf('cannot open log file: %s\n', [outputfile '.log']);
     end
 end
+
+% now that we have a log, report our base_dir
+log_printf(lfid, sprintf('Working dir is %s\n', base_dir));
 
 % Set some default flags if not defined
 keyboard_confirm = false;
