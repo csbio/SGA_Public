@@ -5,7 +5,8 @@ function [sga] = sga_fill_square_array(array_list, sga_fg, sga_ts)
 % Order in is order out?
 
 	% load the equiv and keep only tsq
-    equiv = Csv2Cell('~/SGA/refdata/array_query_map_equiv_good_only_140105.csv');
+    % equiv = Csv2Cell('~/SGA/refdata/array_query_map_equiv_good_only_140105.csv');
+    equiv = Csv2Cell('/heap/data/stage/array_query_map_equiv_good_only_141106.csv');
 	query_equiv = convert_array_to_query(array_list, equiv);
 
 	sga = struct();
