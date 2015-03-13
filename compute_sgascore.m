@@ -597,11 +597,10 @@ end
 log_printf(lfid, '|\n');
 
 % Pool across arrayplates for each query %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% bug HERE
 % SAFE ENTRY
 log_printf(lfid, ['Pooling across arrayplates for each query...\n|' blanks(50) '|\n|']);
-query_arrplate_vars = pool_query_arrayplate_var(sgadata, all_querys, query_map);
-% bug HERE
-
+query_arrplate_vars = pool_query_arrayplate_var(sgadata, all_querys, query_map, lfid);
 
 % SAFE ENTRY
 % Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
