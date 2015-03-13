@@ -1,4 +1,8 @@
 function print_residual_mat_plateformat_sorted_by_batch(sgadata,field,filename,query_map, plate_id_map)
+%function print_residual_mat_plateformat_sorted_by_batch(sgadata,field,filename,query_map, plate_id_map)
+% field is the sgadata-struct field you want to print
+% all other vars can be loaded from score-run-end matfile
+
 
 avg_mats=struct;
 avgt=[];

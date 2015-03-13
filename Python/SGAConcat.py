@@ -1,4 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
+# imports and constants
+import sys 
+import os
+import fileinput
+
 def help():
     HELP_TEXT = """ 
 #############################################################################
@@ -13,60 +19,45 @@ def help():
 #          to prevent large gaps in batch ids
 #
 # Author: Benjamin VanderSluis (bvander@cs.umn.edu)
-# Revision: November 10, 2011
+# Revision: January 26, 2015
 #
 # USAGE: 
-# SGAConcat.py SGAfile.gz OtherData.gz outputfile
+# SGAConcat.py SGAfile.gz OtherData.gz > outputfile
 #  
 # INPUTS:
 #    SGAfile.gz     gzipped raw sgadata file
 #    OtherData.gz  gzipped raw sga data
-#    outputfile     name of the outputfile to write to
 #
 # SGA_file and OtherData may be gzipped 
 #
+# OUTPUTS: (writes to STDOUT)
+#
 #############################################################################
 """
-    print HELP_TEXT
+    print(HELP_TEXT, file=sys.stderr)
     return
 
 ################ MAIN FUNCTION
-# imports and constants
-import sys 
-import os
-import fileinput
-
 
 if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0:
     help()
-    exit()
+    sys.exit()
 
-if len(sys.argv) != 4:
-    print 'Wrong number of arguments, try "-help"'
-    exit()
-
+if len(sys.argv) != 3:
+    print('Wrong number of arguments, try "-help"', file=sys.stderr)
+    sys.exit()
 
 SGAfile = sys.argv[1]
 OtherData = sys.argv[2]
-outputfile = sys.argv[3]
-delim = '\t'
 
-if SGAfile[-3:] == '.gz':
-    fid_1 = fileinput.hook_compressed(SGAfile, 'r')
-else:
-    fid_1 = open(SGAfile, 'r')
-
-if OtherData[-3:] == '.gz':
-    fid_2 = fileinput.hook_compressed(OtherData, 'r')
-else:
-    fid_2 = open(OtherData, 'r')
-
-fid_3 = open(outputfile, 'w')
-
+fid_1 = fileinput.hook_compressed(SGAfile, 'r')
+fid_2 = fileinput.hook_compressed(OtherData, 'r')
 max_plate = 0
 max_batch = 0
 for line in fid_1:
-    split_line = line.split()
+    # if file was actually zipped fileinput reads bytes(bug)
+    line = line.decode('utf-8').strip()
+    split_line = line.split('\t')
     plate = int(split_line[4])
     batch = int(split_line[5])
     if plate > max_plate:
@@ -75,11 +66,11 @@ for line in fid_1:
     if batch > max_batch:
         max_batch = batch
 
-    fid_3.write(line)
+    print(line)
 
 fid_1.close()
 
-print('Other data begins on batch '+ str(max_batch+1) +' plate '+str(max_plate+1))
+print('Other data begins on batch '+ str(max_batch+1) +' plate '+str(max_plate+1), file=sys.stderr)
 
 # rip through file 2 once and map each batch and plate to a new low
 other_batches = {}
@@ -89,7 +80,8 @@ other_plates = {}
 plates_seen = 0
 
 for line in fid_2:
-    line = line.split()
+    line = line.decode('utf-8').strip()
+    line = line.split('\t')
     plate = line[4]
     batch = line[5]
     
@@ -103,9 +95,7 @@ for line in fid_2:
 
     line[4] = str(max_plate +  other_plates[plate])
     line[5] = str(max_batch + other_batches[batch])
-    line = delim.join(line)
-    fid_3.write(line)
-    fid_3.write('\n')
+    line = '\t'.join(line)
+    print(line)
 
 fid_2.close()
-fid_3.close() 

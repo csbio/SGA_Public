@@ -8,7 +8,6 @@ def help():
 #
 # Author: Benjamin VanderSluis (bvander@cs.umn.edu)
 # Revision: August 23, 2011
-# Tested on: Python 2.6.5
 #
 # USAGE: [-h | -help | --help]
 # CountCompleteReplicates.py array_size input_file[.gz] > output_file
@@ -24,7 +23,7 @@ def help():
 #
 #############################################################################
 """
-    print HELP_TEXT
+    print(HELP_TEXT)
     return
 
 ################ MAIN FUNCTION
@@ -45,7 +44,7 @@ if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0
     exit()
 
 if len(sys.argv) < 3:
-    print 'too few arguments (try "-h" for help)'
+    print('too few arguments (try "-h" for help)')
     exit()
 
 ARRAY_PLATE_SET_SIZE = int(sys.argv[1])
@@ -55,7 +54,7 @@ input_file = sys.argv[2]
 # Now ensure that these all exist and we're allowed to write the output
 # if we fail because of this, we want to fail before doing a lot of work
 if not os.path.exists(input_file):
-    print 'input_file"' + input_file + '" does not exist'
+    print('input_file"' + input_file + '" does not exist')
     exit()
 
 if input_file[-3:] == '.gz':

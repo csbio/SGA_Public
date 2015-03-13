@@ -12,9 +12,10 @@ def help():
 # Revision: November 04, 2014                                                    
 #                                                                            
 # USAGE:                                                                     
-# AddDoubleQueryFitnessToSMfile.py DM_query_file DMF_component_file DMF_file SMF_file SGA1 SGA2 ...
+# AddDoubleQueryFitnessToSMfile.py 
 #                                                                            
 # INPUTS:                                                                    
+# ... <Parameters Hardcoded> ...
 #  DM_query_file File with list of DM queries to add to the standard
 #  DMF_file  Current DMF fitness standard. These values taken first
 #  SM_input  This is the current SM standard, will be duplicated in output for a complete standard
@@ -57,17 +58,16 @@ if len(sys.argv) > 1:
     print('too many arguments (paths are hard-coded)')
     sys.exit()
 
-DM_query_file = '/project/csbio/lab_share/SGA/rawdata/triple/141021/dm_queries'
-DMF_component_file = '/project/csbio/lab_share/SGA/Main/refdata/double_mutant_allele_composition_141104.csv'
-DMF_std_file = '/project/csbio/benjamin/Triples/dmf/dmf_standard_141105.csv'
+DM_query_file = '/project/csbio/lab_share/SGA/rawdata/triple/150226/dm_queries.txt'
+DMF_component_file = '/project/csbio/lab_share/SGA/Main/refdata/double_mutant_allele_composition_150227.csv'
+DMF_std_file = '/project/csbio/benjamin/Triples/dmf/dmf_standard_150204.csv'
 SM_input = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417.txt'
 SGA_files = ['/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t26_131130_scored_140103.txt',
 '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t26_131130_scored_140103.txt',
 '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t30_131130_scored_140103.txt',
 '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t30_131130_scored_140103.txt']
 
-# QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_141104.txt'
-QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_141104.txt_fix'
+QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_150226.txt'
 
 # Now ensure that we are not going to clobber the output
 if os.path.exists(QUERY_FIT_OUTPUT):
