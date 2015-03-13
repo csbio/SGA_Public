@@ -10,9 +10,16 @@ function [ query_arrplate_vars ] = pool_query_arrayplate_var_orig(sgadata, all_q
             % qa_ix -> sgadata(q_ix);
             qa_ix = find(sgadata.arrayplateids(q_ix) == sgadata.all_arrayplateids(j));
 
+            % Here we make the first error:
             % qa_sets is the list of set (replicate) ids found for 
             % _this_ query on _this_ arrayplate
+            % qa_ix -> sgadata(q_ix), NOT sgadata()
             qa_sets = unique(sgadata.setids(qa_ix));
+            % as a result we are not even iterating over the right sets
+            % so all of the values are wrong, and MOST of the values are 0
+
+            % correct would be
+            % qa_sets = unique(sgadata.setids(q_ix(qa_ix)));
 
             for k = 1:length(qa_sets)
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
