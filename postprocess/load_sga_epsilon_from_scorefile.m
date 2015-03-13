@@ -13,8 +13,8 @@ Cannon.Map = java.util.HashMap(6000);
 A = textscan(fid, '%s');
 Cannon.Orf = A{1};
 Cannon.GENES = length(Cannon.Orf);
-Cannon.isArray = logical(zeros(1,Cannon.GENES));
-Cannon.isQuery = logical(zeros(Cannon.GENES, 1));
+Cannon.isArray = false(1,Cannon.GENES);
+Cannon.isQuery = false(Cannon.GENES, 1);
 fclose(fid);
 
 for i=1:Cannon.GENES
@@ -30,10 +30,6 @@ Cannon.Map = Hash(Cannon.Map, Cannon.Common);
 format = '%s%s%f32%f32%f64%f32%f32%f32%f32%f32%f32%f32'; % 2 strings, then all singles
 block_size = 1000;
 fid = fopen(score_file_string, 'r');
-TOTAL_LINES = 14171105;
-pct = 0;
-iter_cnt = 0;
-
 
 % allocate matriciesk
 sga_eps = zeros(Cannon.GENES) + nan;
@@ -46,7 +42,7 @@ sga_fit = zeros(Cannon.GENES,1) +nan;
 
 % Read block loop
 while ~feof(fid)
-	segarray = textscan(fid, format, block_size);
+	segarray = textscan(fid, format, block_size, 'ReturnOnError', false);
 	numlines = length(segarray{1});
 	for i=1:numlines
 		ixQ = Cannon.Map.get(segarray{1}{i});

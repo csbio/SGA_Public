@@ -4,9 +4,8 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 % members of 1 overwrite 2
 % output struct will be abbr
 % common dimension will be intersected if inter==true (default)
-% if set to false will be unioned, potentially leaving a big whole
+% if set to false will be unioned, potentially leaving a big hole of NaNs
 % respects isQuery and isArray
-
 
 	if ~exist('cat_type', 'var')
 		cat_type = 'horz';
@@ -61,9 +60,7 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 			iy1 = apply_map(map1, ComA); % leaves 0's
 			iy2 = apply_map(map2, ComA);
 		end
-
 	end
-
 
 	sga = struct();
 	sga.Cannon = struct();
@@ -71,9 +68,9 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 	sga.Cannon.Common = OrfToCommon(sga.Cannon.Orf);
 	sga.Cannon.Map = Hash([], sga.Cannon.Orf);
 	sga.Cannon.GENES = length(sga.Cannon.Orf);
-	sga.Cannon.isQuery = logical(zeros(sga.Cannon.GENES,1));
+	sga.Cannon.isQuery = false(sga.Cannon.GENES,1);
 	sga.Cannon.isQuery(1:length(ComQ)) = true;
-	sga.Cannon.isArray = logical(zeros(1,sga.Cannon.GENES));
+	sga.Cannon.isArray = false(1,sga.Cannon.GENES);
 	sga.Cannon.isArray(length(ComQ)+1:end) = true;
 
 	% do the data
@@ -104,6 +101,4 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 			sga.(fields{f})(sga.Cannon.isQuery, sga.Cannon.isArray) = [E1(:,iy1); E2(:,iy2)];
 		end
 	end
-
-
 end

@@ -20,7 +20,7 @@ def help():
 #
 #############################################################################
 """
-    print HELP_TEXT
+    print(HELP_TEXT)
     return
 
 ################ MAIN FUNCTION
@@ -35,7 +35,7 @@ if sys.argv.count('-h') + sys.argv.count('-help') + sys.argv.count('--help') > 0
     exit()
 
 if len(sys.argv) < 2:
-    print 'too few arguments (try "-h" for help)'
+    print('too few arguments (try "-h" for help)')
     exit()
 
 sga_file = sys.argv[1]
@@ -43,14 +43,17 @@ sga_file = sys.argv[1]
 # Now ensure that these all exist and we're allowed to write the output
 # if we fail because of this, we want to fail before doing a lot of work
 if not os.path.exists(sga_file):
-    print 'sga_file "' + sga_file + '" does not exist'
+    print('sga_file "' + sga_file + '" does not exist')
     exit()
 
-if sga_file[-3:] == '.gz':
-    sga_fid = fileinput.hook_compressed(sga_file, 'r')
-else:
-    sga_fid = open(sga_file, 'r')
+sga_fid = fileinput.hook_compressed(sga_file, 'r')
 
+# default to "raw" input files
+QUERY_COL = 0
+ARRAY_COL = 1
+PLATE_COL = 2
+UNIQE_COL = 4
+BATCH_COL = 5
 if 'raw' in sga_file:
    QUERY_COL = 0
    ARRAY_COL = 1
@@ -76,7 +79,7 @@ query_strain_count = { 'sn':0, 'tsq':0, 'damp':0, 'dma':0, 'tsa':0, 'y':0, 'unan
 array_strain_count = { 'sn':0, 'tsq':0, 'damp':0, 'dma':0, 'tsa':0, 'y':0, 'unann':0}
 
 for line in sga_fid:
-   line = line.strip().split('\t')
+   line = line.strip().split()
    query_set.add(line[QUERY_COL])
    array_set.add(line[ARRAY_COL])
    # raw stuff
@@ -117,34 +120,34 @@ for array in array_set:
     
 # step 3 print results
 type_list = ['sn', 'tsq', 'damp', 'dma', 'tsa', 'y', 'unann']
-print '\n' + sga_file + ' summary:\ntype\t',
+print('\n' + sga_file + ' summary:\ntype\t',end='')
 for strain_type in type_list:
-    print strain_type + '\t',
+    print(strain_type + '\t',end='')
 
-print 'total\nquery\t',
+print('total\nquery\t',end='')
 for strain_type in type_list:
-    print str(query_strain_count[strain_type]) + '\t',
+    print(str(query_strain_count[strain_type]) + '\t',end='')
 
-print len(query_set)
+print(len(query_set))
 
-print 'array\t',
+print('array\t',end='')
 for strain_type in type_list:
-    print str(array_strain_count[strain_type]) + '\t',
-print len(array_set)
+    print(str(array_strain_count[strain_type]) + '\t',end='')
+print(len(array_set))
 
 if 'raw' in sga_file:
-   print 'unique array plates: ',
-   print len(plate_set)
-   print 'unique batchs : ',
-   print len(batch_set)
-   print ' '
+   print('unique array plates: ',end='')
+   print(len(plate_set))
+   print('unique batchs : ', end='')
+   print(len(batch_set))
+   print(' ')
    if len(duple_hsh) > 0:
-       print 'plate collisions:'
+       print('plate collisions:')
        for key in duple_hsh:
-           print key + ':\t' + ', '.join(duple_hsh[key])
+           print(key + ':\t' + ', '.join(duple_hsh[key]))
 
 if len(collab) > 0:
-   print 'Collab Strains:'
+   print('Collab Strains:')
    for key in collab:
-      print key 
+      print(key) 
 
