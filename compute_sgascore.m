@@ -10,7 +10,7 @@
 %	smfitnessfile    path of file containing single mutant fitness
 %	wild_type        strain-id of wild type cols [Default = 'URA3control_sn4757']
 %	border_strin_orf strain-id of border cols.   [Default = 'YOR202W_dma1']
-%  eps_qnorm_ref    string to matfile containing eps_norm_table for quantile
+%   eps_qnorm_ref    string to matfile containing eps_norm_table for quantile
 %
 % Boolean Flags [default]:
 %	skip_linkge_detection [F]: don't bother detecting linkage.
@@ -40,7 +40,7 @@
 compute_sgascore_tic = tic;
 
 %% Default project head and path settings.
-base_dir = '/project/csbio/lab_share/SGA/Main';
+base_dir = '/home/slice/Research/Bug/SGA';
 cd(base_dir);
 addpath(base_dir)
 addpath([base_dir '/IO']);
@@ -596,36 +596,12 @@ for i = 1:length(all_querys)
 end
 log_printf(lfid, '|\n');
 
-% Pool across arrayplates for each query
-query_arrplate_vars = [];   %zeros(length(all_querys),length(all_arrplates))+NaN;
-%query_arrplate_relerr = []; %zeros(length(all_querys),length(all_arrplates))+NaN; % unused
-
+% Pool across arrayplates for each query %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SAFE ENTRY
 log_printf(lfid, ['Pooling across arrayplates for each query...\n|' blanks(50) '|\n|']);
-for i = 1:length(all_querys)
-    
-    ind = query_map{all_querys(i)};
-    
-    for j = 1:length(sgadata.all_arrayplateids)
-        
-        tmp_ind = find(sgadata.arrayplateids(ind) == sgadata.all_arrayplateids(j));
-        currsets = unique(sgadata.setids(tmp_ind));
-        
-        for k = 1:length(currsets)
-            
-            tmp_ind2 = find(sgadata.setids(tmp_ind) == currsets(k));
-            curr_ind = tmp_ind(tmp_ind2);
-            
-				% this is unused.?.
-            %query_arrplate_relerr = [query_arrplate_relerr; i,j,k,sqrt(exp((1./(length(curr_ind)-length(unique(sgadata.arrays(curr_ind)))))*nansum(sgadata.dm_normvar(curr_ind).*((sgadata.dm_num(curr_ind)-1)./sgadata.dm_num(curr_ind))))-1)];
-            query_arrplate_vars = [query_arrplate_vars; i,j,k,(1./(length(curr_ind)-length(unique(sgadata.arrays(curr_ind)))))*nansum(sgadata.dm_normvar(curr_ind).*((sgadata.dm_num(curr_ind)-1)./sgadata.dm_num(curr_ind)))];
-            
-        end
-    end
-    
-    % Print progress
-    print_progress(lfid, length(all_querys), i);
-end
-log_printf(lfid, '|\n');
+query_arrplate_vars = pool_query_arrayplate_var(sgadata, all_querys, query_map);
+% bug HERE
+
 
 % SAFE ENTRY
 % Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
