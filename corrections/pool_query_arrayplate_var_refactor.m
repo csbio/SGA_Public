@@ -1,4 +1,4 @@
-function [ query_arrplate_vars ] = pool_query_arrayplate_var_orig(sgadata, all_querys, query_map, lfid)
+function [ query_arrplate_vars ] = pool_query_arrayplate_var(sgadata, all_querys, query_map, lfid)
     query_arrplate_vars = [];   %zeros(length(all_querys),length(all_arrplates))+NaN;
     for i = 1:length(all_querys)
         % colonies from _this_ query
