@@ -35,7 +35,7 @@ function query_arrplate_vars = pool_query_arrayplate_var(sgadata, all_querys, qu
                     % we need another chunk of space, if you see this all the time
                     % our guess was bad. Bump up N at the top.
                     log_printf(' -- query_arrplate_vars space reallocation --\n');
-                    query_arrplate_vars = [query_arrplate_vars; NaN(N,4)]
+                    query_arrplate_vars = [query_arrplate_vars; NaN(N,4)];
                     N = 2*N;
                 end
 
