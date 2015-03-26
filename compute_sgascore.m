@@ -40,7 +40,7 @@
 compute_sgascore_tic = tic;
 
 %% Default project head and path settings.
-base_dir = '/project/csbio/lab_share/SGA/Main';
+base_dir = pwd();
 cd(base_dir);
 addpath(base_dir)
 addpath([base_dir '/IO']);
