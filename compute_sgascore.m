@@ -273,7 +273,7 @@ sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 % Get colonies corresponding to linkage
 linkage_cols = [];
 if(~skip_linkage_detection)
-	linkage_cols = filter_all_linkage_colonies_queryspecific(sgadata, linkagefile, coord_file,...
+	linkage_cols = filter_linkage_colonies(sgadata, linkagefile, coord_file,...
 		  all_querys, all_arrays, query_map, array_map, wild_type, lfid);
 	log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols));
 end
