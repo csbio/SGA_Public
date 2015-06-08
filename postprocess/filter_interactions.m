@@ -20,6 +20,7 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 	% remove _collab screens
 	% and trigenic screens
 	sga.Cannon.isQuery(substrmatch('_collab', sga.Cannon.Orf))=false;
+	sga.Cannon.isQuery(substrmatch('_y', sga.Cannon.Orf))=false;
 	sga.Cannon.isQuery(substrmatch('+',       sga.Cannon.Orf))=false;
 	
 
