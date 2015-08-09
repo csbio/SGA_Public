@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 def help():
     HELP_TEXT = """
 #############################################################################
@@ -79,6 +79,8 @@ query_strain_count = { 'sn':0, 'tsq':0, 'damp':0, 'dma':0, 'tsa':0, 'y':0, 'unan
 array_strain_count = { 'sn':0, 'tsq':0, 'damp':0, 'dma':0, 'tsa':0, 'y':0, 'unann':0}
 
 for line in sga_fid:
+   if type(line) == bytes:
+      line = line.decode()
    line = line.strip().split()
    query_set.add(line[QUERY_COL])
    array_set.add(line[ARRAY_COL])
