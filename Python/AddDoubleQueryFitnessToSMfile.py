@@ -58,7 +58,7 @@ if len(sys.argv) > 1:
     print('too many arguments (paths are hard-coded)')
     sys.exit()
 
-DM_query_file = '/project/csbio/lab_share/SGA/rawdata/triple/150226/dm_queries.txt'
+DM_query_file = '/project/csbio/lab_share/SGA/rawdata/triple/150728/dm_queries.txt'
 DMF_component_file = '/project/csbio/lab_share/SGA/Main/refdata/double_mutant_allele_composition_150227.csv'
 DMF_std_file = '/project/csbio/benjamin/Triples/dmf/dmf_standard_150204.csv'
 SM_input = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417.txt'
@@ -67,7 +67,8 @@ SGA_files = ['/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t26_
 '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_fg_t30_131130_scored_140103.txt',
 '/project/csbio/lab_share/SGA/Main/scored/131130/scored_sga_ts_t30_131130_scored_140103.txt']
 
-QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_150226.txt'
+QUERY_FIT_OUTPUT = '/project/csbio/lab_share/SGA/refdata/smf_t26_130417_tr_150728.txt'
+## NOTE, last time i set a bunch of these to NaN in post by request of EK
 
 # Now ensure that we are not going to clobber the output
 if os.path.exists(QUERY_FIT_OUTPUT):

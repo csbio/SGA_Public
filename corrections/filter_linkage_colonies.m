@@ -185,7 +185,7 @@ function [linked_arrays, match_code]  = get_linked_arrays(query_string, predef_l
 
     % next we look for the ORF(s) in the predef file
     if match_code == 4
-        orf_list = split_by_delimiter('+', strip_annotation(query_string));
+        orf_list = split_by_delimiter('+', strip_annotation(query_string, 'first'));
         windows = [];
         for i=1:length(orf_list)
             this_orf_chrom = upper(orf_list{i}(2)) - '@'; 
