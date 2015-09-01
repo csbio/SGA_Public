@@ -6,16 +6,19 @@ function [pos_handle, neg_handle] = compare_sga_structs(sga, labels, standard, s
 
     if(PLOTS)
         if(SINGLE_PLOT)
-            neg_handle = subplot(2,2,3);
-            pos_handle = subplot(2,2,4);
+            neg_handle = subplot(1,2,1);
+            pos_handle = subplot(1,2,2);
         else
             neg_handle = figure();
             pos_handle = figure();
         end
     end
-    CM = cbrewer('qual', 'Set1', length(sga));
+    CM = cbrewer('qual', 'Set1', numel(sga));
 
-    for i=1:length(sga)
+    % SGA = reshape(SGA, numel(SGA), 1);
+    labels = reshape(labels, numel(labels),1);
+
+    for i=1:numel(sga)
         %remove nans (not found in std)
         % mask out any queries or arrays not in the standard
         sga{i}.Cannon.isQuery(~ismember(StripOrfs(sga{i}.Cannon.Orf), standard.orfs)) = false;
@@ -38,8 +41,6 @@ function [pos_handle, neg_handle] = compare_sga_structs(sga, labels, standard, s
                 figure(neg_handle);
             end
             semilogx(PR_neg(:,3), PR_neg(:,2), 'Color', colors{i}, 'LineWidth', 2);
-            xx = get(gca, 'XLim');
-            set(gca, 'XLim', [min(xx(2)-1, 10), xx(2)]);
             hold on;
 
             if(SINGLE_PLOT)
@@ -49,8 +50,6 @@ function [pos_handle, neg_handle] = compare_sga_structs(sga, labels, standard, s
             end
 
             semilogx(PR_pos(:,3), PR_pos(:,2), 'Color', colors{i}, 'LineWidth', 2);
-            xx = get(gca, 'XLim');
-            set(gca, 'XLim', [min(xx(2)-1, 10), xx(2)]);
             hold on;
         end
     end
@@ -68,6 +67,10 @@ function [pos_handle, neg_handle] = compare_sga_structs(sga, labels, standard, s
             plot(xx, [backgrounds(i) backgrounds(i)], ...
                 'LineWidth', 2, 'LineStyle', '--', 'Color', colors{i});
         end
+        xx = get(gca, 'XLim');
+        set(gca, 'XLim', [min(xx(2)-1, 10), xx(2)]);
+        yy = get(gca, 'YLim');
+        set(gca, 'YLim', [0, yy(2)]);
         xlabel('Recall');
         ylabel('Precision');
         title(['Negatives - ' std_label], 'Interpreter', 'None');
@@ -84,6 +87,10 @@ function [pos_handle, neg_handle] = compare_sga_structs(sga, labels, standard, s
             plot(xx, [backgrounds(i) backgrounds(i)], ...
                 'LineWidth', 2, 'LineStyle', '--', 'Color', colors{i});
         end
+        xx = get(gca, 'XLim');
+        set(gca, 'XLim', [min(xx(2)-1, 10), xx(2)]);
+        yy = get(gca, 'YLim');
+        set(gca, 'YLim', [0, yy(2)]);
         xlabel('Recall');
         ylabel('Precision');
         title(['Positives - ' std_label], 'Interpreter', 'None');
