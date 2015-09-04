@@ -35,7 +35,8 @@ arrays = labels_col;
 
 load chr_length_110207;
 
-load orf_coordinates_110207;
+%load orf_coordinates_110207;
+load orf_coordinates_150617;
 coord = orf_coord; clear orf_coord;
 
 %% Get the chromosomal coordinates of queries and arrays
@@ -297,7 +298,7 @@ for ic = 1:16
         %plot(m,50,'ko','MarkerFaceColor','k');
         
 %%
-        print_progress(length(iq), q);
+        print_progress(1, length(iq), q);
         
         
         
