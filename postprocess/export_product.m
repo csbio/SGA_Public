@@ -19,12 +19,12 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 	% layout file expects format (plate row col orf) [384] 16x24
 	sga = filter_green_blocks_around_linkage(sga_raw, linkagefile, coord_file, layout_file, wild_type, border_strain);
 
-	% print out the cobatch filter receipt 
-	cell2csv([outputfile '_cobatch_removed.txt'], sga.Cannon.Orf(sga.cobatch_target));
-
 	% this will do cobatch filter and AB BA disagreement filtereing in either case
 	% but will not do any fitness depedant filtering unless 'false'
 	[sga, fitness_struct]  = filter_interactions(sga, smfitnessfile, sga_inputfile, equiv_file);
+
+	% print out the cobatch filter receipt 
+	cell2csv([sga_outputfile '_cobatch_removed.txt'], sga.Cannon.Orf(sga.cobatch_target));
 
 	dirname = split_by_delimiter('/', sga_outputfile);
 	basename= split_by_delimiter('_', dirname{end});
@@ -52,7 +52,7 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 	% ------------------------ processed matfiles
 		fields = split_by_delimiter('_', basename);
 		% project = fields{2};
-		project = 'sgaQvar';
+		project = 'sga';
 		keyboard
 		array   = fields{3};
 		temp    = fields{4};

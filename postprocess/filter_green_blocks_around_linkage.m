@@ -27,16 +27,17 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
    inds_q = 1:length(dataset.queries);
 
 	l_fid = fopen(linkage_file, 'r');
-	A = textscan(l_fid, '%s%d%d', 'Delimiter', '\t');
+	A = textscan(l_fid, '%s%d%d%d', 'Delimiter', '\t', 'ReturnOnError', false);
 	fclose(l_fid);
 	qsl = struct();
 	qsl.orf=A{1};
-	qsl.start=A{2};
-	qsl.end=A{3};
+	qsl.chr = A{2}
+	qsl.start=A{3};
+	qsl.end=A{4};
 
-	for i = 1 : length(qsl.orf)
-		 qsl.chr(i,1) = findstr(qsl.orf{i}(2),'ABCDEFGHIJKLMNOP');
-	end
+	%for i = 1 : length(qsl.orf)
+		 %qsl.chr(i,1) = findstr(qsl.orf{i}(2),'ABCDEFGHIJKLMNOP');
+	%end
 
 	[chrcoord.orf, chrcoord.chrom, chrcoord.start, chrcoord.end] = textread(coord_file,'%s %f %f %f');
 	ind = find(chrcoord.start > chrcoord.end);
@@ -45,7 +46,7 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
 	chrcoord.end(ind) = tmp(ind);
 	clear tmp;
 
-	[fgmap.plate, fgmap.row, fgmap.col, fgmap.orf] = textread(layout_file,'%f %f %f %s');
+	[fgmap.plate, fgmap.row, fgmap.col, fgmap.orf, fgmap.strain] = textread(layout_file,'%f %f %f %s %s');
 
 	block_filter_count = 0;
 	ARRAY = split_by_delimiter('_', layout_file);
@@ -105,6 +106,7 @@ end
 
 
 function[chr, strt, endd] = GetLnkCoord(orf, qsl, chrcoord)
+	% this may now return more than one region per orf / query
 
 	chr = 1; % default in case we get a not-orf (ie ORF+snxxx)
 	strt = 1;
@@ -134,6 +136,9 @@ function[chr, strt, endd] = GetLnkCoord(orf, qsl, chrcoord)
 	
 	% look for coordinate match
 	ind = strmatch(orf, chrcoord.orf, 'exact');
+	if(isempty(ind))
+		ind = strmatch(strip_annotation(orf), chrcoord.orf, 'exact');
+	end
 	if(~isempty(ind))
 		chr  = chrcoord.chrom(ind);
 		strt = chrcoord.start(ind) - 200000;
