@@ -270,6 +270,8 @@ ind384 = sub2ind([16 24], row384, col384);
 sgadata.replicateid = (all_arrayplateids_map(sgadata.arrayplateids)-1)*384 + double(ind384);
 sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 
+%% SAFE ENTRY
+
 % Get colonies corresponding to linkage
 linkage_cols = [];
 if(~skip_linkage_detection)

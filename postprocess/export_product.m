@@ -32,12 +32,12 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 	system(['mkdir -p ' int_dirname]);
 
 	% ------------------------ clustergrams 
-	% clus_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/clustergrams/'];
-	% system(['mkdir -p ' clus_dirname]);
-	% clus_basename = basename;
-	% clus_basename{1} = 'clustergram';
-	% clus_basename = join_by_delimiter(clus_basename, '_');
-	% generate_fg_clustergram(sga, [clus_dirname clus_basename]);
+	clus_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/clustergrams/'];
+	system(['mkdir -p ' clus_dirname]);
+	clus_basename = basename;
+	clus_basename{1} = 'clustergram';
+	clus_basename = join_by_delimiter(clus_basename, '_');
+	generate_fg_clustergram(sga, [clus_dirname clus_basename]);
 
 
 	% ------------------------ interactions / profiles
@@ -51,9 +51,7 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 
 	% ------------------------ processed matfiles
 		fields = split_by_delimiter('_', basename);
-		% project = fields{2};
-		project = 'sga';
-		keyboard
+		project = fields{2};
 		array   = fields{3};
 		temp    = fields{4};
 		construct = join_by_delimiter({project, array, temp}, '_');
