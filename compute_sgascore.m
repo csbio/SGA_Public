@@ -41,7 +41,9 @@ compute_sgascore_tic = tic;
 
 %% Default project head and path settings.
 % only use functions from _this_ code tree
-restoredefaultpath  
+% this started throwing warnings about an optifun directory not existing
+% it does exist, has not changed, and though the warning is common, i cannot reproduce it with 100% success, #maddening
+% restoredefaultpath  
 base_dir = pwd();
 addpath(base_dir)
 addpath([base_dir '/IO']);
