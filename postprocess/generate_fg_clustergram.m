@@ -3,7 +3,7 @@ function[] = generate_fg_clustergram(sga, name)
 % produces a CLUST and CHROM version
 
 
-	fid = fopen('~/Research/Data/YeastGeneMap/strain2orf2common2allele_140521.txt', 'r');
+	fid = fopen('~/Research/Data/YeastGeneMap/strain_orf_common_allele_151109.txt', 'r');
 
 	A = textscan(fid, '%s%s%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
 	fclose(fid);
