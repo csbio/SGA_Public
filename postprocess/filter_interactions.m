@@ -15,13 +15,18 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 
 	% load / calculate the cobatch_scores
 	cobatch_scores = calculate_cobatch_by_query(sga, sga_inputfile);
+   filt = false; fitness_struct = false;
+   return
 
 
 	% remove _collab screens
 	% and trigenic screens
-	sga.Cannon.isQuery(substrmatch('_collab', sga.Cannon.Orf))=false;
-	sga.Cannon.isQuery(substrmatch('_y', sga.Cannon.Orf))=false;
-	sga.Cannon.isQuery(substrmatch('+',       sga.Cannon.Orf))=false;
+   
+   fprintf('not filtering _collab and _y queries and +\n');
+   % fprintf('filtering _collab and _y queries\n');
+	% sga.Cannon.isQuery(substrmatch('_collab', sga.Cannon.Orf))=false;
+	% sga.Cannon.isQuery(substrmatch('_y', sga.Cannon.Orf))=false;
+	% sga.Cannon.isQuery(substrmatch('+',       sga.Cannon.Orf))=false;
 	
 
 	% filter 
@@ -131,7 +136,7 @@ function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 	results = zeros(length(Queries),1); % co_batch IP
 
 	the_map = Hash(java.util.HashMap(length(Queries)), Queries);
-	CoBatch = boolean(sparse(length(cobatch), length(cobatch)));
+	CoBatch = boolean(sparse(length(Queries), length(Queries)));
 	for i=1:length(cobatch)
 		ida = the_map.get(cobatch{i,1});
 		idb = the_map.get(cobatch{i,2});
@@ -151,6 +156,9 @@ function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 	end
 		
 	cobatch_scores = [Queries num2cell(results)];
+
+   cobatch_score_file = [inputfile(1:end-4) '_cobatch_scores.txt'];
+   cell2csv(cobatch_score_file, cobatch_scores);
 end
 
 function[vec] = substrmatch(str, cellary)

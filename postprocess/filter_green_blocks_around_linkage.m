@@ -31,7 +31,7 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
 	fclose(l_fid);
 	qsl = struct();
 	qsl.orf=A{1};
-	qsl.chr = A{2}
+	qsl.chr = A{2};
 	qsl.start=A{3};
 	qsl.end=A{4};
 
