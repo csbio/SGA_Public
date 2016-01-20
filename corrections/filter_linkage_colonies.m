@@ -14,9 +14,9 @@
 % Outputs:
 %   all_linkage_cols - indices of the colonies affected by linkage
 %
-% Authors: Chad Myers (cmyers@cs.umn.edu), 
+% Authors: Benjamin VanderSluis (bvander@cs.umn.edu)
+%          Chad Myers (cmyers@cs.umn.edu), 
 %          Anastasia Baryshnikova (a.baryshnikova@utoronto.ca),
-%          Benjamin VanderSluis (bvander@cs.umn.edu)
 %
 % Linkage matching behavior
 %    First find global linkage colonies (e.g. linked to query markers)
@@ -28,7 +28,7 @@
 %        For b and c iterate over N orfs, delimited by '+' in the strainid
 %%
 
-function [all_linkage_cols, non_spec]  = filter_linkage_colonies_multiregion(sgadata, linkagefile, coord_file, all_querys, all_arrays, query_map, array_map, wild_type, lfid)
+function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkagefile, coord_file, all_querys, all_arrays, query_map, array_map, wild_type, lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
@@ -94,6 +94,28 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies_multiregion(sga
     log_printf(lfid, '\tarray orfs matched:   %d\n', array_orfs_found);
     log_printf(lfid, '\tarray orfs not found: %d\n', array_orfs_not_found);
 
+    % ---------------------------------
+    % map QUERY coordinates (used for suppressor linkage)
+    % ---------------------------------
+    query_orfs_found = 0;
+    query_orfs_not_found = 0;
+    query_coord = nan(length(all_querys),3); % CHR START END
+    for i = 1:length(all_querys)
+        query_orf = strip_annotation(sgadata.orfnames{all_querys(i)});
+        ix = strcmp(query_orf, SGD_coord.orfs);
+
+        if any(ix)
+            query_orfs_found = query_orfs_found + 1;
+            query_coord(i,:) = SGD_coord.locations(ix,:);
+        else
+            query_orfs_not_found = query_orfs_not_found + 1;
+        end
+    end
+
+    log_printf(lfid, 'Query coordinates mapped. \n');
+    log_printf(lfid, '\tquery orfs matched:   %d\n', query_orfs_found);
+    log_printf(lfid, '\tquery orfs not found: %d\n', query_orfs_not_found);
+
     % ----------------------------------------------------------
     % global linkage considerations, e.g. marker-linked arrays
     % ----------------------------------------------------------
@@ -157,6 +179,51 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies_multiregion(sga
         log_printf(lfid, '\t%s\t%d\n', match_code_labels{i}, match_code_counts(i));
     end
 
+    % -------------------------------------------------------------------------
+    % determine additioinal specific linkage for array strains (suppressors)
+    % -------------------------------------------------------------------------
+    %
+    % For this we will consider all entries in the linkage file, corresponding to 
+    % an array strain. General cases (ORFs) are handled on the query side only.
+    log_printf(lfid, ['Mapping array-specific linkage...\n|', blanks(50), '|\n|']);
+    arrays_with_linkage = intersect(sgadata.orfnames(all_arrays), predef_lnkg.orf);
+
+    % reset match code statistics
+    match_code_counts = zeros(1,4);
+
+    alink_filename = 'array_linkage_QA_pairs.txt'; 
+    fprintf('GIVE A NEW NAME\n');
+    keyboard
+    alink_fid = fopen(alink_filename, 'w');
+
+    for i=1:length(arrays_with_linkage)
+       array_string = arrays_with_linkage{i};
+       all_array_ix = find(strcmp(array_string, sgadata.orfnames));
+
+       % get all arrays for this strain
+       [array_linked_queries, match_code] = get_linked_queries(array_string,...
+                                            predef_lnkg, SGD_coord, query_coord);
+
+       % convert to global ix and recordl
+       for j = 1:length(array_linked_queries)
+           all_linkage_cols_bool(intersect(query_map{all_querys(array_linked_queries(j))}, ...
+                                           array_map{all_array_ix})) = true;
+           % print out query array pairs subject to array-side linkage
+           fprintf(alink_fid, '%s\t%s\n', array_linked_queries{j}, array_string);
+       end
+
+       % Print progress
+       match_code_counts(match_code) = match_code_counts(match_code) + 1;
+       print_progress(lfid, length(arrays_with_linkage), i);
+
+    end
+    fclose(alink_fid);
+
+    log_printf(lfid, '|\nLinkage Array Process Report\n');
+    for i=1:length(match_code_labels)
+        log_printf(lfid, '\t%s\t%d\n', match_code_labels{i}, match_code_counts(i));
+    end
+    
     all_linkage_cols = find(all_linkage_cols_bool);
 end
 
@@ -220,6 +287,45 @@ function [linked_arrays, match_code]  = get_linked_arrays(query_string, predef_l
         linked_arrays = find(linked_arrays); % convert to ix
     end
 end
+
+
+function [linked_queries, match_code]  = get_linked_queries(array_string, predef_lnkg, SGD_coord, query_coord)
+% returns indicies into all_querys
+    % query_string will be either an entire strain ID or a single ORF
+    % match_code keeps track of how we determined the linkage resion for this strain/orf 
+    % this will only match entire strain strings by design
+    % as the presense of an entire strain entry in the linkage file defines the input here
+    % they should always exist. Should therefore always return match_code 1 and then stop
+    % 1: we found this entire query string (e.g. strain) in the linkage file
+
+    linked_queries = []; 
+    match_code = 4;
+    windows = [];
+
+    % First look for exact windows for this strain (skip if this is an orf)
+    assert(any(array_string == '_')) % input is a strain
+    ix = strcmp(array_string, predef_lnkg.orf);
+    if any(ix) % we found this strain
+        match_code = 1;
+        windows = [predef_lnkg.chrom(ix) predef_lnkg.coord(ix,:)];
+    end
+
+    % if we have something by now (and we should)
+    if match_code < 4
+        linked_queries = false(size(query_coord,1),1);
+        for i=1:size(windows,1)
+            chrom = windows(i,1);
+            left_win = windows(i,2);
+            right_win = windows(i,3);
+
+            linked_queries((query_coord(:,1) == chrom) & ...
+                           ((query_coord(:,2) > left_win & query_coord(:,2) < right_win) | ...
+                            (query_coord(:,3) > left_win & query_coord(:,3) < right_win))) = true;
+        end
+        linked_queries = find(linked_queries); % convert to ix into query_coord?
+    end
+end
+
 
 function[left_win, right_win, match_code] = lnkg_window_from_coord(orf_string, SGD_coord)
     linkage_dist = 200e3;   % default linkage distance
