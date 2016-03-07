@@ -32,11 +32,15 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    log_printf(lfid, '\nLinkage filter script:\n\t%s\n\n',p);
+    log_printf(lfid, '\nLinkage filter script:\n\t%s\n',p);
+
+    % save the input files to the log for posterity
+    log_printf(lfid, 'Linkage Defs: %s\n', linkagefile);
+    log_printf(lfid, 'Chrom   Defs: %s\n\n', coord_file);
 
     match_code_counts = zeros(1,4);
-    match_code_labels = {'query strain based linkages:', 'query orf based linkages:', ...
-                        'query window based linkages:', 'query linkage failures:'};
+    match_code_labels = {'strain based linkages:', 'orf based linkages:', ...
+                        'window based linkages:', 'linkage failures:'};
 
     wild_type_id = find(strncmp(wild_type, sgadata.orfnames, length(wild_type))); % partial match 
     all_linkage_cols_bool = false(size(sgadata.arrays)); 
@@ -155,6 +159,9 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     % -------------------------------------------------------------------------
     % determine specific linkage for each query strain
     % -------------------------------------------------------------------------
+    fprintf('skipping query linkage!\n');
+    keyboard
+    
     log_printf(lfid, ['Mapping query-specific linkage...\n|', blanks(50), '|\n|']);
     for i = 1:length(all_querys)
 
@@ -174,7 +181,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
         print_progress(lfid, length(all_querys), i);
     end
 
-    log_printf(lfid, '|\nLinkage Query Process Report\n');
+    log_printf(lfid, '|\nQuery Linkage Process Report\n');
     for i=1:length(match_code_labels)
         log_printf(lfid, '\t%s\t%d\n', match_code_labels{i}, match_code_counts(i));
     end
@@ -191,11 +198,6 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     % reset match code statistics
     match_code_counts = zeros(1,4);
 
-    alink_filename = 'array_linkage_QA_pairs.txt'; 
-    fprintf('GIVE A NEW NAME\n');
-    keyboard
-    alink_fid = fopen(alink_filename, 'w');
-
     for i=1:length(arrays_with_linkage)
        array_string = arrays_with_linkage{i};
        all_array_ix = find(strcmp(array_string, sgadata.orfnames));
@@ -208,18 +210,14 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
        for j = 1:length(array_linked_queries)
            all_linkage_cols_bool(intersect(query_map{all_querys(array_linked_queries(j))}, ...
                                            array_map{all_array_ix})) = true;
-           % print out query array pairs subject to array-side linkage
-           fprintf(alink_fid, '%s\t%s\n', array_linked_queries{j}, array_string);
        end
 
        % Print progress
        match_code_counts(match_code) = match_code_counts(match_code) + 1;
        print_progress(lfid, length(arrays_with_linkage), i);
-
     end
-    fclose(alink_fid);
 
-    log_printf(lfid, '|\nLinkage Array Process Report\n');
+    log_printf(lfid, '|\nArray Linkage Process Report\n');
     for i=1:length(match_code_labels)
         log_printf(lfid, '\t%s\t%d\n', match_code_labels{i}, match_code_counts(i));
     end
