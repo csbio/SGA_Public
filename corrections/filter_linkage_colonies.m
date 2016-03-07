@@ -43,6 +43,9 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
                         'window based linkages:', 'linkage failures:'};
 
     wild_type_id = find(strncmp(wild_type, sgadata.orfnames, length(wild_type))); % partial match 
+    nonspec_linkage_cols_bool = false(size(sgadata.arrays)); 
+    query_linkage_cols_bool = false(size(sgadata.arrays)); 
+    array_linkage_cols_bool = false(size(sgadata.arrays)); 
     all_linkage_cols_bool = false(size(sgadata.arrays)); 
 
     % ---------------------------------
@@ -130,14 +133,14 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     [can1_linkage_arrays, ~] = get_linked_arrays('YEL063C', predef_lnkg, SGD_coord, array_coord);
     lyp_can_linkage = unique([lyp1_linkage_arrays; can1_linkage_arrays]);
     for i=1:length(lyp_can_linkage)
-        all_linkage_cols_bool(array_map{all_arrays(lyp_can_linkage(i))}) = true;
+        nonspec_linkage_cols_bool(array_map{all_arrays(lyp_can_linkage(i))}) = true;
     end 
 
     % remove ura3 linkage for wild-type
     [ura3_linkage_arrays, ~] = get_linked_arrays('YEL021W', predef_lnkg, SGD_coord, array_coord);
     for i=1:length(ura3_linkage_arrays)
         for j=1:length(wild_type_id)
-            all_linkage_cols_bool(intersect(array_map{all_arrays(ura3_linkage_arrays(i))}, ...
+            nonspec_linkage_cols_bool(intersect(array_map{all_arrays(ura3_linkage_arrays(i))}, ...
                                             query_map{wild_type_id(j)})) = true;
         end
     end
@@ -149,19 +152,16 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
         [ho_linkage_arrays, ~]   = get_linked_arrays('YDL227C', predef_lnkg, SGD_coord, array_coord);
         ura3_ho_linkage = unique([ura3_linkage_arrays; ho_linkage_arrays]);
         for i=1:length(lyp_can_linkage)
-            all_linkage_cols_bool(array_map{all_arrays(ura3_ho_linkage(i))}) = true;
+            nonspec_linkage_cols_bool(array_map{all_arrays(ura3_ho_linkage(i))}) = true;
         end 
     end
 
     % pass out all of the global (non-query-specific) linkage colonies
-    non_spec = find(all_linkage_cols_bool);
+    non_spec = find(nonspec_linkage_cols_bool);
 
     % -------------------------------------------------------------------------
     % determine specific linkage for each query strain
     % -------------------------------------------------------------------------
-    fprintf('skipping query linkage!\n');
-    keyboard
-    
     log_printf(lfid, ['Mapping query-specific linkage...\n|', blanks(50), '|\n|']);
     for i = 1:length(all_querys)
 
@@ -172,7 +172,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
 
         % convert to global ix and record
         for j = 1:length(query_linked_arrays)
-            all_linkage_cols_bool(intersect(array_map{all_arrays(query_linked_arrays(j))}, ...
+            query_linkage_cols_bool(intersect(array_map{all_arrays(query_linked_arrays(j))}, ...
                                             query_map{all_querys(i)})) = true;
         end
 
@@ -208,7 +208,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
 
        % convert to global ix and recordl
        for j = 1:length(array_linked_queries)
-           all_linkage_cols_bool(intersect(query_map{all_querys(array_linked_queries(j))}, ...
+           array_linkage_cols_bool(intersect(query_map{all_querys(array_linked_queries(j))}, ...
                                            array_map{all_array_ix})) = true;
        end
 
@@ -221,7 +221,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     for i=1:length(match_code_labels)
         log_printf(lfid, '\t%s\t%d\n', match_code_labels{i}, match_code_counts(i));
     end
-    
+    all_linkage_cols_bool = nonspec_linkage_cols_bool | query_linkage_cols_bool | array_linkage_cols_bool;
     all_linkage_cols = find(all_linkage_cols_bool);
 end
 
@@ -251,6 +251,8 @@ function [linked_arrays, match_code]  = get_linked_arrays(query_string, predef_l
 
     % next we look for the ORF(s) in the predef file
     % even if we have found a strain match, continue looking for an ORF match
+    %
+    % TMP SKIP ANYTNG NOT IN LINKAGE FILE FOR ADDENDUM
     if (match_code == 4) || (match_code == 1)
         orf_list = split_by_delimiter('+', strip_annotation(query_string, 'first'));
         for i=1:length(orf_list)
