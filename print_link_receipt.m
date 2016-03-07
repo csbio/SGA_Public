@@ -28,6 +28,15 @@ for i=1:length(mats)
    [all_linkage_cols, non_spec] = filter_linkage_colonies(sgadata, linkage_file, ...
                                   coord_file, all_querys, all_arrays, query_map, array_map, ...
                                   wild_type, lfid);
+
+   % print em out
+   fid = fopen([mats{i} '.link'], 'w');
+   for j=1:length(all_linkage_cols)
+      fprintf(fid, '%s\t%s\n', sgadata.orfnames{sgadata.queries(all_linkage_cols(j))}, ...
+                               sgadata.orfnames{sgadata.arrays(all_linkage_cols(j))});
+   end
+   fclose(fid);
+
 end
 
 

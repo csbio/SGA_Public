@@ -32,7 +32,11 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
 
     % Print the name and path of this script
     p = mfilename('fullpath');
-    log_printf(lfid, '\nLinkage filter script:\n\t%s\n\n',p);
+    log_printf(lfid, '\nLinkage filter script:\n\t%s\n',p);
+
+    % save the input files to the log for posterity
+    log_printf(lfid, 'Linkage Defs: %s\n', linkagefile);
+    log_printf(lfid, 'Chrom   Defs: %s\n\n', coord_file);
 
     match_code_counts = zeros(1,4);
     match_code_labels = {'strain based linkages:', 'orf based linkages:', ...
@@ -156,7 +160,8 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     % determine specific linkage for each query strain
     % -------------------------------------------------------------------------
     fprintf('skipping query linkage!\n');
-    %{
+    keyboard
+    
     log_printf(lfid, ['Mapping query-specific linkage...\n|', blanks(50), '|\n|']);
     for i = 1:length(all_querys)
 
@@ -180,8 +185,6 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     for i=1:length(match_code_labels)
         log_printf(lfid, '\t%s\t%d\n', match_code_labels{i}, match_code_counts(i));
     end
-
-    %}
 
     % -------------------------------------------------------------------------
     % determine additioinal specific linkage for array strains (suppressors)
