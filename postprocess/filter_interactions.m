@@ -16,8 +16,6 @@ function[filt, fitness_struct] = filter_interactions(sga, fitness_file, sga_inpu
 	% load / calculate the cobatch_scores
 	cobatch_scores = calculate_cobatch_by_query(sga, sga_inputfile);
    filt = false; fitness_struct = false;
-   return
-
 
 	% remove _collab screens
 	% and trigenic screens
