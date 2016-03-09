@@ -2,26 +2,8 @@ function[] = generate_fg_clustergram(sga, name)
 %function[] = generate_fg_clustergram(sga, name)
 % produces a CLUST and CHROM version
 
-
-	fid = fopen('~/Research/Data/YeastGeneMap/strain_orf_common_allele_151109.txt', 'r');
-
-	A = textscan(fid, '%s%s%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
-	fclose(fid);
-
-	m = java.util.HashMap();
-	for i=1:1:length(A{1})
-		m.put(java.lang.String(A{1}{i}), java.lang.String(A{4}{i}));
-	end
-
-	allele = sga.Cannon.Orf;
-	for i=1:length(allele)
-		a = m.get(allele{i});
-		if ~isempty(a)
-			allele{i} = a;
-		end
-	end
-	sga.Cannon.allele = allele;
-
+	allele = sga.Cannon.Common;
+   sga.Cannon.allele = allele;
 	EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
 	PVL = sga.pvl(sga.Cannon.isQuery, sga.Cannon.isArray);
 
@@ -48,7 +30,6 @@ function[] = generate_fg_clustergram(sga, name)
 				 sga.Cannon.Orf(sga.Cannon.isQuery), ...
 				 sga.Cannon.allele(sga.Cannon.isQuery), ...
 				 sga.Cannon.allele(sga.Cannon.isArray), [name '_CLUST'], 'pearson');
-				 %sga.Cannon.allele(sga.Cannon.isArray), [name '_CLUST']);
 			 
 
 
