@@ -132,6 +132,21 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     [lyp1_linkage_arrays, ~] = get_linked_arrays('YNL268W', predef_lnkg, SGD_coord, array_coord);
     [can1_linkage_arrays, ~] = get_linked_arrays('YEL063C', predef_lnkg, SGD_coord, array_coord);
     lyp_can_linkage = unique([lyp1_linkage_arrays; can1_linkage_arrays]);
+
+    % convert to global ids, then to all_array ids
+    log_printf(lfid, 'exempting specific orfs for suppressor project\n');
+    exempt_strains = {'YNL296W_dma4159', 'YNL297C_dma4158', 'YNL171C_dma4064', 'YEL033W_dma1296', 'YEL034W_tsa749', 'YER019W_dma1329'};
+    exempt = zeros(size(exempt_strains));
+    for ex=1:length(exempt_strains)
+       ex_id = find(strcmp(exempt_strains{ex}, sgadata.orfnames));
+       if ~isempty(ex_id)
+         ex_aid = find(all_arrays == ex_id);
+         exempt(ex) = ex_aid;
+      end
+    end
+    lyp_can_linkage = setdiff(lyp_can_linkage, nonzeros(exempt));
+    % end section
+
     for i=1:length(lyp_can_linkage)
         nonspec_linkage_cols_bool(array_map{all_arrays(lyp_can_linkage(i))}) = true;
     end 
