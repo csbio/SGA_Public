@@ -56,7 +56,9 @@ max_plate = 0
 max_batch = 0
 for line in fid_1:
     # if file was actually zipped fileinput reads bytes(bug)
-    line = line.decode('utf-8').strip()
+    #line = line.decode('utf-8').strip()
+    line = line.strip()
+
     split_line = line.split('\t')
     plate = int(split_line[4])
     batch = int(split_line[5])
@@ -81,6 +83,7 @@ plates_seen = 0
 
 for line in fid_2:
     line = line.decode('utf-8').strip()
+    #line = line.strip()
     line = line.split('\t')
     plate = line[4]
     batch = line[5]
