@@ -70,23 +70,25 @@ end
 
 function [isQuery, isArray] = E_supp(sga)
    % return vectors: isQuery & is_essential & is_suppressor
-   supp_def_file = '~/SGA/refdata/suppressor_essentiality_160424.txt';
+   supp_def_file = '~/SGA/refdata/suppressor_strain_essentiality_160425.csv';
    supp_def = Csv2Cell(supp_def_file);
    E_ix = strcmp('E', supp_def(:,2));
    supp_ess = supp_def(E_ix,1);
 
-   is_ess = ismember(sga.Cannon.Orf, supp_ess); %is_supp implied
+   [~, tails] = StripOrfs(sga.Cannon.Orf);
+   is_ess = ismember(tails, supp_ess); %is_supp implied
    isQuery = sga.Cannon.isQuery & is_ess;
    isArray = sga.Cannon.isArray & is_ess';
 end
 function [isQuery, isArray] = N_supp(sga)
    % return vectors: isQuery & is_essential & is_suppressor
-   supp_def_file = '~/SGA/refdata/supprnonor_nonentiality_160424.txt';
+   supp_def_file = '~/SGA/refdata/suppressor_strain_essentiality_160425.csv';
    supp_def = Csv2Cell(supp_def_file);
    N_ix = strcmp('N', supp_def(:,2));
    supp_non = supp_def(N_ix,1);
 
-   is_non = ismember(sga.Cannon.Orf, supp_non); %is_supp implied
+   [~, tails] = StripOrfs(sga.Cannon.Orf);
+   is_non = ismember(tails, supp_non); %is_supp implied
    isQuery = sga.Cannon.isQuery & is_non;
    isArray = sga.Cannon.isArray & is_non';
 end
