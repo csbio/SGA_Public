@@ -59,10 +59,10 @@ fprintf('----\n\n');
 query_strains = sga.Cannon.Orf(sga.Cannon.isQuery);
 query_strains_common = sga.Cannon.Common(sga.Cannon.isQuery);
 array_strains = sga.Cannon.Orf(sga.Cannon.isArray);
-strain_types = {'sn' 'dma' 'tsq' 'damp' 'tsa' 'trip' 'y' 'no_' 'total'};
-strain_ident = {'_sn' '_dma' '_tsq' '_damp' '_tsa' '+' '_y'};
+strain_types = {'sn' 'dma' 'tsq' 'damp' 'tsa' 'trip' 'y' 'supp' 'no_' 'total'};
+strain_ident = {'_sn' '_dma' '_tsq' '_damp' '_tsa' '+' '_y' '_S'};
 
-strain_type_counts = nan(2,9); % query,array ; type
+strain_type_counts = nan(2,length(strain_types)); % query,array ; type
 
 for i=1:length(strain_ident)
     strain_type_counts(1,i) = sum(~cellfun(@isempty, strfind(query_strains, strain_ident{i})));
@@ -70,11 +70,11 @@ for i=1:length(strain_ident)
 end
 
 % these two are custom
-strain_type_counts(1,8) = sum(cellfun(@isempty, strfind(query_strains, '_')));
-strain_type_counts(1,9) = length(query_strains);
+strain_type_counts(1,end-1) = sum(cellfun(@isempty, strfind(query_strains, '_')));
+strain_type_counts(1,end) = length(query_strains);
 
-strain_type_counts(2,8) = sum(cellfun(@isempty, strfind(array_strains, '_')));
-strain_type_counts(2,9) = length(array_strains);
+strain_type_counts(2,end-1) = sum(cellfun(@isempty, strfind(array_strains, '_')));
+strain_type_counts(2,end) = length(array_strains);
 
 % put the results in the struct
 for i=1:length(strain_types)
