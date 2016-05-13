@@ -37,8 +37,9 @@ function [] = export_final_datasets(fg_merge, ts_merge, dest)
    file = [dest '/SGA_ExE.txt'];
    [q, a] = E_supp(ts_merge);
    EE = mask_essentials(ts_merge, 'EE');
+   % these are in mask_essentials now, but harmless to repeat
    EE.Cannon.isQuery(q) = true; % reset essential suppressors
-   EE.Cannon.isArray(a) = true;
+   EE.Cannon.isArray(a) = true; 
    print_sga_2015(EE, file);
 
    % NxN
