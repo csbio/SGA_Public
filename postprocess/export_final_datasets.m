@@ -1,21 +1,6 @@
 function [] = export_final_datasets(fg_merge, ts_merge, dest)
 %function [] = export_final_datasets(fg_merge, ts_merge, dest)
    % run this script seperatly on the "living" and "analysis" sets
-   
-
-   % preprocess steps
-   % remove array strains with a suppressor
-   % eventually, we will remove just the suppressor regions
-   % 160424, eventually is now...
-   %array_supp_file = '~/SGA/Main/scored/151015/interactions/151029_array_linkage_report_coord.csv';
-   %array_supp = Csv2Cell(array_supp_file);
-   %array_supp = array_supp(2:end,1);
-   %ix = ismember(fg_merge.Cannon.Orf, array_supp);
-   %fprintf('%d array suppressor strains included!(FG)\n', sum(ix & fg_merge.Cannon.isArray'));
-   %fg_merge.Cannon.isArray(ix) = false;
-   %ix = ismember(ts_merge.Cannon.Orf, array_supp);
-   %fprintf('%d array suppressor strains included!(TS)\n', sum(ix & ts_merge.Cannon.isArray'));
-   %ts_merge.Cannon.isArray(ix) = false;
 
    % print DAmPs first, then remove them
    file = [dest '/SGA_DAmP.txt'];
@@ -37,7 +22,7 @@ function [] = export_final_datasets(fg_merge, ts_merge, dest)
    file = [dest '/SGA_ExE.txt'];
    [q, a] = E_supp(ts_merge);
    EE = mask_essentials(ts_merge, 'EE');
-   EE.Cannon.isQuery(q) = true; % reset essential suppressors
+   EE.Cannon.isQuery(q) = true; % reset essential suppressors with _S tag
    EE.Cannon.isArray(a) = true;
    print_sga_2015(EE, file);
 
