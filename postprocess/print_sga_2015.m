@@ -3,25 +3,7 @@ function[] = print_sga_2015(sga, filename, newfile)
       newfile=true;
    end
 
-
-   % prep an allele mapping
-   allele_file = '~/Research/Data/YeastGeneMap/strain_orf_common_allele_151109.txt';
-   fid = fopen(allele_file, 'r');
-   A = textscan(fid, '%s%s%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
-   fclose(fid);
-   a_map = java.util.HashMap();
-   for i=1:length(A{1})
-      a_map.put(java.lang.String(A{1}{i}), java.lang.String(A{4}{i}));
-   end
-
-   alleles = sga.Cannon.Common;
-   for i=1:length(alleles)
-      a = a_map.get(sga.Cannon.Orf{i});
-      if ~isempty(a)
-         alleles{i} = a;
-      end
-   end
-   
+   alleles = StrainToAllele(sga.Cannon.Orf);
    if(newfile)
       fid = fopen(filename, 'w');
       header = {
@@ -82,6 +64,5 @@ function[] = print_sga_2015(sga, filename, newfile)
          fprintf(fid, '%.4f\t%.4f\n', sga.dbl(q,a), sga.dbl_std(q,a));
       end
    end
-
    fclose(fid);
 end
