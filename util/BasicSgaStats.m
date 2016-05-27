@@ -1,5 +1,5 @@
-function[stats] = BasicSgaStats(sga, thresh, holdout)
-%function[stats] = BasicSgaStats(sga, thresh, holdout)
+function[stats] = BasicSgaStats(sga, thresh)
+%function[stats] = BasicSgaStats(sga, thresh)
 % stats = pos_int neg_int +/-
 % stats struct:
 % .pos  positive interaction count
@@ -7,35 +7,18 @@ function[stats] = BasicSgaStats(sga, thresh, holdout)
 % .scr  screened interactions (non-nan)
 % .ratio  neg / total
 
-if(~exist('holdout', 'var'))
-	holdout = [];
-end
 if(~exist('thresh', 'var'))
 	thresh = 0.08;
 end
-
-sga.eps(holdout,:) = [];
-sga.eps(:,holdout) = [];
-sga.pvl(holdout,:) = [];
-sga.pvl(:,holdout) = [];
-sga.Cannon.isQuery(holdout) = [];
-sga.Cannon.isArray(holdout) = [];
-
 
 EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
 PVL = sga.pvl(sga.Cannon.isQuery, sga.Cannon.isArray);
 SCR = ~isnan(EPS) & ~isnan(PVL); 
 
-num_nans = sum(sum(isnan(EPS)));
-
-EPS(PVL > 0.05) = 0;
-EPS(EPS > -thresh & EPS < thresh) = 0;
-
-num_neg = sum(sum(EPS < 0));
-num_pos = sum(sum(EPS > 0));
+num_neg = sum(sum(EPS <= -thresh & PVL < 0.05));
+num_pos = sum(sum(EPS >= thresh & PVL < 0.05));
 num_total = num_neg+num_pos;
 neg_ratio = num_neg / num_total;
-stats = [num_pos, num_neg, num_pos / num_neg];
 
 stats = struct();
 stats.pos = num_pos;
