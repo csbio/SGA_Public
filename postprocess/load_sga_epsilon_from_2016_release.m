@@ -60,7 +60,7 @@ end
 
 % Read block loop
 while ~feof(fid)
-	segarray = textscan(fid, format, block_size, 'ReturnOnError', false);
+	segarray = textscan(fid, format, block_size, 'ReturnOnError', false, 'Delimiter', '\t');
 	numlines = length(segarray{1});
 	for i=1:numlines
 		ixQ = Cannon.Map.get(segarray{1}{i});
