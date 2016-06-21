@@ -1,5 +1,5 @@
 function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
-%function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
+%function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type='neg', THRESH=0.08)
 % assumes the query exists, and is named exactly
 % THRESH should be positive (abs())
 % type defaults to 'neg' and THRESH to '0.08'
@@ -23,9 +23,9 @@ function [orfs, coms, eps, pvl] = GetInteractions(sga, query, int_type, THRESH)
 	end
 
 	if strcmp(int_type, 'neg')
-		ixa = sga.eps(ixq,sga.Cannon.isArray) < -THRESH & sga.pvl(ixq,sga.Cannon.isArray) < 0.05;
+		ixa = sga.eps(ixq,sga.Cannon.isArray) <= -THRESH & sga.pvl(ixq,sga.Cannon.isArray) < 0.05;
 	elseif strcmp(int_type, 'pos')
-		ixa = sga.eps(ixq,sga.Cannon.isArray) > THRESH & sga.pvl(ixq,sga.Cannon.isArray) < 0.05;
+		ixa = sga.eps(ixq,sga.Cannon.isArray) >= THRESH & sga.pvl(ixq,sga.Cannon.isArray) < 0.05;
 	else
 		fprintf('not implemented yet\n');
 		return
