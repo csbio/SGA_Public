@@ -13,6 +13,9 @@ function[sga] = mask_essentials(sga, select)
 % t (toss any with a +)
 % M Misc (_y... && _u...)
 %
+% V characterized/Verified
+% v not verified (dubious)
+%
 % Array Options:
 % E Essential
 % N Non-Essential
@@ -63,8 +66,13 @@ function[sga] = mask_essentials(sga, select)
 		Qmisc(substrmatch('_u', sga.Cannon.Orf)) = true;
 		Qmisc(substrmatch('_col', sga.Cannon.Orf)) = true;
 		sga.Cannon.isQuery(~Qmisc) = false;
+   elseif select(1) == 'V'
+      v_file = '~/Research/Data/SGD/uncharacterized_and_verified_Yonly_151118.txt';
+      v_list = Csv2Cell(v_file);
+      Qverified = ismember(StripOrfs(sga.Cannon.Orf), v_list);
+      sga.Cannon.isQuery(~Qverified) = false;
 	else
-		error('unrecognized option [ENDdTCMA]')
+		error('unrecognized option [ENDdTCMAV]')
 	end
 		
 	if select(2) == 'E'
@@ -82,8 +90,13 @@ function[sga] = mask_essentials(sga, select)
 	elseif select(2) == 'A'
 		Aall = sga.Cannon.isArray;
 		sga.Cannon.isArray(~Aall) = false; % tautology
+   elseif select(2) == 'V'
+      v_file = '~/Research/Data/SGD/uncharacterized_and_verified_Yonly_151118.txt';
+      v_list = Csv2Cell(v_file);
+      Qverified = ismember(StripOrfs(sga.Cannon.Orf), v_list);
+      sga.Cannon.isArray(~Qverified) = false;
 	else
-		error('unrecognized option [ENA]')
+		error('unrecognized option [ENAV]')
 	end
 end
 
