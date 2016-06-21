@@ -75,13 +75,13 @@ function[sga] = mask_essentials(sga, select)
 		sga.Cannon.isArray(EsuppA) = true; % reset essential supp arrays
 	elseif select(2) == 'N'
 		Anss = logical(zeros(sga.Cannon.GENES,1));
+		[~, NsuppA] = N_supp(sga);
 		Anss(substrmatch('_dma', sga.Cannon.Orf)) = true;
 		sga.Cannon.isArray(~Anss) = false;
+		sga.Cannon.isArray(NsuppA) = true; % reset N supp arrays
 	elseif select(2) == 'A'
 		Aall = sga.Cannon.isArray;
-		[~, NsuppA] = E_supp(sga);
 		sga.Cannon.isArray(~Aall) = false; % tautology
-		sga.Cannon.isArray(NsuppA) = true; % reset N supp arrays
 	else
 		error('unrecognized option [ENA]')
 	end
