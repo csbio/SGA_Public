@@ -9,6 +9,7 @@ Cannon.Map = java.util.HashMap(6000);
 fid = fopen(orf_file, 'r');
 A = textscan(fid, '%s');
 Cannon.Orf = A{1};
+Cannon.Common = CommonToOrf(Cannon.Orf)
 Cannon.GENES = length(Cannon.Orf);
 Cannon.isArray = boolean(zeros(1,Cannon.GENES));
 Cannon.isQuery = boolean(zeros(Cannon.GENES, 1));
@@ -16,10 +17,9 @@ fclose(fid);
 
 for i=1:Cannon.GENES
 	Cannon.Map.put(java.lang.String(Cannon.Orf{i}), java.lang.Integer(i));
+	Cannon.Map.put(java.lang.String(Cannon.Common{i}), java.lang.Integer(i));
 end
-c_map = '~/Research/Data/Master_Common_Ref_SGD.txt';
-fprintf('using common name map %s\n', c_map);
-Cannon = AddCommonToCannon(Cannon, c_map);
+
 % Score file columns:
 % Qorf Qcom Aorf Acom dm_act eps std pval experiment
 % same as release

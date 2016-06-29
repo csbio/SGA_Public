@@ -67,7 +67,7 @@ function[sga] = mask_essentials(sga, select)
 		Qmisc(substrmatch('_col', sga.Cannon.Orf)) = true;
 		sga.Cannon.isQuery(~Qmisc) = false;
    elseif select(1) == 'V'
-      v_file = '~/Research/Data/SGD/uncharacterized_and_verified_Yonly_151118.txt';
+      v_file = [get_SGAROOT() '/refdata/SGD_uncharacterized_and_verified_Yonly_151118.txt'];
       v_list = Csv2Cell(v_file);
       Qverified = ismember(StripOrfs(sga.Cannon.Orf), v_list);
       sga.Cannon.isQuery(~Qverified) = false;
@@ -91,7 +91,7 @@ function[sga] = mask_essentials(sga, select)
 		Aall = sga.Cannon.isArray;
 		sga.Cannon.isArray(~Aall) = false; % tautology
    elseif select(2) == 'V'
-      v_file = '~/Research/Data/SGD/uncharacterized_and_verified_Yonly_151118.txt';
+      v_file = [get_SGAROOT() '/refdata/SGD_uncharacterized_and_verified_Yonly_151118.txt'];
       v_list = Csv2Cell(v_file);
       Qverified = ismember(StripOrfs(sga.Cannon.Orf), v_list);
       sga.Cannon.isArray(~Qverified) = false;
@@ -104,7 +104,7 @@ end
 % for suppressor strain support in E and N where labels are _S
 function [isQuery, isArray] = E_supp(sga)
    % return vectors: isQuery & is_essential & is_suppressor
-   supp_def_file = '~/SGA/refdata/suppressor_strain_essentiality_160425.csv';
+   supp_def_file = [get_SGAROOT() '/refdata/suppressor_strain_essentiality_160425.csv'];
    supp_def = Csv2Cell(supp_def_file);
    E_ix = strcmp('E', supp_def(:,2));
    supp_ess = supp_def(E_ix,1);
@@ -116,7 +116,7 @@ function [isQuery, isArray] = E_supp(sga)
 end
 function [isQuery, isArray] = N_supp(sga)
    % return vectors: isQuery & is_essential & is_suppressor
-   supp_def_file = '~/SGA/refdata/suppressor_strain_essentiality_160425.csv';
+   supp_def_file = [get_SGAROOT() '/refdata/suppressor_strain_essentiality_160425.csv'];
    supp_def = Csv2Cell(supp_def_file);
    N_ix = strcmp('N', supp_def(:,2));
    supp_non = supp_def(N_ix,1);
