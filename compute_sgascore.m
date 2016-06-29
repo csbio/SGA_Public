@@ -125,12 +125,19 @@ if(skip_linkage_detection)
 end
 for i = 1 : length(vars_to_check) 
     if ~exist(vars_to_check{i},'var')
-        error(['Define' vars_to_check{i} '.']);
+        error(['Define ' vars_to_check{i} '.']);
     else
         if ~exist(eval(vars_to_check{i}), 'file')
             error(['Indicated ' vars_to_check{i} ' does not exist: ' eval(vars_to_check{i})]);
         end
     end
+end
+
+% If we are skipping the perl step, we need to check for pre-processed files as well
+if(skip_perl_step)
+   if ~exist([inputfile '_orfidmap'], 'file') || ~exist([inputfile '_numeric'], 'file')
+      error('skip_perl_step is set to true, but _orfidmap and/or _numeric for inputfile do not exist!')
+   end
 end
 
 % Save the path and version for the records
