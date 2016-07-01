@@ -83,10 +83,12 @@ log_printf(lfid, sprintf('Working dir is %s\n', base_dir));
 % Set random seed if defined
 if exist('random_seed','var')
     rng(random_seed);
-    log_printf(lfid, sprintf('Random Seed is %s\n', num2str(random_seed)));
 else
-    log_printf(lfid, sprintf('Random Seed is NOT defined - Result will not be reproducable.'));
+    random_seed = randi([0,10000], 1,1);
+    rng(random_seed);
 end
+
+log_printf(lfid, sprintf('Random Seed is %s\n', num2str(random_seed)));
 
 % Set some default flags if not defined
 keyboard_confirm = false;
