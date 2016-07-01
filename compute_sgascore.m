@@ -10,7 +10,8 @@
 %	smfitnessfile    path of file containing single mutant fitness
 %	wild_type        strain-id of wild type cols [Default = 'URA3control_sn4757']
 %	border_strin_orf strain-id of border cols.   [Default = 'YOR202W_dma1']
-%   eps_qnorm_ref    string to matfile containing eps_norm_table for quantile
+%       eps_qnorm_ref    string to matfile containing eps_norm_table for quantile
+%       random_seed	 random seed used to reproduce a random run
 %
 % Boolean Flags [default]:
 %	skip_linkge_detection [F]: don't bother detecting linkage.
@@ -78,6 +79,16 @@ end
 
 % now that we have a log, report our base_dir
 log_printf(lfid, sprintf('Working dir is %s\n', base_dir));
+
+% Set random seed if defined
+if exist('random_seed','var')
+    rng(random_seed);
+else
+    random_seed = randi([0,10000], 1,1);
+    rng(random_seed);
+end
+
+log_printf(lfid, sprintf('Random Seed is %s\n', num2str(random_seed)));
 
 % Set some default flags if not defined
 keyboard_confirm = false;
