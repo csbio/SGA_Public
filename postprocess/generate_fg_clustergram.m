@@ -12,8 +12,8 @@ function[] = generate_fg_clustergram(sga, name)
 	aorf = sga.Cannon.Orf(sga.Cannon.isArray);
 	aallele = allele(sga.Cannon.isArray);
 
-	qix = ChromSort(qorf);
-	aix = ChromSort(aorf);
+	[~, qix] = sort_by_chr(qorf);
+	[~, aix] = sort_by_chr(aorf);
 
 	print_pcl_file(EPS(qix, aix), qallele(qix), qorf(qix), aorf(aix), [name '_CHROM.pcl']);
 	% print_pcl_file(EPS(qix, aix), qallele(qix), qorf(qix), aallele(aix), [name '_CHROM.pcl']);
