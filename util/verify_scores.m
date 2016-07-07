@@ -17,7 +17,7 @@ function[v1, v2] = verify_scores(sga1, sga2)
 	[r,c,v1] = find(EPS1);
 	length(r)
 
-	rand_ix = RandomSubset(1:length(r), NUM);
+	rand_ix = random_subset(1:length(r), NUM);
 
 	r = r(rand_ix);
 	c = c(rand_ix);

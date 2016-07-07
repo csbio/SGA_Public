@@ -1,8 +1,8 @@
-function [ NVec ] = RandomSubset( Vector, n )
-%function [ NVec ] = RandomSubset( Vector, n )
+function [ NVec ] = random_subset( Vector, n )
+%function [ NVec ] = random_subset( Vector, n )
 %RANDOMSUBSET returns random subset of column vector (length n)
 %   if Vector is boolean then "n" ones will be preserved at random
-%   without n, RandomSubset returns a random permutation
+%   without n, random_subset returns a random permutation
 
 if(~exist('n', 'var'))
 	n = length(Vector);

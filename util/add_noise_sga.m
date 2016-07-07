@@ -67,13 +67,13 @@ function[sga] = add_fp_fn(sga, fp_rate, fn_rate)
 	valid=(~isnan(PVL) & ~isnan(EPS) & ~NEG);
 
 	% flip some bits
-	FP = RandomSubset(find(valid), round(fp_rate*sum(sum(valid))));
+	FP = random_subset(find(valid), round(fp_rate*sum(sum(valid))));
 	EPS(FP) = -0.25;
 	PVL(FP) = 0.001;
 
 
 	% mask some bits
-	FN = RandomSubset(find(NEG), round(fn_rate*sum(sum(NEG))));
+	FN = random_subset(find(NEG), round(fn_rate*sum(sum(NEG))));
 	EPS(FN) = 0;
 	PVL(FN) = 0.5;
 

@@ -15,7 +15,7 @@ function[sga] = reduce_alleles(sga)
 	for i=1:length(Qs)
 		ix = strmatch(Qs{i}, All_Qs, 'exact');
 		if(length(ix)>1)
-			ix = RandomSubset(ix, length(ix)-1);
+			ix = random_subset(ix, length(ix)-1);
 			sga.Cannon.isQuery(QQ(ix)) = false;
 		end
 	end
@@ -24,7 +24,7 @@ function[sga] = reduce_alleles(sga)
 	for i=1:length(As)
 		ix = strmatch(As{i}, All_As, 'exact');
 		if(length(ix)>1)
-			ix = RandomSubset(ix, length(ix)-1);
+			ix = random_subset(ix, length(ix)-1);
 			sga.Cannon.isArray(AA(ix)) = false;
 		end
 	end
