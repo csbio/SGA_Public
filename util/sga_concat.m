@@ -33,8 +33,8 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 			[ComQ, ix1, ix2] = intersect(Qorf1, Qorf2);
 		else
 			ComQ = union(Qorf1, Qorf2);
-			map1 = Hash([], Qorf1);
-			map2 = Hash([], Qorf2);
+			map1 = hash_strings(Qorf1);
+			map2 = hash_strings(Qorf2);
 			ix1 = apply_map(map1, ComQ); % leaves 0's
 			ix2 = apply_map(map2, ComQ);
 		end
@@ -55,8 +55,8 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 			[ComA, iy1, iy2] = intersect(Aorf1, Aorf2);
 		else
 			ComA = union(Aorf1, Aorf2);
-			map1 = Hash([], Aorf1);
-			map2 = Hash([], Aorf2);
+			map1 = hash_strings(Aorf1);
+			map2 = hash_strings(Aorf2);
 			iy1 = apply_map(map1, ComA); % leaves 0's
 			iy2 = apply_map(map2, ComA);
 		end
@@ -66,7 +66,7 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 	sga.Cannon = struct();
 	sga.Cannon.Orf = [ComQ; ComA];
 	sga.Cannon.Common = OrfToCommon(sga.Cannon.Orf);
-	sga.Cannon.Map = Hash([], sga.Cannon.Orf);
+	sga.Cannon.Map = hash_strings(sga.Cannon.Orf);
 	sga.Cannon.GENES = length(sga.Cannon.Orf);
 	sga.Cannon.isQuery = false(sga.Cannon.GENES,1);
 	sga.Cannon.isQuery(1:length(ComQ)) = true;

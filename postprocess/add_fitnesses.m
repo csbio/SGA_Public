@@ -4,10 +4,7 @@ function [sga] = add_fitnesses(sga)
    fid = fopen(file_26, 'r');
    A = textscan(fid, '%s%f%f', 'Delimiter', '\t', 'ReturnOnError', false);
    fclose(fid);
-   hash_26 = java.util.HashMap(length(A{1}));
-   for i=1:length(A{1})
-      hash_26.put(java.lang.String(A{1}{i}), A{2}(i));
-   end
+   hash_26 = hash_strings(A{1});
    fit26 = NaN(sga.Cannon.GENES,1);
    for i=1:sga.Cannon.GENES
       f = hash_26.get(sga.Cannon.Orf{i});
@@ -20,7 +17,7 @@ function [sga] = add_fitnesses(sga)
    fid = fopen(file_30, 'r');
    A = textscan(fid, '%s%f%f', 'Delimiter', '\t', 'ReturnOnError', false);
    fclose(fid);
-   hash_30 = java.util.HashMap(length(A{1}));
+   hash_30 = hash_strings(A{1});
    for i=1:length(A{1})
       hash_30.put(java.lang.String(A{1}{i}), A{2}(i));
    end

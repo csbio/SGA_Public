@@ -9,7 +9,6 @@ if(~exist('unique_names_file', 'var'))
 end
 
 fid = fopen(unique_names_file, 'r');
-Cannon.Map = java.util.HashMap(6000);
 A = textscan(fid, '%s');
 Cannon.Orf = A{1};
 Cannon.GENES = length(Cannon.Orf);
@@ -17,13 +16,9 @@ Cannon.isArray = false(1,Cannon.GENES);
 Cannon.isQuery = false(Cannon.GENES, 1);
 fclose(fid);
 
-for i=1:Cannon.GENES
-	%Cannon.Map.put(Cannon.Orf{i}, i);
-	Cannon.Map.put(java.lang.String(Cannon.Orf{i}), java.lang.Integer(i));
-end
-
 Cannon.Common = OrfToCommon(Cannon.Orf);
-Cannon.Map = Hash(Cannon.Map, Cannon.Common);
+Cannon.Map = hash_strings(Cannon.Orf);
+Cannon.Map = hash_strings(Cannon.Common, Cannon.Map);
 
 % Score file columns:
 % Qorf Aorf escore std pval smfit1 std smfit2 std dm_exp dm_act std
@@ -80,16 +75,10 @@ end
 fclose(fid);
 
 arrays = Cannon.Orf(Cannon.isArray);
-Cannon.ArrayMap = java.util.HashMap(length(arrays));
-for i=1:length(arrays)
-	Cannon.ArrayMap.put(arrays{i}, i);
-end
+Cannon.ArrayMap = hash_strings(arrays);
 
 querys = Cannon.Orf(Cannon.isQuery);
-Cannon.QueryMap = java.util.HashMap(length(querys));
-for i=1:length(querys)
-	Cannon.QueryMap.put(querys{i}, i);
-end
+Cannon.QueryMap = hash_strings(querys);
 
 sga = struct('eps', sga_eps, 'dbl', sga_dbl, 'pvl', sga_pvl, ...
    'Cannon', Cannon, 'dbl_std', sga_dbl_std, 'escore', sga_escore, ...

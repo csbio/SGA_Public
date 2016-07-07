@@ -24,7 +24,7 @@ fclose(fid);
 
 result = cell(size(cellarr));
 cellarr = cellarr(:);
-map = Hash([], A{2});
+map = hash_strings(A{2});
 
 for i=1:length(cellarr)
 	ix = map.get(cellarr{i});

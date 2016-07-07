@@ -124,7 +124,7 @@ function [PR] = help_curve_the_pr(sga, standard, negativesTF)
 end
 function [PR, ix] = help_eval_ppi_pairs(standard, pair_list)
 
-    name_map = Hash(java.util.HashMap(), standard.orfs);
+    name_map = hash_strings(standard.orfs);
    
     rows = zeros(size(pair_list, 1),1);
     cols = zeros(size(pair_list, 1),1);

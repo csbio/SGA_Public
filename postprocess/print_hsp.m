@@ -81,7 +81,7 @@ function [] = print_sga_append(sga, filename)
    A = textscan(fid, '%s%s%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
    fclose(fid);
 
-   map = Hash([], A{1});
+   map = hash_strings(A{1});
    array_ids = apply_map(map, sga.Cannon.Orf(sga.Cannon.isArray));
 
    % start with common to catch misses

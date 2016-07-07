@@ -15,7 +15,7 @@ function [table] = print_smf_2015(file_26, file_30, fg_merge, ts_merge)
 
    % fill in 26 
    dat26 = Csv2Cell(file_26);
-   h26 = Hash([], dat26(:,1));
+   h26 = hash_strings(dat26(:,1));
    for i=1:length(all_strains)
       ix = h26.get(all_strains{i});
       if isempty(ix)
@@ -25,10 +25,9 @@ function [table] = print_smf_2015(file_26, file_30, fg_merge, ts_merge)
       end
    end
 
-
    % fill in 30
    dat30 = Csv2Cell(file_30);
-   h30 = Hash([], dat30(:,1));
+   h30 = hash_strings(dat30(:,1));
    for i=1:length(all_strains)
       ix = h30.get(all_strains{i});
       if isempty(ix)

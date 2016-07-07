@@ -81,7 +81,7 @@ end
 % sub-function lifted from compare_sga_structs on Apr 11, 2013
 function[PR, ix] = help_eval_ppi_pairs(standard, pair_list)
 
-   name_map = Hash(java.util.HashMap(), standard.orfs);
+   name_map = hash_strings(standard.orfs);
    
    rows = zeros(size(pair_list, 1),1);
    cols = zeros(size(pair_list, 1),1);

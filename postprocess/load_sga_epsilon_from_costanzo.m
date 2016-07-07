@@ -4,7 +4,6 @@ tic
 
 % make a Cannon
 Cannon = struct();
-Cannon.Map = java.util.HashMap(6000);
 
 fid = fopen(orf_file, 'r');
 A = textscan(fid, '%s');
@@ -15,10 +14,8 @@ Cannon.isArray = boolean(zeros(1,Cannon.GENES));
 Cannon.isQuery = boolean(zeros(Cannon.GENES, 1));
 fclose(fid);
 
-for i=1:Cannon.GENES
-	Cannon.Map.put(java.lang.String(Cannon.Orf{i}), java.lang.Integer(i));
-	Cannon.Map.put(java.lang.String(Cannon.Common{i}), java.lang.Integer(i));
-end
+Cannon.Map = hash_strings(Cannon.Orf);
+Cannon.Map = hash_strings(Cannon.Common, Cannon.Map);
 
 % Score file columns:
 % Qorf Qcom Aorf Acom dm_act eps std pval experiment
@@ -70,16 +67,10 @@ end
 fclose(fid);
 
 arrays = Cannon.Orf(Cannon.isArray);
-Cannon.ArrayMap = java.util.HashMap(length(arrays));
-for i=1:length(arrays)
-	Cannon.ArrayMap.put(arrays{i}, i);
-end
+Cannon.ArrayMap = hash_strings(arrays);
 
 querys = Cannon.Orf(Cannon.isQuery);
-Cannon.QueryMap = java.util.HashMap(length(querys));
-for i=1:length(querys)
-	Cannon.QueryMap.put(querys{i}, i);
-end
+Cannon.QueryMap = hash_strings(querys);
 
 sga = struct('eps', sga_eps, 'pvl', sga_pvl, ...
    'Cannon', Cannon, 'dbl_std', sga_dbl_std);

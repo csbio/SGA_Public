@@ -30,9 +30,9 @@ function[sga] = merge_temperatures(primary, p_name, secondary, s_name)
    sga.Cannon.isArray = false(1,sga.Cannon.GENES);
    sga.Cannon.isArray(end-length(arrays)+1:end) = true;
 
-   sga.Cannon.Map = Hash([], sga.Cannon.Orf);
-   sga.Cannon.QueryMap = Hash([], queries);
-   sga.Cannon.ArrayMap = Hash([], arrays);
+   sga.Cannon.Map = hash_strings(sga.Cannon.Orf);
+   sga.Cannon.QueryMap = hash_strings(queries);
+   sga.Cannon.ArrayMap = hash_strings(arrays);
    
    sga.eps = NaN(sga.Cannon.GENES);
    sga.dbl = NaN(sga.Cannon.GENES);

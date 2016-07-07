@@ -35,7 +35,7 @@ for i=1:Cannon.GENES
 end
 
 Cannon.sources = {'DMA26', 'DMA30', 'TSA26', 'TSA30'};
-Cannon.src_map = Hash([], Cannon.sources);
+Cannon.src_map = hash_strings(Cannon.sources);
 
 % Score file columns:
 % Qstrain Qallele Astrain Aallele Arraytype/Temp epsilon pval qsmf asmf dmf dmf_std

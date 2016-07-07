@@ -133,7 +133,7 @@ function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 	Queries = sga.Cannon.Orf(sga.Cannon.isQuery);
 	results = zeros(length(Queries),1); % co_batch IP
 
-	the_map = Hash(java.util.HashMap(length(Queries)), Queries);
+	the_map = hash_strings(Queries);
 	CoBatch = boolean(sparse(length(Queries), length(Queries)));
 	for i=1:length(cobatch)
 		ida = the_map.get(cobatch{i,1});
