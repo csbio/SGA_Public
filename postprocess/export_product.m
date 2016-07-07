@@ -16,14 +16,14 @@ function[sga] = export_product(sga_inputfile, sga_outputfile, smfitnessfile, ...
 
 
 
-	dirname = split_by_delimiter('/', sga_outputfile);
-	basename= split_by_delimiter('_', dirname{end});
+	dirname = split_by_delimiter(sga_outputfile, '/');
+	basename= split_by_delimiter(dirname{end}, '_');
 	int_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/interactions/'];
 	system(['mkdir -p ' int_dirname]);
 
 
 	% ------------------------ processed matfiles
-		fields = split_by_delimiter('_', basename);
+		fields = split_by_delimiter(basename, '_');
 		project = fields{2};
 		array   = fields{3};
 		temp    = fields{4};

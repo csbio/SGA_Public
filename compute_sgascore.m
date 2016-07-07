@@ -58,7 +58,7 @@ more off
 if ~exist('outputfile','var')
     error('Define outputfile.');
 else
-    tmp = split_by_delimiter('/', outputfile);
+    tmp = split_by_delimiter(outputfile, '/');
     outputdir = join_by_delimiter(tmp(1:end-1), '/');
     if(outputfile(1) == '/')
         outputdir = ['/' outputdir];

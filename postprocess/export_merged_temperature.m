@@ -4,8 +4,8 @@ function [] = export_merged_temperature(sga_outputfile)
 % merges temperatures, saves results, clusters results
 % call me just once, with any of the four outputfiles
 
-   dirname = split_by_delimiter('/', sga_outputfile);                                                                                                                                
-   basename= split_by_delimiter('_', dirname{end});
+   dirname = split_by_delimiter(sga_outputfile, '/');
+   basename= split_by_delimiter(dirname{end}, '_');
 
    int_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/interactions/'];
    clus_dirname = [join_by_delimiter(dirname(1:end-1), '/') '/clustergrams/']; 
@@ -25,11 +25,11 @@ function [] = export_merged_temperature(sga_outputfile)
    basename{4} = 'merge';
 
    basename{3} = 'fg';
-   clus_basename = join_by_delimiter(basename, '_');                                                                                                                            
+   clus_basename = join_by_delimiter(basename, '_');
    generate_fg_clustergram(fg_merge, [clus_dirname clus_basename]); 
 
    basename{3} = 'ts';
-   clus_basename = join_by_delimiter(basename, '_');                                                                                                                            
+   clus_basename = join_by_delimiter(basename, '_');
    generate_fg_clustergram(ts_merge, [clus_dirname clus_basename]); 
 
 end

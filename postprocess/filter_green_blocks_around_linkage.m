@@ -49,7 +49,7 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
 	[fgmap.plate, fgmap.row, fgmap.col, fgmap.orf, fgmap.strain] = textread(layout_file,'%f %f %f %s %s');
 
 	block_filter_count = 0;
-	ARRAY = split_by_delimiter('_', layout_file);
+	ARRAY = split_by_delimiter(layout_file, '_');
 	ARRAY = ARRAY{3};
 	if(~ismember(ARRAY, {'fg', 'ts'}))
 		error('unrecognized array format!');
@@ -62,7 +62,7 @@ function[dataset] = helper_dataset_wrapper(dataset, linkage_file, coord_file, la
 
 	for q = 1 : length(inds_q)
 		 
-		orfs_this_query = split_by_delimiter('+', dataset.queries{inds_q(q)});
+		orfs_this_query = split_by_delimiter(dataset.queries{inds_q(q)}, '+');
 		for i=1:length(orfs_this_query)
 			if(strcmp(orfs_this_query{i}, wild_type))
 				continue

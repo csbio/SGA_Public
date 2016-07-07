@@ -254,7 +254,7 @@ function [linked_arrays, match_code]  = get_linked_arrays(query_string, predef_l
     %
     % TMP SKIP ANYTNG NOT IN LINKAGE FILE FOR ADDENDUM
     if (match_code == 4) || (match_code == 1)
-        orf_list = split_by_delimiter('+', strip_annotation(query_string, 'first'));
+        orf_list = split_by_delimiter(strip_annotation(query_string, 'first'), '+');
         for i=1:length(orf_list)
             this_orf_chrom = upper(orf_list{i}(2)) - '@'; 
             ix = strcmp(orf_list{i}, predef_lnkg.orf);
