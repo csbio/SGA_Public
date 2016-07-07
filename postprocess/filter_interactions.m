@@ -134,7 +134,7 @@ function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 	results = zeros(length(Queries),1); % co_batch IP
 
 	the_map = hash_strings(Queries);
-	CoBatch = boolean(sparse(length(Queries), length(Queries)));
+	CoBatch = logical(sparse(length(Queries), length(Queries)));
 	for i=1:length(cobatch)
 		ida = the_map.get(cobatch{i,1});
 		idb = the_map.get(cobatch{i,2});
@@ -143,7 +143,7 @@ function[cobatch_scores] = calculate_cobatch_by_query(sga, inputfile)
 		end 
 	end
 	CoBatch = CoBatch | CoBatch';
-	CoBatch(boolean(eye(size(CoBatch,1)))) = false;
+	CoBatch(logical(eye(size(CoBatch,1)))) = false;
 
 	EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
 	EPS(isnan(EPS)) = 0;

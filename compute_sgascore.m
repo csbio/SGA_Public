@@ -404,8 +404,8 @@ triple_remove_list = {'YKL216W_dma2907', 'YJL130C_dma2510', 'YLR420W_dma3476', .
 	triple_queries = find(~cellfun(@isempty, cellfun(@strfind, sgadata.orfnames, plus_cell, 'UniformOutput', false)));
 	
 	% Any colony which matches any combination of a query and array above is removed
-	triple_queries_bool = boolean(zeros(length(sgadata.querys), 1));
-	triple_remove_bool  = boolean(zeros(length(sgadata.arrays), 1));
+	triple_queries_bool = logical(zeros(length(sgadata.querys), 1));
+	triple_remove_bool  = logical(zeros(length(sgadata.arrays), 1));
 	for i=1:length(triple_queries)
     	triple_queries_bool = triple_queries_bool | sgadata.querys == triple_queries(i);
 	end

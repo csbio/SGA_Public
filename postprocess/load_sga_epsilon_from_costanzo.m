@@ -10,8 +10,8 @@ A = textscan(fid, '%s');
 Cannon.Orf = A{1};
 Cannon.Common = CommonToOrf(Cannon.Orf)
 Cannon.GENES = length(Cannon.Orf);
-Cannon.isArray = boolean(zeros(1,Cannon.GENES));
-Cannon.isQuery = boolean(zeros(Cannon.GENES, 1));
+Cannon.isArray = logical(zeros(1,Cannon.GENES));
+Cannon.isQuery = logical(zeros(Cannon.GENES, 1));
 fclose(fid);
 
 Cannon.Map = hash_strings(Cannon.Orf);

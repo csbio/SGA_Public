@@ -12,7 +12,7 @@ if(islogical(Vector))
 	if(n > sum(Vector))
 		error('You are asking too much! sum(V)=%d n=%d\n',sum(Vector), n);
 	else
-		NVec = boolean(zeros(size(Vector)));
+		NVec = logical(zeros(size(Vector)));
 		NVec(MyChoose(find(Vector), n)) = true;
 	end
 else

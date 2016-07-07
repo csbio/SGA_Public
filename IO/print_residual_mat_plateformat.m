@@ -33,7 +33,7 @@ big_map = nan(big_size_y, big_size_x);
 	labels_x(:) = {'brdr'};
 
 % precalculate array plate (col) matches
-plate_columns = boolean(zeros(length(sgadata.arrayplateids), length(all_arrplates)));
+plate_columns = logical(zeros(length(sgadata.arrayplateids), length(all_arrplates)));
 for i=1:length(all_arrplates)
 	plate_columns(:,i) = sgadata.arrayplateids == all_arrplates(i);
 end
