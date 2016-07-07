@@ -86,7 +86,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     array_orfs_not_found = 0;
     array_coord = nan(length(all_arrays),3); % CHR START END
     for i = 1:length(all_arrays)
-        array_orf = strip_annotation(sgadata.orfnames{all_arrays(i)});
+        array_orf = strip_annotation(sgadata.orfnames{all_arrays(i)}, 'last');
         ix = strcmp(array_orf, SGD_coord.orfs);
 
         if any(ix)
@@ -108,7 +108,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     query_orfs_not_found = 0;
     query_coord = nan(length(all_querys),3); % CHR START END
     for i = 1:length(all_querys)
-        query_orf = strip_annotation(sgadata.orfnames{all_querys(i)});
+        query_orf = strip_annotation(sgadata.orfnames{all_querys(i)}, 'last');
         ix = strcmp(query_orf, SGD_coord.orfs);
 
         if any(ix)

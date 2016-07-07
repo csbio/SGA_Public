@@ -648,9 +648,9 @@ for i=1:length(sgadata.orfnames)
         final_smfit(i)     = fitness_data.SMF(fitness_hash.get(sgadata.orfnames{i}));
         final_smfit_std(i) = fitness_data.STD(fitness_hash.get(sgadata.orfnames{i}));
         fitness_report_counts(1) = fitness_report_counts(1)+1;
-    elseif fitness_hash.containsKey(strip_annotation(sgadata.orfnames{i}))
-        final_smfit(i)     = fitness_data.SMF(fitness_hash.get(strip_annotation(sgadata.orfnames{i})));
-        final_smfit_std(i) = fitness_data.STD(fitness_hash.get(strip_annotation(sgadata.orfnames{i})));
+    elseif fitness_hash.containsKey(strip_annotation(sgadata.orfnames{i}, 'last'))
+        final_smfit(i)     = fitness_data.SMF(fitness_hash.get(strip_annotation(sgadata.orfnames{i}, 'last')));
+        final_smfit_std(i) = fitness_data.STD(fitness_hash.get(strip_annotation(sgadata.orfnames{i}, 'last')));
         fitness_report_counts(2) = fitness_report_counts(2)+1;
     else
         fitness_report_counts(3) = fitness_report_counts(3)+1;

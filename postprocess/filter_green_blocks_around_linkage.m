@@ -137,7 +137,7 @@ function[chr, strt, endd] = GetLnkCoord(orf, qsl, chrcoord)
 	% look for coordinate match
 	ind = strmatch(orf, chrcoord.orf, 'exact');
 	if(isempty(ind))
-		ind = strmatch(strip_annotation(orf), chrcoord.orf, 'exact');
+		ind = strmatch(strip_annotation(orf, 'last'), chrcoord.orf, 'exact');
 	end
 	if(~isempty(ind))
 		chr  = chrcoord.chrom(ind);
