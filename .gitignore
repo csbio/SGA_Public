@@ -1,0 +1,19 @@
+# project exclude file, this is shared
+# if you want to exclude something just for
+# yourself, or in just one copy of the repo
+# use .git/info/exclude instead
+
+# input output directories
+rawdata
+scored
+
+# exclude contents of the test working directory
+test/Sci_Batch40
+
+# except the test files themselves
+!test/Sci_Batch40/Sci_Batch40.txt.gz
+!test/Sci_Batch40/Sci_Batch40_standard.log
+!test/Sci_Batch40/Sci_Batch40_standard.txt
+!test/Sci_Batch40/Sci_Batch40_standard.orf
+!test/Sci_Batch40/test_*
+
