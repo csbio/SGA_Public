@@ -1,0 +1,136 @@
+Working dir is /Users/bvander/SGA
+Random Seed is 42
+
+Load raw SGA data with batch script: /Users/bvander/SGA/IO/load_raw_sga_data_withbatch
+
+beginning perl preprocessing
+Data loaded.
+using border strain YOR202W_dma1
+border strain array matches 391627 colonies (19%); expected (19%)
+
+
+Strain Summary:
+type	sn	dma	tsq	damp	tsa	trip	unann	total
+query	122	0	8	7	0	0	0	137
+array	0	4293	0	0	0	0	0	4293
+
+number of unique array plates found: 14
+68073 colonies ignored from "bad arrays"
+
+Constructing plateid->ind map...
+|                                                  |
+|**************************************************|
+Constructing query->ind map...
+Constructing array->ind map...
+
+Linkage filter script:
+	/Users/bvander/SGA/corrections/filter_linkage_colonies
+Linkage Defs: refdata/linkage_estimate_curated_160426.txt
+Chrom   Defs: refdata/chrom_coordinates_150617.tab
+
+Array coordinates mapped. 
+	array orfs matched:   4276
+	array orfs not found: 17
+Query coordinates mapped. 
+	query orfs matched:   136
+	query orfs not found: 1
+Mapping query-specific linkage...
+|                                                  |
+|**************************************************|
+Query Linkage Process Report
+	strain based linkages:	0
+	orf based linkages:	135
+	window based linkages:	1
+	linkage failures:	1
+Mapping array-specific linkage...
+|                                                  |
+|**************************************************|
+Array Linkage Process Report
+	strain based linkages:	97
+	orf based linkages:	0
+	window based linkages:	0
+	linkage failures:	0
+156433 colonies identified as linkage
+
+Plate normalization script:
+	/Users/bvander/SGA/corrections/apply_plate_normalization
+
+Plate normalization...
+|                                                  |
+|**************************************************|
+Calculating colony residuals...
+|                                                  |
+|**************************************************|
+
+Spatial correction script:
+	/Users/bvander/SGA/corrections/apply_spatial_normalization
+
+Spatial normalization...
+|                                                  |
+|**************************************************|
+
+Row/column correction script:
+	/Users/bvander/SGA/corrections/apply_rowcol_normalization
+
+Row/column correction...
+|                                                  |
+|**************************************************|
+
+Competition correction script:
+	/Users/bvander/SGA/corrections/apply_competition_correction
+
+	Get colony neighbor indices script:
+		/Users/bvander/SGA/corrections/get_colony_neighbor_indices_list
+
+Mapping neighboring colonies...
+|                                                  |
+|**************************************************|
+
+Competition correction...
+|                                                  |
+|**************************************************|
+
+Plate normalization script:
+	/Users/bvander/SGA/corrections/apply_plate_normalization
+
+Plate normalization...
+|                                                  |
+|**************************************************|
+
+Jackknife variance correction script:
+	/Users/bvander/SGA/corrections/apply_jackknife_correction
+
+Running the hold-one-out filter...
+|                                                  |
+|**************************************************|
+Finished applying filters...
+Getting arrayplate means...
+|                                                  |
+|**************************************************|
+Preparing for batch normalization...
+|                                                  |
+|**************************************************|
+Batch normalization...
+|                                                  |
+|**************************************************|
+Calculating array WT variance...
+|                                                  |
+|**************************************************|
+Computing average for double mutants...
+|                                                  |
+|*************************************************|
+Pooling across arrayplates for each query...
+|                                                  |
+|**************************************************|
+Fitness file report:
+	Exact match	: 4429
+	Partial Match	: 0
+	Not Found	: 1
+	NaN in file	: 377
+Model fitting...
+|                                                  |
+|********************************************|
+Printing output file...
+|                                                  |
+|**************************************************|
+total time elapsed: 0.32 hours
