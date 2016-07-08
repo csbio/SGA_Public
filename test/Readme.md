@@ -5,10 +5,12 @@ Data Description
 (supplementary data file 4)
 With \_strainIDs added later
 
+```
 Sci_40.txt.gz summary:
 type   sn   tsq   damp   dma   tsa   y   unann   total
 query  122  8     7      0      0    0   0       137
 array   0   0     0      4293   0    0   0       4293
+```
 
 
 To test the pipeline:
@@ -40,9 +42,9 @@ the first test, you can stop, but if you fail, you can run more tests to find
 the problem. 
 
 The repo will ignore files that begin with `test` so if you want to spit out a
-pdf or a log, you should name it `result` so that git will ignore it. Assume they
-are run in order, so you can write state to result files or the matlab environment
-for use in subsequent tests.
+pdf or a log, you should name it `result` or something so that git will ignore
+it. Assume they are run in order, so you can write state to result files or the
+matlab environment for use in subsequent tests.
 
 ```
 test_10.sh diffs the txt file to check all scores
