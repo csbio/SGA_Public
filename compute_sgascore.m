@@ -80,16 +80,6 @@ end
 % now that we have a log, report our base_dir
 log_printf(lfid, sprintf('Working dir is %s\n', base_dir));
 
-% Set random seed if defined
-if exist('random_seed','var')
-    rng(random_seed);
-else
-    random_seed = randi([0,10000], 1,1);
-    rng(random_seed);
-end
-
-log_printf(lfid, sprintf('Random Seed is %s\n', num2str(random_seed)));
-
 % Set some default flags if not defined
 keyboard_confirm = false;
 if(~exist('skip_linkage_detection', 'var'))
@@ -150,6 +140,18 @@ if(skip_perl_step)
       error('skip_perl_step is set to true, but _orfidmap and/or _numeric for inputfile do not exist!')
    end
 end
+
+% Set random seed if defined
+if exist('random_seed','var')
+    rng(random_seed);
+else
+   tmp = datevec(now);
+   rng(tmp(6)*1000);
+   random_seed = getfield(rng, 'Seed');
+   clear tmp;
+end
+
+log_printf(lfid, sprintf('Random Seed is %s\n', num2str(random_seed)));
 
 % Save the path and version for the records
 pth = path;
@@ -222,10 +224,6 @@ if ~ismember(unique_array_plate_count, [1, 4, 14])
     log_printf(lfid, 'TERMINAL unknown array configuration (%d) or incorrect array plate mapping');
     return
 end
-
-% Seed the random number generator % may throw error in older matlab versions
-RSTREAM = RandStream.create('mt19937ar','Seed', 'shuffle');
-RandStream.setGlobalStream(RSTREAM); clear RSTREM;
 
 %% Define colonies to ignore for some normalization steps
 
