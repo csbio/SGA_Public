@@ -12,8 +12,8 @@ function[] = print_terse_sga(sga, filename)
 	Arf = sga.Cannon.Orf(sga.Cannon.isArray);
 
 	% fprintf('using ORF names\n');
-	% Qrf = StripOrfs(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
-	% Arf = StripOrfs(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
+	% Qrf = strip_annotation(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
+	% Arf = strip_annotation(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
 
 
 

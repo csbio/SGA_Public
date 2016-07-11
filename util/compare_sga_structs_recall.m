@@ -19,8 +19,8 @@ function [] = compare_sga_structs_recall(sga, labels, standard, std_label)
 	for i=1:length(sga)
 		%remove nans (not found in std)
 		% mask out any queries or arrays not in the standard
-		sga{i}.Cannon.isQuery(~ismember(StripOrfs(sga{i}.Cannon.Orf), standard.orfs)) = false;
-		sga{i}.Cannon.isArray(~ismember(StripOrfs(sga{i}.Cannon.Orf), standard.orfs)) = false;
+		sga{i}.Cannon.isQuery(~ismember(strip_annotation(sga{i}.Cannon.Orf), standard.orfs)) = false;
+		sga{i}.Cannon.isArray(~ismember(strip_annotation(sga{i}.Cannon.Orf), standard.orfs)) = false;
 
 		% perform the analysis
       	PR_neg = help_curve_the_pr(sga{i}, standard, true);
@@ -113,8 +113,8 @@ function [PR] = help_curve_the_pr(sga, standard, negativesTF)
    EPS = EPS(sga.Cannon.isQuery, sga.Cannon.isArray);
    
    [r, c, v] = find(EPS);
-   Qname = StripOrfs(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
-   Aname = StripOrfs(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
+   Qname = strip_annotation(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
+   Aname = strip_annotation(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
    
    [tmp, ix] = sort(abs(v), 'descend');
    r = r(ix);
@@ -151,8 +151,8 @@ function [back_rate, back_num] = compute_background_rate(standard, sga)
 	% Assumes all queries are screened by all arrays
 	% Also assumes standard is symmetric
 
-	Q = ismember(standard.orfs, StripOrfs(sga.Cannon.Orf(sga.Cannon.isQuery)));
-	A = ismember(standard.orfs, StripOrfs(sga.Cannon.Orf(sga.Cannon.isArray)));
+	Q = ismember(standard.orfs, strip_annotation(sga.Cannon.Orf(sga.Cannon.isQuery)));
+	A = ismember(standard.orfs, strip_annotation(sga.Cannon.Orf(sga.Cannon.isArray)));
 	TP = sum(sum(standard.matrix(Q,A)== 1));
 	if islogical(standard.matrix)
 		TN = sum(sum(~standard.matrix(Q,A)));

@@ -2,7 +2,7 @@ function [table] = print_smf_2015(file_26, file_30, fg_merge, ts_merge)
 
    all_strains = fg_merge.Cannon.Orf(fg_merge.Cannon.isQuery | fg_merge.Cannon.isArray');
    all_strains = union(all_strains, ts_merge.Cannon.Orf(ts_merge.Cannon.isQuery | ts_merge.Cannon.isArray'));
-   all_orfs = StripOrfs(all_strains);
+   all_orfs = strip_annotation(all_strains, 'first');
    all_alleles = StrainToAllele(all_strains);
 
    % all the strains in the dataset will form the index

@@ -8,7 +8,7 @@ function [table] = print_smf_2016(file_26, file_30, sga_sets)
       s = sga_sets{i};
       all_strains = union(all_strains, s.Cannon.Orf(s.Cannon.isQuery | s.Cannon.isArray'));
    end
-   all_orfs = StripOrfs(all_strains);
+   all_orfs = strip_annotation(all_strains);
    all_alleles = StrainToAllele(all_strains);
 
    % all the strains in the dataset will form the index

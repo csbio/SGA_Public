@@ -3,9 +3,9 @@ function[sga] = reduce_alleles(sga)
 % Choose one representitive ORF for each (Q, A) at random...
 % and mask out the rest.
 
-	All_Qs = StripOrfs(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
+	All_Qs = strip_annotation(sga.Cannon.Orf(sga.Cannon.isQuery), 'first');
 	Qs = unique(All_Qs);
-	All_As = StripOrfs(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
+	All_As = strip_annotation(sga.Cannon.Orf(sga.Cannon.isArray), 'first');
 	As = unique(All_As);
 
 	QQ=find(sga.Cannon.isQuery);
