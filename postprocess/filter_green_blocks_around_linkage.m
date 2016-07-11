@@ -3,8 +3,8 @@ function [sga] = filter_green_blocks_around_linkage(sga, linkage_file, coord_fil
 
 	% convert my style struct to anastasia's style, then use her original code
 	dataset = struct();
-	dataset.queries = StripOrfs(sga.Cannon.Orf(sga.Cannon.isQuery));
-	dataset.arrays  = StripOrfs(sga.Cannon.Orf(sga.Cannon.isArray));
+	dataset.queries = strip_annotation(sga.Cannon.Orf(sga.Cannon.isQuery));
+	dataset.arrays  = strip_annotation(sga.Cannon.Orf(sga.Cannon.isArray));
 	dataset.scores = sga.escore(sga.Cannon.isQuery,sga.Cannon.isArray);
 	dataset = helper_dataset_wrapper(dataset, linkage_file, coord_file, layout_file, wild_type, border_strain);
 

@@ -43,8 +43,8 @@ function[] = PRCurves_from_files(file_list, input_label, standard, std_label)
 	% This code originally written for Allele-Allele similarity standard evaluation.
 	for i=1:length(lists)
 		%lists{i} = [AlleleToOrf(lists{i}(:,1)) AlleleToOrf(lists{i}(:,2))];
-		lists{i} = [StripOrfs(AlleleToOrf(lists{i}(:,1))) ...
-		            StripOrfs(AlleleToOrf(lists{i}(:,2)))];
+		lists{i} = [strip_annotation(AlleleToOrf(lists{i}(:,1))) ...
+		            strip_annotation(AlleleToOrf(lists{i}(:,2)))];
 	end
 
 	% Remove pairs that contain an ORF not in our std.

@@ -41,7 +41,7 @@ function[sga] = mask_collab_and_linkage(sga, bad_linkage_orfs, fix_linkage_orfs)
 		ends_within   = CD(:,2) > mask_region(1) & CD(:,2) < mask_region(2);
 
 		arrays_to_mask = coords{1}(intersect(this_chr, find(begins_within | ends_within)));
-		array_ix = sga.Cannon.isArray & ismember(StripOrfs(sga.Cannon.Orf), arrays_to_mask)';
+		array_ix = sga.Cannon.isArray & ismember(strip_annotation(sga.Cannon.Orf), arrays_to_mask)';
 	
 		sga.eps(afflicted_ix, array_ix) = NaN;
 		sga.pvl(afflicted_ix, array_ix) = NaN;

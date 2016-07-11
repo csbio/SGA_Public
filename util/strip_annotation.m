@@ -1,5 +1,5 @@
-function[heads, tails] = split_annotation(strain_list, pos)
-% function[heads, tails] = split_annotation(strain_list, [pos='first'])
+function[heads, tails] = strip_annotation(strain_list, pos)
+% function[heads, tails] = strip_annotation(strain_list, [pos='first'])
 %
 % Splits strings in the strain list at '_' and returns the pieces.
 % strain_list may also be a single string to operate on.

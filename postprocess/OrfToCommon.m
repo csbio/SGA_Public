@@ -19,7 +19,7 @@ A = textscan(fid, '%s%s%s%s', 'Delimiter', '\t', 'ReturnOnError', false);
 fclose(fid);
 
 % handle tails
-[cellarr, tails] = StripOrfs(cellarr, 'first');
+[cellarr, tails] = strip_annotation(cellarr, 'first');
 
 
 result = cell(size(cellarr));

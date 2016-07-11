@@ -69,7 +69,7 @@ function[sga] = mask_essentials(sga, select)
    elseif select(1) == 'V'
       v_file = [get_SGAROOT() '/refdata/SGD_uncharacterized_and_verified_Yonly_151118.txt'];
       v_list = Csv2Cell(v_file);
-      Qverified = ismember(StripOrfs(sga.Cannon.Orf), v_list);
+      Qverified = ismember(strip_annotation(sga.Cannon.Orf), v_list);
       sga.Cannon.isQuery(~Qverified) = false;
 	else
 		error('unrecognized option [ENDdTCMAV]')
@@ -93,7 +93,7 @@ function[sga] = mask_essentials(sga, select)
    elseif select(2) == 'V'
       v_file = [get_SGAROOT() '/refdata/SGD_uncharacterized_and_verified_Yonly_151118.txt'];
       v_list = Csv2Cell(v_file);
-      Qverified = ismember(StripOrfs(sga.Cannon.Orf), v_list);
+      Qverified = ismember(strip_annotation(sga.Cannon.Orf), v_list);
       sga.Cannon.isArray(~Qverified) = false;
 	else
 		error('unrecognized option [ENAV]')
@@ -109,7 +109,7 @@ function [isQuery, isArray] = E_supp(sga)
    E_ix = strcmp('E', supp_def(:,2));
    supp_ess = supp_def(E_ix,1);
 
-   [~, tails] = StripOrfs(sga.Cannon.Orf);
+   [~, tails] = strip_annotation(sga.Cannon.Orf);
    is_ess = ismember(tails, supp_ess); %is_supp implied
    isQuery = sga.Cannon.isQuery & is_ess;
    isArray = sga.Cannon.isArray & is_ess';
@@ -121,7 +121,7 @@ function [isQuery, isArray] = N_supp(sga)
    N_ix = strcmp('N', supp_def(:,2));
    supp_non = supp_def(N_ix,1);
 
-   [~, tails] = StripOrfs(sga.Cannon.Orf);
+   [~, tails] = strip_annotation(sga.Cannon.Orf);
    is_non = ismember(tails, supp_non); %is_supp implied
    isQuery = sga.Cannon.isQuery & is_non;
    isArray = sga.Cannon.isArray & is_non';
