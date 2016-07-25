@@ -1,4 +1,4 @@
-function[stats] = BasicSgaStats(sga, thresh)
+function[stats] = BasicSgaStats(sga, thresh, verbose)
 %function[stats] = BasicSgaStats(sga, thresh)
 % stats = pos_int neg_int +/-
 % stats struct:
@@ -9,6 +9,10 @@ function[stats] = BasicSgaStats(sga, thresh)
 
 if(~exist('thresh', 'var'))
 	thresh = 0.08;
+end
+
+if(~exist('verbose', 'var'))
+   verbose = true;
 end
 
 EPS = sga.eps(sga.Cannon.isQuery, sga.Cannon.isArray);
@@ -31,13 +35,15 @@ stats.arrays  = struct();
 stats.neg_den = num_neg / sum(sum(SCR));
 stats.pos_den = num_pos / sum(sum(SCR));
 
-fprintf('-----------------\n');
-fprintf('%d queries\n%d arrays\n', sum(sga.Cannon.isQuery), sum(sga.Cannon.isArray));
-fprintf('%d interactions screened\n', sum(sum(SCR)));
-fprintf('interactions (- %d)(+ %d)\n', num_neg, num_pos);
-fprintf('-den: %.2f%%    +den: %.2f%%\n', stats.neg_den*100, stats.pos_den*100)
-fprintf('%.2f ratio (neg / total)\n', neg_ratio);
-fprintf('----\n\n');
+if verbose
+   fprintf('-----------------\n');
+   fprintf('%d queries\n%d arrays\n', sum(sga.Cannon.isQuery), sum(sga.Cannon.isArray));
+   fprintf('%d interactions screened\n', sum(sum(SCR)));
+   fprintf('interactions (- %d)(+ %d)\n', num_neg, num_pos);
+   fprintf('-den: %.2f%%    +den: %.2f%%\n', stats.neg_den*100, stats.pos_den*100)
+   fprintf('%.2f ratio (neg / total)\n', neg_ratio);
+   fprintf('----\n\n');
+end
 
 query_strains = sga.Cannon.Orf(sga.Cannon.isQuery);
 query_strains_common = sga.Cannon.Common(sga.Cannon.isQuery);
@@ -65,19 +71,18 @@ for i=1:length(strain_types)
     stats.arrays.(strain_types{i})  = strain_type_counts(2,i);
 end
 
-% print them out pretty
-fprintf('Strain Summary:\n');
-print_table = [[{'type'}, strain_types]; [{'query', 'array'}' num2cell(strain_type_counts)]];
-disp(print_table);
+if verbose
+   % print them out pretty
+   fprintf('Strain Summary:\n');
+   print_table = [[{'type'}, strain_types]; [{'query', 'array'}' num2cell(strain_type_counts)]];
+   disp(print_table);
 
-fprintf('-----------------------------------------------------------\n');
+   fprintf('-----------------------------------------------------------\n');
 
-% list collab query strains by common name
-fprintf(1, 'Collab Queries (_y):\n');
-collabs = query_strains_common(substrmatch('_y', query_strains_common));
-collabs = [collabs; cell(mod(4-mod(length(collabs),4),4),1)];
-collabs = reshape(collabs, length(collabs)/4, 4);
-cell2csv(1, collabs);
-
-
-
+   % list collab query strains by common name
+   fprintf(1, 'Collab Queries (_y):\n');
+   collabs = query_strains_common(substrmatch('_y', query_strains_common));
+   collabs = [collabs; cell(mod(4-mod(length(collabs),4),4),1)];
+   collabs = reshape(collabs, length(collabs)/4, 4);
+   cell2csv(1, collabs);
+end
