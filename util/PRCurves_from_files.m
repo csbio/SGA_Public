@@ -10,9 +10,9 @@ function[] = PRCurves_from_files(file_list, input_label, standard, std_label)
 		fseek(fid,0,-1); % rewind line	
 		COLS = length(A{1});
 		if(COLS == 2) 
-			A = textscan(fid, '%s%s', 'Delimiter', '\t', 'ReturnOnError', false, 'BufSize', 2^20); 
+			A = textscan(fid, '%s%s', 'Delimiter', '\t', 'ReturnOnError', false); 
 		elseif(COLS == 3);% We've got a numerical column, sort it
-			A = textscan(fid, '%s%s%f', 'Delimiter', '\t', 'ReturnOnError', false, 'BufSize', 2^20); 
+			A = textscan(fid, '%s%s%f', 'Delimiter', '\t', 'ReturnOnError', false); 
 			if ~issorted(A{3})
 				fprintf('sorting file %d\n', i);
 				[A{3}, ix] = sort(A{3}, 'descend');

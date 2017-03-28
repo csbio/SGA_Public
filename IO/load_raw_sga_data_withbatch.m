@@ -52,10 +52,8 @@ end
 % 9 colsize 
 
 field_string = '%n%n%n%n%n%n%n%n%n';
-
-% Buffered textscan is much faster than importdata
 input_fid = fopen([inputfile '_numeric'], 'r');
-rawdata = textscan(input_fid, field_string, 'BufSize', 2^20, 'ReturnOnError', false);
+rawdata = textscan(input_fid, field_string, 'ReturnOnError', false);
 fclose(input_fid);
 
 sgadata.querys = rawdata{1};
