@@ -9,12 +9,12 @@
 %	linkagefile      path of file containing the query-specific linkage window sizes
 %	smfitnessfile    path of file containing single mutant fitness
 %	wild_type        strain-id of wild type cols [Default = 'URA3control_sn4757']
-%	border_strin_orf strain-id of border cols.   [Default = 'YOR202W_dma1']
+%	border_strain_orf strain-id of border cols.   [Default = 'YOR202W_dma1']
 %       eps_qnorm_ref    string to matfile containing eps_norm_table for quantile
 %       random_seed	 random seed used to reproduce a random run
 %
 % Boolean Flags [default]:
-%	skip_linkge_detection [F]: don't bother detecting linkage.
+%	skip_linkage_detection [F]: don't bother detecting linkage.
 %			If this is set skip_linkage_mask has no effect either way
 %
 %	skip_linkage_mask [F]: if set to true, detect linkage and hold it 
@@ -27,7 +27,20 @@
 %	skip_wt_remove [F]: Usually, WT-queries are NaN'ed out at the end
 %			Set this to true to skip that and print out a WT query profile
 %
+%  remove_HO_globally [F]: The script will detect if all queries are double
+%        mutants and will remove HO linkage for all queries. However, if you
+%        have added other queries for stability, this detection will fail. 
+%        This flag gives you the option to remove HO linkage for all queries
+%        even when not all queries are DM. If this option is false, auto-detection 
+%        still proceeds.
 %
+%  skip_batch_correction [F]: This will skip the batch correction step.
+%
+%  disable_arrayvar_pval [F]: This will remove the "second pvalue" derived from
+%        array variance. Set to TRUE for the condition project.
+%
+%  disable_jackknife [F]: Disable the jackknife colony filter.
+%         Set to TRUE for the condition project
 %
 %	
 % Authors: Chad Myers (cmyers@cs.umn.edu), 
@@ -113,6 +126,24 @@ if ~exist('skip_wt_remove', 'var')
     log_printf(lfid, 'Using DEFAULT: skip_wt_remove = false\n');
     skip_wt_remove = false;
 end
+if ~exist('remove_HO_globally', 'var')
+   log_printf(lfid, 'Using DEFAULT: remove_HO_globally = false\n');
+   remove_HO_globally = false;
+end
+if ~exist('skip_batch_correction', 'var')
+   log_printf(lfid, 'Using DEFAULT: skip_batch_correction = false\n');
+   skip_batch_correction = false;
+end
+if ~exist('disable_arrayvar_pval', 'var')
+   log_printf(lfid, 'Using DEFAULT: disable_arrayvar_pval = false\n');
+   disable_arrayvar_pval = false;
+end
+if ~exist('disable_jackknife', 'var')
+   log_printf(lfid, 'Using DEFAULT: disable_jackknife = false\n');
+   disable_jackknife = false;
+end
+
+
 if(keyboard_confirm)
     log_printf(lfid, 'Automatic selections made. Please confirm.\n');
     log_printf(lfid, 'Type "dbcont" to continue or "dbquit" to abort.');
@@ -294,7 +325,7 @@ sgadata.spots = sgadata.plateids*10000 + sgadata.replicateid;
 linkage_cols = [];
 if(~skip_linkage_detection)
 	linkage_cols = filter_linkage_colonies(sgadata, linkagefile, coord_file,...
-		  all_querys, all_arrays, query_map, array_map, wild_type, lfid);
+		  all_querys, all_arrays, query_map, array_map, wild_type, remove_HO_globally, lfid);
 	log_printf(lfid, '%d colonies identified as linkage\n', length(linkage_cols));
 end
 ignore_cols = unique([bad_array_cols; linkage_cols]);
@@ -339,17 +370,19 @@ sgadata.compcorr_colsize = ...
 sgadata.finalplatecorr_colsize = apply_plate_normalization(sgadata, 'compcorr_colsize', ...
                                  ignore_cols, default_median_colsize, plate_id_map, lfid);
 
-% Do filtering based on held-out CV values
-sgadata.filt_jackknife = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', ...
-                       border_strain_orf, query_map, plate_id_map, lfid);
+if disable_jackknife
+   sgadata.filt_jackknife = sgadata.finalplatecorr_colsize;
+else
+   % Do filtering based on held-out CV values
+   sgadata.filt_jackknife = apply_jackknife_correction(sgadata, 'finalplatecorr_colsize', ...
+                          border_strain_orf, query_map, plate_id_map, lfid);
+end
 
 % keep a copy (in jackknife) to replace linkage after batch
 % SAFE ENTRY POINT, this is the first time we use filt colsize
 sgadata.filt_colsize = sgadata.filt_jackknife;
 
-
 %% Filters section
-
 
 % Set values == 0 to NaN
 sgadata.filt_colsize(sgadata.filt_colsize < 1) = NaN;
@@ -415,140 +448,13 @@ triple_remove_list = {'YKL216W_dma2907', 'YJL130C_dma2510', 'YLR420W_dma3476', .
 	clear plus_cell triple_queries triple_remove_list triple_queries_bool triple_remove_bool
      
 
-%% Batch correction
-% Get array plate means (use all screens, including WT screens)
-
-all_arrplates = unique(sgadata.arrayplateids);
-arrplate_ind = zeros(max(all_arrplates),1);
-arrplate_ind(all_arrplates) = 1:length(all_arrplates);  
-
-width = 48;
-height = 32;
-
-array_means = zeros(length(all_arrplates),width*height)+NaN;
-
-log_printf(lfid, ['Getting arrayplate means...\n|' blanks(50) '|\n|']);
-for i = 1:length(all_arrplates)
-    
-    currplates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
-    t = [];
-    
-    for j = 1:length(currplates)
-        
-        ind = plate_id_map{currplates(j)};
-        iii = sub2ind([32,48], sgadata.rows(ind), sgadata.cols(ind));
-        
-        d = zeros(32,48);
-        d(:,[1 2 47 48]) = NaN;
-        d([1 2 31 32],:) = NaN;
-        d(iii) = sgadata.filt_colsize(ind);
-        
-        t = [t,d(:)];
-        
-    end
-    
-    array_means(i,:) = nanmean(t,2);
-    
-    % Print progress
-    print_progress(lfid, length(all_arrplates),i);
-    
+%% Batch Correction 
+if skip_batch_correction
+   log_printf(lfid, 'SKIPPING batch correction.\n');
+   sgadata.batchnorm_colsize = sgadata.filt_colsize;
+else
+   sgadata = batch_correction_wrapper(sgadata, plate_id_map, lfid);
 end
-log_printf(lfid, '|\n');
-    
-
-% Do batch normalization using LDA
-save_mats=struct;
-
-log_printf(lfid, ['Preparing for batch normalization...\n|' blanks(50) '|\n|']);
-for i=1:length(all_arrplates)
-    
-    curr_plates = unique(sgadata.plateids(sgadata.arrayplateids == all_arrplates(i)));
-    
-    curr_mat = zeros(length(curr_plates),width*height)+NaN;
-    curr_ind_mat = zeros(length(curr_plates),width*height)+NaN;
-    curr_batch = zeros(length(curr_plates),1);
-    
-    for j = 1:length(curr_plates) 
-        
-        ind = plate_id_map{curr_plates(j)};
-        iii = sub2ind([32,48], sgadata.rows(ind), sgadata.cols(ind));
-        
-        d = zeros(32,48);
-        d(:,[1 2 47 48]) = NaN;
-        d([1 2 31 32],:) = NaN;
-        d_map = zeros(32,48) + 1; % default reference to the 1st index
-        
-        d_map(iii) = ind;
-        d(iii) = sgadata.filt_colsize(ind);
-        
-        curr_mat(j,:)=d(:);
-        curr_ind_mat(j,:)=d_map(:);
-        
-        curr_batch(j) = unique(sgadata.batch(ind));
-        
-    end
-    
-    t = curr_mat - repmat(array_means(i,:),size(curr_mat,1),1);
-           
-    save_mats(i).mat = t;
-    save_mats(i).mat_ind = curr_ind_mat;
-    save_mats(i).batch = curr_batch;
-    
-    % Print progress
-    print_progress(lfid, length(all_arrplates),i);
-    
-end
-log_printf(lfid, '|\n');
-    
-
-% Normalize out batch effect. Method: LDA (supervised) 
-sgadata.batchnorm_colsize = sgadata.filt_colsize;
-log_printf(lfid, ['Batch normalization...\n|', blanks(50), '|\n|']);
-sv_thresh = 0.1;
-
-for i = 1:length(all_arrplates)
-    
-    t = save_mats(i).mat;
-    t(isnan(t)) = 0;
-    % batches_by_plate (formerly curr_batch) is a list of 
-    % batch labels for all unique plateids in this array position
-    batches_by_plate = save_mats(i).batch; 
-  
-    % Check if some of the batches are too small -- make a larger orphan batch
-    % start assembling new batches by combining small batches until they reach certain siz
-    % TOO SMALL < 3
-    % BIG ENOUGH >= 8 (as defined by median size in FG30)
-
-    unique_batches_this_plate = unique(batches_by_plate);
-    batch_count = histc(batches_by_plate, unique_batches_this_plate);
-
-    merge_with_batch = find(batch_count < 3, 1, 'first'); % a pointer
-    for j=1:length(unique_batches_this_plate)
-        if(batch_count(j) < 3 && merge_with_batch ~= j) % don't merge batches with themselves 
-            % merge this batch
-            batches_by_plate(batches_by_plate == unique_batches_this_plate(j)) = ...
-										unique_batches_this_plate(merge_with_batch);
-            % update our counts and move our merge pointer if this orphan batch is big enough
-            batch_count(merge_with_batch) = batch_count(merge_with_batch) + batch_count(j);
-            batch_count(j) = NaN;
-            if(batch_count(merge_with_batch) >=8 ) % move the pointer
-                merge_with_batch = merge_with_batch + find(batch_count(merge_with_batch+1:end) < 3, 1, 'first');
-            end
-        end
-    end 
-  
-    batch_effect = multi_class_lda(t,batches_by_plate,sv_thresh);
-
-    sgadata.batchnorm_colsize(save_mats(i).mat_ind(:)) = ...
-       sgadata.batchnorm_colsize(save_mats(i).mat_ind(:)) - batch_effect(:);
-    
-    % Print progress
-    print_progress(lfid, length(all_arrplates),i);
-    
-end
-clear save_mats;
-log_printf(lfid, '|\n');
-
 
 %% Calculate array WT variance
 % We need vertcat in case wild_type_id has more than one element (i.e. replicate)
@@ -621,46 +527,14 @@ end
 log_printf(lfid, '|\n');
 
 % Pool across arrayplates for each query %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% bug HERE
 % SAFE ENTRY
 log_printf(lfid, ['Pooling across arrayplates for each query...\n|' blanks(50) '|\n|']);
 query_arrplate_vars = pool_query_arrayplate_var(sgadata, all_querys, query_map, lfid);
 
 % SAFE ENTRY
-% Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
-smf_fid = fopen(smfitnessfile, 'r');
-fitness_data = struct();
-fitness_data.raw = textscan(smf_fid, '%s%f%f', 'Delimiter', '\t', 'ReturnOnError', false);
-fclose(smf_fid);
-fitness_data.ORF = fitness_data.raw{1};
-fitness_data.SMF = fitness_data.raw{2};
-fitness_data.STD = fitness_data.raw{3};
-fitness_report_header = {'Exact match', 'Partial Match', 'Not Found', 'NaN in file'};
-fitness_report_counts = zeros(1,4);
-fitness_hash = hash_strings(fitness_data.ORF);
 
-final_smfit = zeros(length(sgadata.orfnames),1) + NaN;
-final_smfit_std = zeros(length(sgadata.orfnames),1) + NaN;
-for i=1:length(sgadata.orfnames)
-    if fitness_hash.containsKey(sgadata.orfnames{i})
-        final_smfit(i)     = fitness_data.SMF(fitness_hash.get(sgadata.orfnames{i}));
-        final_smfit_std(i) = fitness_data.STD(fitness_hash.get(sgadata.orfnames{i}));
-        fitness_report_counts(1) = fitness_report_counts(1)+1;
-    elseif fitness_hash.containsKey(strip_annotation(sgadata.orfnames{i}, 'last'))
-        final_smfit(i)     = fitness_data.SMF(fitness_hash.get(strip_annotation(sgadata.orfnames{i}, 'last')));
-        final_smfit_std(i) = fitness_data.STD(fitness_hash.get(strip_annotation(sgadata.orfnames{i}, 'last')));
-        fitness_report_counts(2) = fitness_report_counts(2)+1;
-    else
-        fitness_report_counts(3) = fitness_report_counts(3)+1;
-    end
-end
-fitness_report_counts(4) = sum(isnan(final_smfit)) - fitness_report_counts(3);
-
-log_printf(lfid, 'Fitness file report:\n');
-for i=1:length(fitness_report_header)
-    log_printf(lfid, '\t%s\t: %d\n', fitness_report_header{i}, fitness_report_counts(i));
-end
-% Load the single mutant fitness file -----------------------------------------------------------------------------------------------------
+% Load the single mutant fitness file 
+[file_smfit, file_smfit_std] = load_smf(smfitnessfile, sgadata, lfid);
 
 
 % replace linkage colony values that got removed before batch correction
@@ -669,18 +543,25 @@ if(skip_linkage_mask)
 	log_printf(lfid, '* REPLACING linkage colonies.\n');
 end
 
+
+% Model fitting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 model_fits = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 model_fit_std = zeros(length(all_arrays),length(sgadata.orfnames)+1) + NaN;
 
 all_nans = find(isnan(sgadata.batchnorm_colsize));
 ind_his3 = strmatch(border_strain_orf, sgadata.orfnames,'exact');
 
-sgadata.arraymean_corrected = nan(size(sgadata.arraymedian));
+sgadata.arraymean_corrected = nan(size(sgadata.arraymedian));% saved but unused
 log_printf(lfid, ['Model fitting...\n|' blanks(50) '|\n|']);
 for i = 1:length(all_arrays)
     
     all_ind = array_map{all_arrays(i)};
     all_ind = setdiff(all_ind, all_nans);
+
+    % Print progress before continue statements
+    print_progress(lfid, length(all_arrays),i);
+   
    
     if isempty(all_ind)
        continue;
@@ -689,42 +570,55 @@ for i = 1:length(all_arrays)
     if all_arrays(i) == ind_his3
        continue;
     end
-
-    querys = unique(sgadata.querys(all_ind));
      
-    ind2 = find(~isnan(final_smfit(sgadata.querys(all_ind))));
     % sometimes we get an error here:
     % Warning: Polynomial is not unique; degree >= number of data points.
     % Generally I only get this when scoring replicate data, so I haven't much explored the ramifications. (BJV)
-	% it comes from not having any non-NaN query fitness estimates, so 0 data points to
-	% fit the trend for each array with a degree 1 polynomial
-	% p becomes [0, 0]
-    p = polyfit(final_smfit(sgadata.querys(all_ind(ind2))),sgadata.batchnorm_colsize(all_ind(ind2)),1);
+	 % it comes from not having any non-NaN query fitness estimates, so 0 data points to
+	 % fit the trend for each array with a degree 1 polynomial
+	 % resid_model becomes [0, 0]
     
-    curr_data = sgadata.batchnorm_colsize(all_ind);
-    
-    % Added back (11-03-31)
     % subtract the trend between interactions and fitness
-    curr_data(ind2) = curr_data(ind2) + (nanmean(sgadata.batchnorm_colsize(all_ind(ind2))) - (p(1)*final_smfit(sgadata.querys(all_ind(ind2)))+p(2)));
+    % Query fitness is, in theory, normalized out of the plates, but there is still
+    % a residual trend we want to correct for.
+    %
+    % For queries that have an SMF, estimate the magnitude of the effect, 
+    % and reset the colony scores to the arraymean plus the residual
+    this_array_colonies = sgadata.batchnorm_colsize(all_ind);
+    ind2 = find(~isnan(file_smfit(sgadata.querys(all_ind))));
 
+    col_data_to_fit = this_array_colonies(ind2); % these are pixel scores
+    query_fit_for_model = file_smfit(sgadata.querys(all_ind(ind2))); % these are fitness
+
+    % this will fit a fitness for each array. Used for 3 things:
+    % 1 the adjustment below
+    % 2 used with arrays that have an SMF to fit a model pixel_fit -> WT-relative
+    % 3 the model from 2 will be used to scale pixel scores that don't have an SMF, and fill them in
+    resid_model = polyfit(query_fit_for_model, col_data_to_fit, 1);
+    col_data_prime  = resid_model(1) * query_fit_for_model + resid_model(2);
+    resid = col_data_to_fit - col_data_prime;
+    this_array_colonies(ind2) = nanmean(col_data_to_fit) + resid;
+    
+    % collapse replicate pixel scores and calculate std dev
     curr_querys = sgadata.querys(all_ind);
     uniq_querys = unique(curr_querys);
     
+    % this is essentialy a colony-wise pixel epsilon
     query_effects = zeros(length(uniq_querys),1);
     query_effects_std = zeros(length(uniq_querys),1);
     
     for k = 1:length(uniq_querys)
-        
         ind = find(curr_querys == uniq_querys(k));
-        query_effects(k) = nanmean(curr_data(ind));
-        query_effects_std(k) = nanstd(curr_data(ind));
+        query_effects(k) = nanmean(this_array_colonies(ind));
+        query_effects_std(k) = nanstd(this_array_colonies(ind));
     end
     
-    
+    % subtract the mean to convert to pixel residual
     arrmean = nanmean(query_effects);
     arrstd = nanstd(query_effects);
     query_effects = query_effects - arrmean;
    
+    % put array mean in column 1
     query_effects = [arrmean; query_effects];
     query_effects_std = [arrstd; query_effects_std];
     
@@ -734,6 +628,7 @@ for i = 1:length(all_arrays)
     query_effects(1) = query_effects(1) + res;
     query_effects(2:end) = query_effects(2:end) - res;
    
+    % put in canonical order, with array smf (pixel) in column 1
     [int, a, b] = intersect(1:length(sgadata.orfnames), uniq_querys);
 
     model_fits(i,a+1) = query_effects(b+1);
@@ -741,45 +636,42 @@ for i = 1:length(all_arrays)
     model_fits(i,1) = query_effects(1);
     model_fit_std(i,1) = query_effects_std(1);
 
-    all_ind = array_map{all_arrays(i)}; % get nan_colonies back to record corrected mean
-    % put the removed mean back in and add the query_effects???
+
+    % record arraymean_corrected for posterity
+    % arraymean_corrected is not used in any further calculation
+    all_ind = array_map{all_arrays(i)}; % get nan_colonies back
     sgadata.arraymean_corrected(all_ind) = nanmean(query_effects + arrmean);
     
-    % Print progress
-    print_progress(lfid, length(all_arrays),i);
-   
 end
 log_printf(lfid, '|\n');
 
 
 % Fill in SM fitness for arrays that appear here that aren't in standard
-model_smfits = zeros(size(final_smfit,1),1);
-model_smstd = zeros(size(final_smfit,1),1);
+model_smfits = zeros(size(file_smfit,1),1);
+model_smstd = zeros(size(file_smfit,1),1);
 
-model_smfits(all_arrays)=model_fits(:,1);
-model_smstd(all_arrays)=model_fit_std(:,1);
+model_smfits(all_arrays) = model_fits(:,1);
+model_smstd(all_arrays) = model_fit_std(:,1);
 
 model_smfits(model_smfits == 0) = NaN;
 model_smstd(model_smstd == 0) = NaN;
 
-ind = find(~isnan(final_smfit(:,1)) & ~isnan(model_smfits));
-p = polyfit(model_smfits(ind), final_smfit(ind),1);
+% fit a model to transform pixel fitness scores scores to WT-relative
+ind = find(~isnan(file_smfit(:,1)) & ~isnan(model_smfits));
+p = polyfit(model_smfits(ind), file_smfit(ind),1);
 
-ind = find(isnan(final_smfit(:,1)));
+ind = find(isnan(file_smfit(:,1)));
+final_smfit = file_smfit;
 final_smfit(ind) = model_smfits(ind)*p(1)+p(2);
+final_smfit_std = file_smfit_std;
 final_smfit_std(ind) = model_smstd(ind)*p(1);
 
 
-% SGA score
 % SAFE ENTRY
-sga_score = model_fits(:,2:end);
-sga_score_std = model_fit_std(:,2:end);
-
-complete_mat = zeros(length(sgadata.orfnames)) + NaN;
-complete_mat_std = zeros(length(sgadata.orfnames)) + NaN;
-complete_mat(:,all_arrays) = sga_score';
-complete_mat_std(:,all_arrays) = sga_score_std';
-clear sga_score sga_score_std;
+sga_score = zeros(length(sgadata.orfnames)) + NaN;
+sga_score_std = zeros(length(sgadata.orfnames)) + NaN;
+sga_score(:,all_arrays) = model_fits(:,2:end)';
+sga_score_std(:,all_arrays) = model_fit_std(:,2:end)';
 
 avar = zeros(1,length(sgadata.orfnames)) + NaN;
 amean = zeros(1,length(sgadata.orfnames)) + NaN;
@@ -787,8 +679,8 @@ amean = zeros(1,length(sgadata.orfnames)) + NaN;
 avar(all_arrays) = array_vars(:,2);
 amean(all_arrays) = array_vars(:,1);
 
-amat = repmat(avar,size(complete_mat,1),1);
-amat_mean = repmat(amean,size(complete_mat,1),1);
+amat = repmat(avar,size(sga_score,1),1);
+amat_mean = repmat(amean,size(sga_score,1),1);
 
 
 % Create array to arrayplate map
@@ -800,7 +692,7 @@ for i = 1:length(all_arrays)
     
 end
 
-qmat = zeros(size(complete_mat,1),size(complete_mat,2)) + NaN;
+qmat = zeros(size(sga_score,1),size(sga_score,2)) + NaN;
 for j = 1:length(all_arrays)
     
     arrplate_ind = all_arrayplateids_map(array_arrplate{all_arrays(j)}); % arrayplate(s) this array appears on
@@ -813,29 +705,30 @@ for j = 1:length(all_arrays)
     
 end
 
+% upper/lower CI bound is backgd_mean*(backgd_std)^n OR backgd_mean/(backgd_std)^n where n is the number of std. dev. for normal cdf
 backgd_mean = exp(amat_mean);
-backgd_std = exp(sqrt(amat+qmat));  % upper/lower CI bound is backgd_mean*(backgd_std)^n OR backgd_mean/(backgd_std)^n where n is the number of std. dev. for normal cdf
+backgd_std = exp(sqrt(amat+qmat));  
 clear amat amat_mean;
 
 
-qfit = repmat(final_smfit,1,length(complete_mat));
 
 % To avoid removing real interactions, assume the query fitness is 1 if we
 % don't have other fitness information. This will cause incorrectly scaled
 % interactions but we have no way of dealing with this is we don't have SM
 % fitness information.
-
+qfit = repmat(final_smfit,1,length(sga_score));
 qfit(isnan(qfit)) = 1;
 
-afit = repmat(final_smfit',length(complete_mat),1);
+afit = repmat(final_smfit',length(sga_score),1);
 
-dm_expected = afit.*qfit;
+% fit another model from pixel to wt-relative space, this time using all available array data
 ind = find(~isnan(model_fits(:,1)) & ~isnan(final_smfit(all_arrays)));
 p = polyfit(final_smfit(all_arrays(ind)),model_fits(ind,1),1);
 c = p(1);
 
-eps = complete_mat .* (qfit/c);
-eps_std = complete_mat_std.*(qfit/c);
+% convert sga_score to wt-relative space, and scale by query fitness
+eps = sga_score .* (qfit/c);
+eps_std = sga_score_std.*(qfit/c);
 
 % Mainly for TS data to calibrate to FG
 if(exist('eps_qnorm_ref', 'var') && ~isempty(eps_qnorm_ref))
@@ -844,21 +737,45 @@ if(exist('eps_qnorm_ref', 'var') && ~isempty(eps_qnorm_ref))
    eps = quantile_normalize_from_table(eps, eps_norm_table);
 end
 
+dm_expected = afit.*qfit;
 dm_actual = dm_expected + eps;
 dm_actual_std = eps_std;
 clear eps eps_std afit;
 
+% calculate pvalue 1, based on replicate spot variance
+% assume this variance is normal, and assess difference from zero
+% based on that assumption
+pval1 = normcdf(-abs(sga_score./sga_score_std));
+
+if disable_arrayvar_pval
+   pvals = pval1;
+else
+   % calculate pvalue 2, based on array strain variance
+   % assume that array variance is log-normally distrubuted
+   % then assess difference from the background mean (of that array)
+   % based on that assumption
+   pval2 = normcdf(-abs(log((backgd_mean + sga_score)./backgd_mean) ./ log(backgd_std)));
+
+   % final pvalue is the geometric mean of these two
+   pvals = sqrt(pval1 .* pval2);
+end
+
+
+
+
 % remove wild-type data
 if(~skip_wt_remove)
     ind = strmatch(strip_annotation(wild_type, 'first'), sgadata.orfnames);
-    complete_mat(ind,:)=NaN;
-    complete_mat(:,ind)=NaN;
+    sga_score(ind,:)=NaN;
+    sga_score(:,ind)=NaN;
 end
 
 
 %% Printing out
 
-output_interaction_data(outputfile,sgadata.orfnames,complete_mat,complete_mat_std,backgd_mean,backgd_std,final_smfit,final_smfit_std,dm_expected,dm_actual,dm_actual_std,lfid);
+output_interaction_data(outputfile, sgadata.orfnames, sga_score, ...
+      sga_score_std, pvals, final_smfit, final_smfit_std, ...
+      dm_expected, dm_actual, dm_actual_std, lfid);
 
 %% Final save
 

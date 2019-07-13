@@ -78,7 +78,7 @@ SAFE-ENTRY points
 The script has a number of places marked:
 `% SAFE ENTRY`
 Which means "The only variables which change after this point, are created after this point."
-These have been determined by manual inspection and are by no means exhaustive. They are used to resme
+These have been determined by manual inspection and are by no means exhaustive. They are used to resume
 the script mid-execution to save time when testing changes. I generally use this procedure:
   - Locate the position of the change you wish to test (line XXX)
   - Locate the first SAFE ENTRY above XXX, (line YYY)

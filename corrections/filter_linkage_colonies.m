@@ -28,7 +28,8 @@
 %        For b and c iterate over N orfs, delimited by '+' in the strainid
 %%
 
-function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkagefile, coord_file, all_querys, all_arrays, query_map, array_map, wild_type, lfid)
+function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkagefile, coord_file, ...
+      all_querys, all_arrays, query_map, array_map, wild_type, remove_HO, lfid)
 
     % Print the name and path of this script
     p = mfilename('fullpath');
@@ -86,7 +87,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     array_orfs_not_found = 0;
     array_coord = nan(length(all_arrays),3); % CHR START END
     for i = 1:length(all_arrays)
-        array_orf = strip_annotation(sgadata.orfnames{all_arrays(i)}, 'last');
+        array_orf = strip_annotation(sgadata.orfnames{all_arrays(i)}, 'first');
         ix = strcmp(array_orf, SGD_coord.orfs);
 
         if any(ix)
@@ -108,7 +109,7 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     query_orfs_not_found = 0;
     query_coord = nan(length(all_querys),3); % CHR START END
     for i = 1:length(all_querys)
-        query_orf = strip_annotation(sgadata.orfnames{all_querys(i)}, 'last');
+        query_orf = strip_annotation(sgadata.orfnames{all_querys(i)}, 'first');
         ix = strcmp(query_orf, SGD_coord.orfs);
 
         if any(ix)
@@ -148,7 +149,11 @@ function [all_linkage_cols, non_spec]  = filter_linkage_colonies(sgadata, linkag
     %if every query has a +, this is triple mutant triple array, and we need to unlink HO globally
     % we also need to unlink URA3 globally, not just for WTS
     if(all(~cellfun(@isempty, strfind(sgadata.orfnames(all_querys), '+'))));
-        log_printf(lfid, 'All Queries are DM, removing HO/URA3 globally...\n');
+        log_printf(lfid, 'All Queries are DM, ...');
+        remove_HO = true;
+     end
+     if remove_HO
+        log_printf(lfid, 'removing HO/URA3 globally...\n');
         [ho_linkage_arrays, ~]   = get_linked_arrays('YDL227C', predef_lnkg, SGD_coord, array_coord);
         ura3_ho_linkage = unique([ura3_linkage_arrays; ho_linkage_arrays]);
         for i=1:length(lyp_can_linkage)

@@ -75,7 +75,7 @@ function[sga] = sga_concat(sga1, sga2, cat_type, inter)
 
 	% do the data
 	% get all available fields (confined to this list)
-	fields = {'eps', 'pvl', 'dbl', 'escore', 'dbl_std'};
+	fields = {'eps', 'pvl', 'dbl', 'escore', 'dbl_std', 'qfit', 'afit'};
 	fields1 = fieldnames(sga1);
 	fields2 = fieldnames(sga2);
 	fields = intersect(fields, intersect(fields1, fields2));

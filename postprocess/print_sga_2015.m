@@ -51,7 +51,8 @@ function[] = print_sga_2015(sga, filename, newfile)
             alleles{q}, ...
             sga.Cannon.Orf{a}, ...
             alleles{a}, ...
-            sga.source_labels{sga.source(q,a)});
+            sga.Cannon.sources{sga.src(q,a)});
+            % sga.source_labels{sga.source(q,a)});
 
          % score
          fprintf(fid, '%.4f\t%.3e\t', sga.eps(q,a), sga.pvl(q,a));

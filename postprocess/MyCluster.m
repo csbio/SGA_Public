@@ -15,8 +15,10 @@ function[] = MyCluster(mat, row_label1, row_label2, col_label, jobname, TYPE)
 
 	if strcmp(TYPE, 'inner_product')
 		command = 'cluster -e 9 -g 9 -m a -f '; % inner product
+      fix = true;
 	elseif strcmp(TYPE, 'pearson')
 		command = 'cluster -e 2 -g 2 -m a -f '; % pearson 
+      fix = false;
 	else
 		% give the user a chance to reset it and continue
 		fprintf('invalid clustering method request (entering degubber)\n');
@@ -31,9 +33,10 @@ function[] = MyCluster(mat, row_label1, row_label2, col_label, jobname, TYPE)
 	command = [command filename];
 	disp(command)
 	system(command);
-
-	fix_tree_files(jobname);
-
+   if fix
+	  fix_tree_files(jobname);
+   end
+    
 	system(['rm -f ' filename]); % cleanup the pcl
 
 end

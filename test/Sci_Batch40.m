@@ -24,5 +24,7 @@ coord_file = 'refdata/chrom_coordinates_150617.tab';
 inputfile = 'test/Sci_Batch40/Sci_Batch40.txt';
 outputfile = 'test/Sci_Batch40/Sci_Batch40_output';
 
+skip_batch_correction = true;
+
 compute_sgascore
 
