@@ -23,6 +23,10 @@ function[sga] = score_trigenic_interactions(sga, assignments)
 	FitNameMap = Hash([], fitness(:,1));
 
 	% Gather the DM_queries and Controls
+   % each of the first three return arguments are Nx3
+   % orfs and common names are strings (cell)
+   % and ix_all are absolute indexes into sga.Cannon, sga.eps, sga.pvl etc
+   % first column is double mutant, then singleA then singleB
 	[orf_all, com_all, ix_all, sga] = find_trigenic_players(sga, assignments);
 
 	% If these are not unique we may have hash mapping problems, check BEFORE SET OPS
@@ -42,6 +46,10 @@ function[sga] = score_trigenic_interactions(sga, assignments)
 	end
 
 	% score complete sets
+   % trgenic scoring equation:
+   % double mutant query profile (vector of triple "epsilons") minus:
+   %     single mutant A profile, scaled by smf of B   minus
+   %     single mutant B profile, scaled by smf of A
    for i=1:size(ix_all,1)
       [A_fit, B_fit] = GetSingleFitness(orf_all(i,:), fitness, NameMap);
       sga.eps(ix_all(i,1),:) = sga.eps(ix_all(i,1),:) - B_fit*sga.eps(ix_all(i,2),:) - A_fit*sga.eps(ix_all(i,3),:);
