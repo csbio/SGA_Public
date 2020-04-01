@@ -83,3 +83,24 @@ Final format for the 2010 paper
 12. Double mutant fitness
 13. Double mutant fitness standard deviation 
 
+Assignment file for score_trigenic_interactions.m
+-------------------------------------------------
+### 8 col
+1. StrainID1: strain ID of the first single mutant.
+2. ORF1: ORF of the first single mutant.
+3. StrainID2: strain ID of the second single mutant.
+4. ORF2: ORF of the second single mutant.
+5. DMstrainID: strain ID for the double mutant query (ORFs are ORF1 and ORF2).
+6. SM1strainID: strain ID for the single mutant (one of the ORFs will be YDL227C/HO).
+7. SM2strainID: strain ID for the other single mutant.
+8. Annotation: which class this interaction should be assigned to.
+
+Output of print_trigenic.m
+--------------------------
+### 6 col
+1. Query Strain ID
+2. Array Strain ID
+3. Adjusted genetic interaction score (epsilon or tau)
+4. P-value
+5. Double/triple mutant fitness
+6. Double/triple mutant fitness standard deviation

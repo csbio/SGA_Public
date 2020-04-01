@@ -9,5 +9,6 @@ function add_SGAPATH()
    addpath([base_dir '/util']);
    addpath([base_dir '/postprocess']);
    addpath([base_dir '/linkage_est']);
-   addpath([base_dir '/test']);
+   addpath([base_dir '/trigenic']);
+   addpath([base_dir '/test']);   
 end

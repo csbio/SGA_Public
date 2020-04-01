@@ -1,3 +1,6 @@
+SGA score
+===============
+
 Data Description
 ================
 
@@ -53,4 +56,16 @@ test_20.sh diffs the orf file to check for strain census changes
 
 *You may also want to examine a diff of the log files, but as file paths are subject to change
 without affecting scores, this is tricky to do automatically.*
+
  
+Tau-SGA (trigenic) Score
+========================
+
+Data Description
+================
+Data follows the same format of the SGA score. For the trigenic specific test, we have provided two different input files.
+
+1. raw_triple_test_small.txt
+2. raw_triple_test_full.txt.gz
+
+Both files reside inside the directory 'trigenic_scoring_test'. Outputs of different steps for the small dataset is provided inside the directory that include output of the SGA scoring step, Tau-SGA scoring step, and the clustergrams and is generated using the script 'trigenic_scoring_job.m'. The outputs for the full file can be generated with the same script but using the full file as the input instead. 

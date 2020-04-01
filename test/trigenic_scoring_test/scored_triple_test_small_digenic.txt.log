@@ -1,0 +1,145 @@
+Working dir is /home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master
+Using DEFAULT: skip_linkage_detection = false
+Using DEFAULT: skip_linkage_mask = false
+Using DEFAULT: skip_wt_remove = false
+Using DEFAULT: remove_HO_globally = false
+Using DEFAULT: skip_batch_correction = false
+Using DEFAULT: disable_arrayvar_pval = false
+Using DEFAULT: disable_jackknife = false
+Random Seed is 42
+
+Load raw SGA data with batch script: /home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/IO/load_raw_sga_data_withbatch
+
+beginning perl preprocessing
+Data loaded.
+using border strain YOR202W_dma1
+border strain array matches 132544 colonies (19%); expected (19%)
+
+
+Strain Summary:
+type	sn	dma	tsq	damp	tsa	trip	unann	total
+query	0	0	0	0	0	10	0	10
+array	0	1033	0	0	200	0	0	1233
+
+number of unique array plates found: 4
+5232 colonies ignored from "bad arrays"
+
+Constructing plateid->ind map...
+|                                                  |
+|**************************************************|
+Constructing query->ind map...
+Constructing array->ind map...
+
+Linkage filter script:
+	/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/filter_linkage_colonies
+Linkage Defs: refdata/linkage_estimate_curated_160426.txt
+Chrom   Defs: refdata/chrom_coordinates_150617.tab
+
+Array coordinates mapped. 
+	array orfs matched:   1233
+	array orfs not found: 0
+Query coordinates mapped. 
+	query orfs matched:   0
+	query orfs not found: 10
+All Queries are DM, ...removing HO/URA3 globally...
+Mapping query-specific linkage...
+|                                                  |
+|**************************************************|
+Query Linkage Process Report
+	strain based linkages:	0
+	orf based linkages:	4
+	window based linkages:	6
+	linkage failures:	0
+Mapping array-specific linkage...
+|                                                  |
+|**************************************************|
+Array Linkage Process Report
+	strain based linkages:	11
+	orf based linkages:	0
+	window based linkages:	0
+	linkage failures:	0
+26372 colonies identified as linkage
+
+Plate normalization script:
+	/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/apply_plate_normalization
+
+Plate normalization...
+|                                                  |
+|**************************************************|
+Calculating colony residuals...
+|                                                  |
+|**************************************************|
+
+Spatial correction script:
+	/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/apply_spatial_normalization
+
+Spatial normalization...
+|                                                  |
+|**************************************************|
+
+Row/column correction script:
+	/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/apply_rowcol_normalization
+
+Row/column correction...
+|                                                  |
+|**************************************************|
+
+Competition correction script:
+	/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/apply_competition_correction
+
+	Get colony neighbor indices script:
+		/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/get_colony_neighbor_indices_list
+
+Mapping neighboring colonies...
+|                                                  |
+|**************************************************|
+
+Competition correction...
+|                                                  |
+|**************************************************|
+
+Plate normalization script:
+	/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/apply_plate_normalization
+
+Plate normalization...
+|                                                  |
+|**************************************************|
+
+Jackknife variance correction script:
+	/home/mahfuz/Desktop/SGA/Nat_Protocols_Paper_Release/SGA_Public-master/corrections/apply_jackknife_correction
+
+Running the hold-one-out filter...
+|                                                  |
+|**************************************************|
+Finished applying filters...
+Getting arrayplate means...
+|                                                  |
+|**************************************************|
+Preparing for batch normalization...
+|                                                  |
+|**************************************************|
+Batch normalization...
+|                                                  |
+|**************************************************|
+Calculating array WT variance...
+|                                                  |
+|**************************************************|
+Computing average for double mutants...
+|                                                  |
+|*********************************************|
+Pooling across arrayplates for each query...
+|                                                  |
+|************************* -- query_arrplate_vars space reallocation --
+*************************|
+Fitness file report:
+	Exact match	: 1237
+	Partial Match	: 0
+	Not Found	: 6
+	NaN in file	: 55
+Model fitting...
+|                                                  |
+|**************************************************|
+Printing output file...
+|                                                  |
+|**************************************************|
+total time elapsed: 0.06 hours
