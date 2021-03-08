@@ -142,6 +142,10 @@ if ~exist('disable_jackknife', 'var')
    log_printf(lfid, 'Using DEFAULT: disable_jackknife = false\n');
    disable_jackknife = false;
 end
+if ~exist('disable_big_colony_removal', 'var')
+    log_printf(lfid, 'Using DEFAULT: disable_big_colony_removal = false\n');
+    disable_big_colony_removal = false;
+end
 
 
 if(keyboard_confirm)
@@ -388,7 +392,9 @@ sgadata.filt_colsize = sgadata.filt_jackknife;
 sgadata.filt_colsize(sgadata.filt_colsize < 1) = NaN;
 
 % Set values > 1000 to 1000
-sgadata.filt_colsize(sgadata.filt_colsize > 1000) = 1000;
+if (~disable_big_colony_removal)
+    sgadata.filt_colsize(sgadata.filt_colsize > 1000) = 1000;
+end
 
 % Remove border (contains HIS3 control strains)
 ind = find(sgadata.rows < 3 | sgadata.rows > 30 | sgadata.cols < 3 | sgadata.cols > 46);
